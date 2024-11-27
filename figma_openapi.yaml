@@ -1,0 +1,369 @@
+openapi: 3.0.0
+info:
+  title: Figma API (Simplified)
+  version: 0.1.0
+  description: Simplified Figma API for FigFlow
+
+servers:
+  - url: https://api.figma.com
+
+security:
+  - PersonalAccessToken: []
+  - OAuth2: []
+
+paths:
+  /v1/files/{file_key}:
+    get:
+      tags:
+        - Files
+      summary: Get file JSON
+      security:
+        - PersonalAccessToken: []
+        - OAuth2: 
+            - files:read
+      operationId: getFile
+      parameters:
+        - name: file_key
+          in: path
+          description: File to export JSON from
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  lastModified:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  document:
+                    $ref: '#/components/schemas/Document'
+        "401":
+          description: Authentication failed
+        "403":
+          description: Permission denied
+        "404":
+          description: File not found
+
+  /v1/images/{file_key}:
+    get:
+      tags:
+        - Files
+      summary: Get images
+      security:
+        - PersonalAccessToken: []
+        - OAuth2: 
+            - files:read
+      operationId: getImages
+      parameters:
+        - name: file_key
+          in: path
+          description: File to export images from
+          required: true
+          schema:
+            type: string
+        - name: ids
+          in: query
+          description: Node IDs to render
+          required: true
+          schema:
+            type: string
+        - name: scale
+          in: query
+          description: Image scaling factor
+          schema:
+            type: number
+            minimum: 0.01
+            maximum: 4
+        - name: format
+          in: query
+          description: Image format
+          schema:
+            type: string
+            enum: [jpg, png, svg, pdf]
+            default: png
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      format: uri
+        "401":
+          description: Authentication failed
+        "403":
+          description: Permission denied
+        "404":
+          description: File not found
+
+components:
+  securitySchemes:
+    PersonalAccessToken:
+      type: apiKey
+      name: X-Figma-Token
+      in: header
+      description: Personal access token for Figma API
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://www.figma.com/oauth
+          tokenUrl: https://www.figma.com/api/oauth/token
+          scopes:
+            files:read: Read files
+
+  schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [DOCUMENT]
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Canvas'
+
+    Canvas:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [CANVAS]
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        backgroundColor:
+          $ref: '#/components/schemas/Color'
+
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [FRAME, GROUP, RECTANGLE, TEXT]
+        visible:
+          type: boolean
+          default: true
+        locked:
+          type: boolean
+          default: false
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        absoluteBoundingBox:
+          $ref: '#/components/schemas/Rectangle'
+        constraints:
+          $ref: '#/components/schemas/LayoutConstraint'
+        layoutMode:
+          type: string
+          enum: [NONE, HORIZONTAL, VERTICAL]
+        primaryAxisAlignItems:
+          type: string
+          enum: [MIN, CENTER, MAX, SPACE_BETWEEN]
+        counterAxisAlignItems:
+          type: string
+          enum: [MIN, CENTER, MAX]
+        paddingLeft:
+          type: number
+        paddingRight:
+          type: number
+        paddingTop:
+          type: number
+        paddingBottom:
+          type: number
+        itemSpacing:
+          type: number
+        fills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Paint'
+        strokes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Paint'
+        strokeWeight:
+          type: number
+        effects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Effect'
+        characters:
+          type: string
+        style:
+          $ref: '#/components/schemas/TypeStyle'
+        cornerRadius:
+          type: number
+
+    Rectangle:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+      required:
+        - x
+        - y
+        - width
+        - height
+
+    LayoutConstraint:
+      type: object
+      properties:
+        vertical:
+          type: string
+          enum: [TOP, BOTTOM, CENTER, SCALE, STRETCH]
+        horizontal:
+          type: string
+          enum: [LEFT, RIGHT, CENTER, SCALE, STRETCH]
+      required:
+        - vertical
+        - horizontal
+
+    Paint:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [SOLID, GRADIENT_LINEAR, GRADIENT_RADIAL]
+        color:
+          $ref: '#/components/schemas/Color'
+        opacity:
+          type: number
+          minimum: 0
+          maximum: 1
+        gradientHandlePositions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vector'
+        gradientStops:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColorStop'
+      required:
+        - type
+
+    Effect:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [DROP_SHADOW, INNER_SHADOW, LAYER_BLUR]
+        color:
+          $ref: '#/components/schemas/Color'
+        offset:
+          $ref: '#/components/schemas/Vector'
+        radius:
+          type: number
+        visible:
+          type: boolean
+          default: true
+        blendMode:
+          type: string
+          enum: [NORMAL, MULTIPLY, SCREEN, OVERLAY]
+      required:
+        - type
+
+    Color:
+      type: object
+      properties:
+        r:
+          type: number
+          minimum: 0
+          maximum: 1
+        g:
+          type: number
+          minimum: 0
+          maximum: 1
+        b:
+          type: number
+          minimum: 0
+          maximum: 1
+        a:
+          type: number
+          minimum: 0
+          maximum: 1
+      required:
+        - r
+        - g
+        - b
+        - a
+
+    Vector:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+      required:
+        - x
+        - y
+
+    ColorStop:
+      type: object
+      properties:
+        position:
+          type: number
+        color:
+          $ref: '#/components/schemas/Color'
+      required:
+        - position
+        - color
+
+    TypeStyle:
+      type: object
+      properties:
+        fontFamily:
+          type: string
+        fontPostScriptName:
+          type: string
+        fontSize:
+          type: number
+        fontWeight:
+          type: number
+        textAlignHorizontal:
+          type: string
+          enum: [LEFT, RIGHT, CENTER, JUSTIFIED]
+        textAlignVertical:
+          type: string
+          enum: [TOP, CENTER, BOTTOM]
+        letterSpacing:
+          type: number
+        lineHeightPx:
+          type: number
+        lineHeightPercent:
+          type: number

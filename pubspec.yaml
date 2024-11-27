@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  figma_api:
+    path: "packages/figma_api"
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
