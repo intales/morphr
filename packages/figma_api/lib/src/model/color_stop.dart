@@ -24,6 +24,8 @@ class ColorStop {
     required  this.color,
   });
 
+          // minimum: 0
+          // maximum: 1
   @JsonKey(
     
     name: r'position',

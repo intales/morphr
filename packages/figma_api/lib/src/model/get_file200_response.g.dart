@@ -21,6 +21,13 @@ GetFile200Response _$GetFile200ResponseFromJson(Map<String, dynamic> json) =>
               (v) => v == null
                   ? null
                   : Document.fromJson(v as Map<String, dynamic>)),
+          schemaVersion: $checkedConvert('schemaVersion', (v) => v as num?),
+          styles: $checkedConvert(
+              'styles',
+              (v) => (v as Map<String, dynamic>?)?.map(
+                    (k, e) =>
+                        MapEntry(k, Style.fromJson(e as Map<String, dynamic>)),
+                  )),
         );
         return val;
       },
@@ -33,4 +40,8 @@ Map<String, dynamic> _$GetFile200ResponseToJson(GetFile200Response instance) =>
         'lastModified': value,
       if (instance.version case final value?) 'version': value,
       if (instance.document?.toJson() case final value?) 'document': value,
+      if (instance.schemaVersion case final value?) 'schemaVersion': value,
+      if (instance.styles?.map((k, e) => MapEntry(k, e.toJson()))
+          case final value?)
+        'styles': value,
     };

@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:figma_api/src/model/vector.dart';
 import 'package:figma_api/src/model/color.dart';
+import 'package:figma_api/src/model/blend_mode.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'effect.g.dart';
@@ -22,15 +23,19 @@ class Effect {
 
     required  this.type,
 
-     this.color,
-
-     this.offset,
+     this.visible = true,
 
      this.radius,
 
-     this.visible = true,
+     this.color,
 
      this.blendMode,
+
+     this.offset,
+
+     this.spread,
+
+     this.showShadowBehindNode = false,
   });
 
   @JsonKey(
@@ -42,42 +47,6 @@ class Effect {
 
 
   final EffectTypeEnum type;
-
-
-
-  @JsonKey(
-    
-    name: r'color',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final Color? color;
-
-
-
-  @JsonKey(
-    
-    name: r'offset',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final Vector? offset;
-
-
-
-  @JsonKey(
-    
-    name: r'radius',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final num? radius;
 
 
 
@@ -95,13 +64,73 @@ class Effect {
 
   @JsonKey(
     
+    name: r'radius',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final num? radius;
+
+
+
+  @JsonKey(
+    
+    name: r'color',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final Color? color;
+
+
+
+  @JsonKey(
+    
     name: r'blendMode',
     required: false,
     includeIfNull: false,
   )
 
 
-  final EffectBlendModeEnum? blendMode;
+  final BlendMode? blendMode;
+
+
+
+  @JsonKey(
+    
+    name: r'offset',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final Vector? offset;
+
+
+
+  @JsonKey(
+    
+    name: r'spread',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final num? spread;
+
+
+
+  @JsonKey(
+    defaultValue: false,
+    name: r'showShadowBehindNode',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final bool? showShadowBehindNode;
 
 
 
@@ -110,20 +139,24 @@ class Effect {
     @override
     bool operator ==(Object other) => identical(this, other) || other is Effect &&
       other.type == type &&
-      other.color == color &&
-      other.offset == offset &&
-      other.radius == radius &&
       other.visible == visible &&
-      other.blendMode == blendMode;
+      other.radius == radius &&
+      other.color == color &&
+      other.blendMode == blendMode &&
+      other.offset == offset &&
+      other.spread == spread &&
+      other.showShadowBehindNode == showShadowBehindNode;
 
     @override
     int get hashCode =>
         type.hashCode +
-        color.hashCode +
-        offset.hashCode +
-        radius.hashCode +
         visible.hashCode +
-        blendMode.hashCode;
+        radius.hashCode +
+        color.hashCode +
+        blendMode.hashCode +
+        offset.hashCode +
+        spread.hashCode +
+        showShadowBehindNode.hashCode;
 
   factory Effect.fromJson(Map<String, dynamic> json) => _$EffectFromJson(json);
 
@@ -143,29 +176,11 @@ DROP_SHADOW(r'DROP_SHADOW'),
 @JsonValue(r'INNER_SHADOW')
 INNER_SHADOW(r'INNER_SHADOW'),
 @JsonValue(r'LAYER_BLUR')
-LAYER_BLUR(r'LAYER_BLUR');
+LAYER_BLUR(r'LAYER_BLUR'),
+@JsonValue(r'BACKGROUND_BLUR')
+BACKGROUND_BLUR(r'BACKGROUND_BLUR');
 
 const EffectTypeEnum(this.value);
-
-final String value;
-
-@override
-String toString() => value;
-}
-
-
-
-enum EffectBlendModeEnum {
-@JsonValue(r'NORMAL')
-NORMAL(r'NORMAL'),
-@JsonValue(r'MULTIPLY')
-MULTIPLY(r'MULTIPLY'),
-@JsonValue(r'SCREEN')
-SCREEN(r'SCREEN'),
-@JsonValue(r'OVERLAY')
-OVERLAY(r'OVERLAY');
-
-const EffectBlendModeEnum(this.value);
 
 final String value;
 

@@ -38,6 +38,7 @@ const _$LayoutConstraintVerticalEnumEnumMap = {
   LayoutConstraintVerticalEnum.CENTER: 'CENTER',
   LayoutConstraintVerticalEnum.SCALE: 'SCALE',
   LayoutConstraintVerticalEnum.STRETCH: 'STRETCH',
+  LayoutConstraintVerticalEnum.TOP_BOTTOM: 'TOP_BOTTOM',
 };
 
 const _$LayoutConstraintHorizontalEnumEnumMap = {
@@ -46,4 +47,5 @@ const _$LayoutConstraintHorizontalEnumEnumMap = {
   LayoutConstraintHorizontalEnum.CENTER: 'CENTER',
   LayoutConstraintHorizontalEnum.SCALE: 'SCALE',
   LayoutConstraintHorizontalEnum.STRETCH: 'STRETCH',
+  LayoutConstraintHorizontalEnum.LEFT_RIGHT: 'LEFT_RIGHT',
 };

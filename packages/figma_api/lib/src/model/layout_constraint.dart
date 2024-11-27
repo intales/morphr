@@ -81,7 +81,9 @@ CENTER(r'CENTER'),
 @JsonValue(r'SCALE')
 SCALE(r'SCALE'),
 @JsonValue(r'STRETCH')
-STRETCH(r'STRETCH');
+STRETCH(r'STRETCH'),
+@JsonValue(r'TOP_BOTTOM')
+TOP_BOTTOM(r'TOP_BOTTOM');
 
 const LayoutConstraintVerticalEnum(this.value);
 
@@ -103,7 +105,9 @@ CENTER(r'CENTER'),
 @JsonValue(r'SCALE')
 SCALE(r'SCALE'),
 @JsonValue(r'STRETCH')
-STRETCH(r'STRETCH');
+STRETCH(r'STRETCH'),
+@JsonValue(r'LEFT_RIGHT')
+LEFT_RIGHT(r'LEFT_RIGHT');
 
 const LayoutConstraintHorizontalEnum(this.value);
 

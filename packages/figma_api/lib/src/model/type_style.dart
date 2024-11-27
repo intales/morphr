@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:figma_api/src/model/paint.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'type_style.g.dart';
@@ -20,13 +21,13 @@ class TypeStyle {
 
      this.fontFamily,
 
-     this.fontPostScriptName,
-
      this.fontSize,
 
      this.fontWeight,
 
      this.textAlignHorizontal,
+
+     this.textCase,
 
      this.textAlignVertical,
 
@@ -34,7 +35,9 @@ class TypeStyle {
 
      this.lineHeightPx,
 
-     this.lineHeightPercent,
+     this.italic,
+
+     this.fills,
   });
 
   @JsonKey(
@@ -46,18 +49,6 @@ class TypeStyle {
 
 
   final String? fontFamily;
-
-
-
-  @JsonKey(
-    
-    name: r'fontPostScriptName',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final String? fontPostScriptName;
 
 
 
@@ -99,6 +90,18 @@ class TypeStyle {
 
   @JsonKey(
     
+    name: r'textCase',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final TypeStyleTextCaseEnum? textCase;
+
+
+
+  @JsonKey(
+    
     name: r'textAlignVertical',
     required: false,
     includeIfNull: false,
@@ -135,13 +138,25 @@ class TypeStyle {
 
   @JsonKey(
     
-    name: r'lineHeightPercent',
+    name: r'italic',
     required: false,
     includeIfNull: false,
   )
 
 
-  final num? lineHeightPercent;
+  final bool? italic;
+
+
+
+  @JsonKey(
+    
+    name: r'fills',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final List<Paint>? fills;
 
 
 
@@ -150,26 +165,28 @@ class TypeStyle {
     @override
     bool operator ==(Object other) => identical(this, other) || other is TypeStyle &&
       other.fontFamily == fontFamily &&
-      other.fontPostScriptName == fontPostScriptName &&
       other.fontSize == fontSize &&
       other.fontWeight == fontWeight &&
       other.textAlignHorizontal == textAlignHorizontal &&
+      other.textCase == textCase &&
       other.textAlignVertical == textAlignVertical &&
       other.letterSpacing == letterSpacing &&
       other.lineHeightPx == lineHeightPx &&
-      other.lineHeightPercent == lineHeightPercent;
+      other.italic == italic &&
+      other.fills == fills;
 
     @override
     int get hashCode =>
         fontFamily.hashCode +
-        fontPostScriptName.hashCode +
         fontSize.hashCode +
         fontWeight.hashCode +
         textAlignHorizontal.hashCode +
+        textCase.hashCode +
         textAlignVertical.hashCode +
         letterSpacing.hashCode +
         lineHeightPx.hashCode +
-        lineHeightPercent.hashCode;
+        italic.hashCode +
+        fills.hashCode;
 
   factory TypeStyle.fromJson(Map<String, dynamic> json) => _$TypeStyleFromJson(json);
 
@@ -194,6 +211,26 @@ CENTER(r'CENTER'),
 JUSTIFIED(r'JUSTIFIED');
 
 const TypeStyleTextAlignHorizontalEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}
+
+
+
+enum TypeStyleTextCaseEnum {
+@JsonValue(r'UPPER')
+UPPER(r'UPPER'),
+@JsonValue(r'LOWER')
+LOWER(r'LOWER'),
+@JsonValue(r'TITLE')
+TITLE(r'TITLE'),
+@JsonValue(r'SMALL_CAPS')
+SMALL_CAPS(r'SMALL_CAPS');
+
+const TypeStyleTextCaseEnum(this.value);
 
 final String value;
 

@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:figma_api/src/model/style.dart';
 import 'package:figma_api/src/model/document.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -26,6 +27,10 @@ class GetFile200Response {
      this.version,
 
      this.document,
+
+     this.schemaVersion,
+
+     this.styles,
   });
 
   @JsonKey(
@@ -76,6 +81,30 @@ class GetFile200Response {
 
 
 
+  @JsonKey(
+    
+    name: r'schemaVersion',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final num? schemaVersion;
+
+
+
+  @JsonKey(
+    
+    name: r'styles',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final Map<String, Style>? styles;
+
+
+
 
 
     @override
@@ -83,14 +112,18 @@ class GetFile200Response {
       other.name == name &&
       other.lastModified == lastModified &&
       other.version == version &&
-      other.document == document;
+      other.document == document &&
+      other.schemaVersion == schemaVersion &&
+      other.styles == styles;
 
     @override
     int get hashCode =>
         name.hashCode +
         lastModified.hashCode +
         version.hashCode +
-        document.hashCode;
+        document.hashCode +
+        schemaVersion.hashCode +
+        styles.hashCode;
 
   factory GetFile200Response.fromJson(Map<String, dynamic> json) => _$GetFile200ResponseFromJson(json);
 

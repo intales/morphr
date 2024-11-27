@@ -24,6 +24,8 @@ Canvas _$CanvasFromJson(Map<String, dynamic> json) => $checkedCreate(
               'backgroundColor',
               (v) =>
                   v == null ? null : Color.fromJson(v as Map<String, dynamic>)),
+          prototypeStartNodeID:
+              $checkedConvert('prototypeStartNodeID', (v) => v as String?),
         );
         return val;
       },
@@ -38,6 +40,8 @@ Map<String, dynamic> _$CanvasToJson(Canvas instance) => <String, dynamic>{
         'children': value,
       if (instance.backgroundColor?.toJson() case final value?)
         'backgroundColor': value,
+      if (instance.prototypeStartNodeID case final value?)
+        'prototypeStartNodeID': value,
     };
 
 const _$CanvasTypeEnumEnumMap = {

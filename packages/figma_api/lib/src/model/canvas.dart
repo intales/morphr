@@ -29,6 +29,8 @@ class Canvas {
      this.children,
 
      this.backgroundColor,
+
+     this.prototypeStartNodeID,
   });
 
   @JsonKey(
@@ -91,6 +93,18 @@ class Canvas {
 
 
 
+  @JsonKey(
+    
+    name: r'prototypeStartNodeID',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? prototypeStartNodeID;
+
+
+
 
 
     @override
@@ -99,7 +113,8 @@ class Canvas {
       other.name == name &&
       other.type == type &&
       other.children == children &&
-      other.backgroundColor == backgroundColor;
+      other.backgroundColor == backgroundColor &&
+      other.prototypeStartNodeID == prototypeStartNodeID;
 
     @override
     int get hashCode =>
@@ -107,7 +122,8 @@ class Canvas {
         name.hashCode +
         type.hashCode +
         children.hashCode +
-        backgroundColor.hashCode;
+        backgroundColor.hashCode +
+        prototypeStartNodeID.hashCode;
 
   factory Canvas.fromJson(Map<String, dynamic> json) => _$CanvasFromJson(json);
 

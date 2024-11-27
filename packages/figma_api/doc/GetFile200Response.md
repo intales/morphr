@@ -12,6 +12,8 @@ Name | Type | Description | Notes
 **lastModified** | [**DateTime**](DateTime.md) |  | [optional] 
 **version** | **String** |  | [optional] 
 **document** | [**Document**](Document.md) |  | [optional] 
+**schemaVersion** | **num** |  | [optional] 
+**styles** | [**Map&lt;String, Style&gt;**](Style.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
