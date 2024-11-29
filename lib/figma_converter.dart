@@ -17,7 +17,7 @@ class FigmaConverter {
   }
 
   Widget convertLayout(figma_api.Node node) {
-    final children =
+    var children =
         node.children?.map((child) => _convertChild(child: child)).toList() ??
             [];
     final width = node.absoluteBoundingBox?.width.toDouble() ?? 0;
@@ -38,14 +38,21 @@ class FigmaConverter {
 
     final isHorizontal =
         node.layoutMode == figma_api.NodeLayoutModeEnum.HORIZONTAL;
-
     final itemSpacing = node.itemSpacing?.toDouble() ?? 0;
-    for (var i = 0; i < children.length; i += 2) {
-      if (isHorizontal) {
-        children.insert(i, SizedBox(width: itemSpacing));
-      } else {
-        children.insert(i, SizedBox(height: itemSpacing));
+
+    if (itemSpacing > 0) {
+      final spacedChildren = <Widget>[];
+      for (var i = 0; i < children.length; i++) {
+        spacedChildren.add(children[i]);
+        if (i < children.length - 1) {
+          if (isHorizontal) {
+            spacedChildren.add(SizedBox(width: itemSpacing));
+          } else {
+            spacedChildren.add(SizedBox(height: itemSpacing));
+          }
+        }
       }
+      children = spacedChildren;
     }
 
     Widget layout = isHorizontal
