@@ -38,6 +38,16 @@ class FigmaConverter {
 
     final isHorizontal =
         node.layoutMode == figma_api.NodeLayoutModeEnum.HORIZONTAL;
+
+    final itemSpacing = node.itemSpacing?.toDouble() ?? 0;
+    for (var i = 0; i < children.length; i += 2) {
+      if (isHorizontal) {
+        children.insert(i, SizedBox(width: itemSpacing));
+      } else {
+        children.insert(i, SizedBox(height: itemSpacing));
+      }
+    }
+
     Widget layout = isHorizontal
         ? Row(
             mainAxisAlignment:

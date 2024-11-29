@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:figma_api/figma_api.dart' as figma_api;
 import 'package:flutter/widgets.dart';
 
@@ -87,22 +88,43 @@ class FigmaRectangleConverter {
       );
     }).toList();
 
-    final positions =
-        gradientFill.gradientStops?.map((stop) => stop.position).toList();
+    final positions = gradientFill.gradientStops
+        ?.map((stop) => stop.position.toDouble())
+        .toList();
 
     switch (gradientFill.type) {
       case figma_api.PaintTypeEnum.GRADIENT_LINEAR:
+        if (gradientFill.gradientHandlePositions?.length != 3) return null;
+
+        final start = gradientFill.gradientHandlePositions![0];
+        final end = gradientFill.gradientHandlePositions![1];
+
         return LinearGradient(
           colors: stops ?? [],
-          stops: positions?.map((e) => e.toDouble()).toList(),
-          // TODO: handle gradient transform
+          stops: positions,
+          begin: Alignment(start.x * 2 - 1, start.y * 2 - 1),
+          end: Alignment(end.x * 2 - 1, end.y * 2 - 1),
         );
+
       case figma_api.PaintTypeEnum.GRADIENT_RADIAL:
+        if (gradientFill.gradientHandlePositions?.length != 3) return null;
+
+        final center = gradientFill.gradientHandlePositions![0];
+        final radius = gradientFill.gradientHandlePositions![1];
+
+        final focalX = center.x;
+        final focalY = center.y;
+        final radiusX = radius.x - center.x;
+        final radiusY = radius.y - center.y;
+        final r = math.sqrt(radiusX * radiusX + radiusY * radiusY);
+
         return RadialGradient(
           colors: stops ?? [],
-          stops: positions?.map((e) => e.toDouble()).toList(),
-          // TODO: handle gradient transform
+          stops: positions,
+          center: Alignment(focalX * 2 - 1, focalY * 2 - 1),
+          radius: r,
         );
+
       default:
         return null;
     }
