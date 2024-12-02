@@ -1,8 +1,20 @@
 import 'dart:math' as math;
 import 'package:figma/figma.dart' as figma_api;
 import 'package:flutter/widgets.dart';
+import 'figma_node_converter.dart';
 
-class FigmaRectangleConverter {
+class FigmaRectangleConverter extends FigmaNodeConverter {
+  @override
+  Widget convert(figma_api.Node node) {
+    if (node is! figma_api.Rectangle) {
+      throw ArgumentError('Not a Rectangle node');
+    }
+    return applyLayoutAlign(
+      node.layoutAlign,
+      convertRectangle(rectangle: node),
+    );
+  }
+
   Widget convertRectangle({
     required figma_api.Rectangle rectangle,
   }) {
