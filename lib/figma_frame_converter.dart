@@ -1,3 +1,4 @@
+import 'package:figflow/figma_style_helper.dart';
 import 'package:figma/figma.dart' as figma_api;
 import 'package:flutter/widgets.dart';
 import 'figma_node_converter.dart';
@@ -12,22 +13,29 @@ class FigmaFrameConverter extends FigmaNodeConverter {
     if (node is! figma_api.Frame) throw ArgumentError('Not a Frame node');
     return applyLayoutAlign(
       node.layoutAlign,
-      _convertLayout(node),
+      convertLayout(node),
     );
   }
 
-  Widget _convertLayout(figma_api.Frame frame) {
+  Widget convertLayout(figma_api.Frame frame) {
     var children = frame.children?.nonNulls
             .map((child) => _convertChild(child))
             .toList() ??
         [];
-    final width = frame.absoluteBoundingBox?.width?.toDouble() ?? 0;
-    final height = frame.absoluteBoundingBox?.height?.toDouble() ?? 0;
+    final useFixedWidth =
+        frame.counterAxisSizingMode != figma_api.CounterAxisSizingMode.auto;
+    final useFixedHeight =
+        frame.primaryAxisSizingMode != figma_api.PrimaryAxisSizingMode.auto;
+
+    final width =
+        useFixedWidth ? (frame.absoluteBoundingBox?.width ?? 0) : null;
+    final height =
+        useFixedHeight ? (frame.absoluteBoundingBox?.height ?? 0) : null;
     final clipBehavior = frame.clipsContent == true ? Clip.hardEdge : Clip.none;
 
     if (frame.layoutMode == null ||
         frame.layoutMode == figma_api.LayoutMode.none) {
-      return SizedBox(
+      final stackWidget = SizedBox(
         width: width,
         height: height,
         child: Stack(
@@ -35,24 +43,24 @@ class FigmaFrameConverter extends FigmaNodeConverter {
           children: children,
         ),
       );
+
+      return _applyScrollToStack(
+        frame: frame,
+        child: stackWidget,
+        width: width,
+        height: height,
+      );
     }
 
     final isHorizontal = frame.layoutMode == figma_api.LayoutMode.horizontal;
-    final itemSpacing = frame.itemSpacing.toDouble();
+    final itemSpacing = frame.itemSpacing;
 
     if (itemSpacing > 0) {
-      final spacedChildren = <Widget>[];
-      for (var i = 0; i < children.length; i++) {
-        spacedChildren.add(children[i]);
-        if (i < children.length - 1) {
-          if (isHorizontal) {
-            spacedChildren.add(SizedBox(width: itemSpacing));
-          } else {
-            spacedChildren.add(SizedBox(height: itemSpacing));
-          }
-        }
-      }
-      children = spacedChildren;
+      children = _addSpacingBetweenChildren(
+        children: children,
+        spacing: itemSpacing,
+        isHorizontal: isHorizontal,
+      );
     }
 
     Widget layout = isHorizontal
@@ -85,28 +93,140 @@ class FigmaFrameConverter extends FigmaNodeConverter {
             children: children,
           );
 
-    final padding = EdgeInsets.only(
-      left: frame.paddingLeft.toDouble(),
-      right: frame.paddingRight.toDouble(),
-      top: frame.paddingTop.toDouble(),
-      bottom: frame.paddingBottom.toDouble(),
+    layout = _applyPadding(
+      frame: frame,
+      child: layout,
     );
 
-    if (padding != EdgeInsets.zero) {
-      layout = Padding(
-        padding: padding,
+    layout = _applyScrollToLayout(
+      frame: frame,
+      child: layout,
+      isHorizontal: isHorizontal,
+    );
+
+    final decoration = FigmaStyleHelper.extractBoxDecoration(
+      fills: frame.fills,
+      strokes: frame.strokes,
+      strokeWeight: frame.strokeWeight,
+    );
+
+    if (decoration != null) {
+      layout = Container(
+        decoration: decoration,
+        child: layout,
+      );
+    }
+
+    if (width != null || height != null) {
+      layout = SizedBox(
+        width: width,
+        height: height,
         child: layout,
       );
     }
 
     return SizedBox(
-      width: width,
-      height: height,
+      width: frame.absoluteBoundingBox?.width ?? 0,
+      height: frame.absoluteBoundingBox?.height ?? 0,
       child: ClipRect(
-        clipBehavior: clipBehavior,
+        clipBehavior: frame.clipsContent == true ? Clip.hardEdge : Clip.none,
         child: layout,
       ),
     );
+  }
+
+  Widget _applyScrollToStack({
+    required figma_api.Frame frame,
+    required Widget child,
+    required double? width,
+    required double? height,
+  }) {
+    if (frame.overflowDirection == figma_api.OverflowDirection.none) {
+      return child;
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: frame.overflowDirection ==
+              figma_api.OverflowDirection.horizontalScrolling
+          ? Axis.horizontal
+          : Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: frame.overflowDirection ==
+                figma_api.OverflowDirection.horizontalScrolling
+            ? Axis.vertical
+            : Axis.horizontal,
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _applyScrollToLayout({
+    required figma_api.Frame frame,
+    required Widget child,
+    required bool isHorizontal,
+  }) {
+    if (frame.overflowDirection == figma_api.OverflowDirection.none) {
+      return child;
+    }
+
+    final scrollDirection = frame.overflowDirection ==
+            figma_api.OverflowDirection.horizontalScrolling
+        ? Axis.horizontal
+        : Axis.vertical;
+
+    if ((isHorizontal && scrollDirection == Axis.horizontal) ||
+        (!isHorizontal && scrollDirection == Axis.vertical)) {
+      return SingleChildScrollView(
+        scrollDirection: scrollDirection,
+        child: child,
+      );
+    }
+
+    return child;
+  }
+
+  List<Widget> _addSpacingBetweenChildren({
+    required List<Widget> children,
+    required double spacing,
+    required bool isHorizontal,
+  }) {
+    final spacedChildren = <Widget>[];
+    for (var i = 0; i < children.length; i++) {
+      spacedChildren.add(children[i]);
+      if (i < children.length - 1) {
+        if (isHorizontal) {
+          spacedChildren.add(SizedBox(width: spacing));
+        } else {
+          spacedChildren.add(SizedBox(height: spacing));
+        }
+      }
+    }
+    return spacedChildren;
+  }
+
+  Widget _applyPadding({
+    required figma_api.Frame frame,
+    required Widget child,
+  }) {
+    final padding = EdgeInsets.only(
+      left: frame.paddingLeft,
+      right: frame.paddingRight,
+      top: frame.paddingTop,
+      bottom: frame.paddingBottom,
+    );
+
+    if (padding != EdgeInsets.zero) {
+      return Padding(
+        padding: padding,
+        child: child,
+      );
+    }
+
+    return child;
   }
 
   Widget _convertChild(figma_api.Node child) {

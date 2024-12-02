@@ -31,6 +31,7 @@ class FigmaTestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: const Color(0xFF222222),
         appBar: AppBar(
           title: const Text(
             'Figma Layout + Rectangle Tests',
