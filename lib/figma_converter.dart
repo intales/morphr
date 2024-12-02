@@ -1,31 +1,32 @@
 import 'package:figflow/figma_rectangle_converter.dart';
-import 'package:figma_api/figma_api.dart' as figma_api;
+import 'package:figma/figma.dart' as figma_api;
 import 'package:flutter/widgets.dart';
 
 class FigmaConverter {
   final _rectangleConverter = FigmaRectangleConverter();
 
   Widget convertNode(figma_api.Node node) {
-    switch (node.type) {
-      case figma_api.NodeTypeEnum.FRAME:
-        return convertLayout(node);
-      case figma_api.NodeTypeEnum.RECTANGLE:
-        return _rectangleConverter.convertRectangle(node: node);
+    switch (node) {
+      case figma_api.Frame frame:
+        return convertLayout(frame);
+      case figma_api.Rectangle rectangle:
+        return _rectangleConverter.convertRectangle(rectangle: rectangle);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget convertLayout(figma_api.Node node) {
-    var children =
-        node.children?.map((child) => _convertChild(child: child)).toList() ??
-            [];
-    final width = node.absoluteBoundingBox?.width.toDouble() ?? 0;
-    final height = node.absoluteBoundingBox?.height.toDouble() ?? 0;
-    final clipBehavior = node.clipsContent == true ? Clip.hardEdge : Clip.none;
+  Widget convertLayout(figma_api.Frame frame) {
+    var children = frame.children?.nonNulls
+            .map((child) => _convertChild(child: child))
+            .toList() ??
+        [];
+    final width = frame.absoluteBoundingBox?.width?.toDouble() ?? 0;
+    final height = frame.absoluteBoundingBox?.height?.toDouble() ?? 0;
+    final clipBehavior = frame.clipsContent == true ? Clip.hardEdge : Clip.none;
 
-    if (node.layoutMode == null ||
-        node.layoutMode == figma_api.NodeLayoutModeEnum.NONE) {
+    if (frame.layoutMode == null ||
+        frame.layoutMode == figma_api.LayoutMode.none) {
       return SizedBox(
         width: width,
         height: height,
@@ -36,9 +37,8 @@ class FigmaConverter {
       );
     }
 
-    final isHorizontal =
-        node.layoutMode == figma_api.NodeLayoutModeEnum.HORIZONTAL;
-    final itemSpacing = node.itemSpacing?.toDouble() ?? 0;
+    final isHorizontal = frame.layoutMode == figma_api.LayoutMode.horizontal;
+    final itemSpacing = frame.itemSpacing.toDouble();
 
     if (itemSpacing > 0) {
       final spacedChildren = <Widget>[];
@@ -57,35 +57,39 @@ class FigmaConverter {
 
     Widget layout = isHorizontal
         ? Row(
-            mainAxisAlignment:
-                _convertMainAxisAlignment(align: node.primaryAxisAlignItems),
-            crossAxisAlignment:
-                _convertCrossAxisAlignment(align: node.counterAxisAlignItems),
+            mainAxisAlignment: _convertMainAxisAlignment(
+              align: frame.primaryAxisAlignItems,
+            ),
+            crossAxisAlignment: _convertCrossAxisAlignment(
+              align: frame.counterAxisAlignItems,
+            ),
             mainAxisSize: _convertAxisSize(
               sizingMode: isHorizontal
-                  ? node.primaryAxisSizingMode
-                  : node.counterAxisSizingMode,
+                  ? frame.primaryAxisSizingMode
+                  : frame.counterAxisSizingMode,
             ),
             children: children,
           )
         : Column(
-            mainAxisAlignment:
-                _convertMainAxisAlignment(align: node.primaryAxisAlignItems),
-            crossAxisAlignment:
-                _convertCrossAxisAlignment(align: node.counterAxisAlignItems),
+            mainAxisAlignment: _convertMainAxisAlignment(
+              align: frame.primaryAxisAlignItems,
+            ),
+            crossAxisAlignment: _convertCrossAxisAlignment(
+              align: frame.counterAxisAlignItems,
+            ),
             mainAxisSize: _convertAxisSize(
               sizingMode: isHorizontal
-                  ? node.primaryAxisSizingMode
-                  : node.counterAxisSizingMode,
+                  ? frame.primaryAxisSizingMode
+                  : frame.counterAxisSizingMode,
             ),
             children: children,
           );
 
     final padding = EdgeInsets.only(
-      left: node.paddingLeft?.toDouble() ?? 0,
-      right: node.paddingRight?.toDouble() ?? 0,
-      top: node.paddingTop?.toDouble() ?? 0,
-      bottom: node.paddingBottom?.toDouble() ?? 0,
+      left: frame.paddingLeft.toDouble(),
+      right: frame.paddingRight.toDouble(),
+      top: frame.paddingTop.toDouble(),
+      bottom: frame.paddingBottom.toDouble(),
     );
 
     if (padding != EdgeInsets.zero) {
@@ -96,44 +100,55 @@ class FigmaConverter {
     }
 
     return SizedBox(
-      width: node.absoluteBoundingBox?.width.toDouble() ?? 0,
-      height: node.absoluteBoundingBox?.height.toDouble() ?? 0,
+      width: frame.absoluteBoundingBox?.width?.toDouble() ?? 0,
+      height: frame.absoluteBoundingBox?.height?.toDouble() ?? 0,
       child: ClipRect(
-        clipBehavior: node.clipsContent == true ? Clip.hardEdge : Clip.none,
+        clipBehavior: frame.clipsContent == true ? Clip.hardEdge : Clip.none,
         child: layout,
       ),
     );
   }
 
-  Widget _convertChild({required figma_api.Node child}) {
+  Widget _convertChild({
+    required figma_api.Node child,
+  }) {
     final widget = convertNode(child);
 
-    switch (child.layoutAlign) {
-      case figma_api.NodeLayoutAlignEnum.STRETCH:
-        return Expanded(child: widget);
-      case figma_api.NodeLayoutAlignEnum.MIN:
-        return Align(alignment: Alignment.centerLeft, child: widget);
-      case figma_api.NodeLayoutAlignEnum.CENTER:
-        return Align(alignment: Alignment.center, child: widget);
-      case figma_api.NodeLayoutAlignEnum.MAX:
-        return Align(alignment: Alignment.centerRight, child: widget);
-      case figma_api.NodeLayoutAlignEnum.INHERIT:
-      case null:
-        return widget;
-    }
+    return switch (child) {
+      figma_api.Rectangle rect => _applyLayoutAlign(rect.layoutAlign, widget),
+      figma_api.Frame frame => _applyLayoutAlign(frame.layoutAlign, widget),
+      figma_api.Vector vector => _applyLayoutAlign(vector.layoutAlign, widget),
+      _ => widget
+    };
+  }
+
+  Widget _applyLayoutAlign(
+    figma_api.LayoutAlign? layoutAlign,
+    Widget child,
+  ) {
+    return switch (layoutAlign) {
+      figma_api.LayoutAlign.stretch => Expanded(child: child),
+      figma_api.LayoutAlign.min =>
+        Align(alignment: Alignment.centerLeft, child: child),
+      figma_api.LayoutAlign.center =>
+        Align(alignment: Alignment.center, child: child),
+      figma_api.LayoutAlign.max =>
+        Align(alignment: Alignment.centerRight, child: child),
+      _ => child,
+    };
   }
 
   MainAxisAlignment _convertMainAxisAlignment({
-    final figma_api.NodePrimaryAxisAlignItemsEnum? align,
+    final figma_api.PrimaryAxisAlignItems? align,
   }) {
     switch (align) {
-      case figma_api.NodePrimaryAxisAlignItemsEnum.MIN:
+      case figma_api.PrimaryAxisAlignItems.min:
         return MainAxisAlignment.start;
-      case figma_api.NodePrimaryAxisAlignItemsEnum.CENTER:
+      case figma_api.PrimaryAxisAlignItems.center:
         return MainAxisAlignment.center;
-      case figma_api.NodePrimaryAxisAlignItemsEnum.MAX:
+      case figma_api.PrimaryAxisAlignItems.max:
         return MainAxisAlignment.end;
-      case figma_api.NodePrimaryAxisAlignItemsEnum.SPACE_BETWEEN:
+      case figma_api.PrimaryAxisAlignItems.spaceBetween:
         return MainAxisAlignment.spaceBetween;
       default:
         return MainAxisAlignment.start;
@@ -141,23 +156,25 @@ class FigmaConverter {
   }
 
   CrossAxisAlignment _convertCrossAxisAlignment({
-    final figma_api.NodeCounterAxisAlignItemsEnum? align,
+    final figma_api.CounterAxisAlignItems? align,
   }) {
     switch (align) {
-      case figma_api.NodeCounterAxisAlignItemsEnum.MIN:
+      case figma_api.CounterAxisAlignItems.min:
         return CrossAxisAlignment.start;
-      case figma_api.NodeCounterAxisAlignItemsEnum.CENTER:
+      case figma_api.CounterAxisAlignItems.center:
         return CrossAxisAlignment.center;
-      case figma_api.NodeCounterAxisAlignItemsEnum.MAX:
+      case figma_api.CounterAxisAlignItems.max:
         return CrossAxisAlignment.end;
       default:
         return CrossAxisAlignment.center;
     }
   }
 
-  MainAxisSize _convertAxisSize({final dynamic sizingMode}) {
-    if (sizingMode == figma_api.NodePrimaryAxisSizingModeEnum.AUTO ||
-        sizingMode == figma_api.NodeCounterAxisSizingModeEnum.AUTO) {
+  MainAxisSize _convertAxisSize({
+    final dynamic sizingMode,
+  }) {
+    if (sizingMode == figma_api.PrimaryAxisSizingMode.auto ||
+        sizingMode == figma_api.CounterAxisSizingMode.auto) {
       return MainAxisSize.min;
     }
     return MainAxisSize.max;

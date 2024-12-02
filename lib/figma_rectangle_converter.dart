@@ -1,17 +1,19 @@
 import 'dart:math' as math;
-import 'package:figma_api/figma_api.dart' as figma_api;
+import 'package:figma/figma.dart' as figma_api;
 import 'package:flutter/widgets.dart';
 
 class FigmaRectangleConverter {
-  Widget convertRectangle({required figma_api.Node node}) {
+  Widget convertRectangle({
+    required figma_api.Rectangle rectangle,
+  }) {
     return Container(
-      width: node.absoluteBoundingBox?.width.toDouble() ?? 0,
-      height: node.absoluteBoundingBox?.height.toDouble() ?? 0,
+      width: rectangle.absoluteBoundingBox?.width?.toDouble() ?? 0,
+      height: rectangle.absoluteBoundingBox?.height?.toDouble() ?? 0,
       decoration: BoxDecoration(
-        color: _extractFillColor(node.fills),
-        borderRadius: _extractBorderRadius(node),
-        border: _extractBorder(node),
-        gradient: _extractGradient(node.fills),
+        color: _extractFillColor(rectangle.fills),
+        borderRadius: _extractBorderRadius(rectangle),
+        border: _extractBorder(rectangle),
+        gradient: _extractGradient(rectangle.fills),
       ),
     );
   }
@@ -20,24 +22,21 @@ class FigmaRectangleConverter {
     if (fills == null || fills.isEmpty) return null;
 
     final solidFill = fills
-        .where(
-          (fill) =>
-              fill.type == figma_api.PaintTypeEnum.SOLID &&
-              fill.visible != false,
-        )
+        .where((fill) => fill.type == figma_api.PaintType.solid && fill.visible)
         .firstOrNull;
 
     if (solidFill?.color == null) return null;
 
+    final color = solidFill!.color!;
     return Color.fromRGBO(
-      (solidFill!.color!.r * 255).round(),
-      (solidFill.color!.g * 255).round(),
-      (solidFill.color!.b * 255).round(),
-      solidFill.color!.a.toDouble(),
+      (color.r! * 255).round(),
+      (color.g! * 255).round(),
+      (color.b! * 255).round(),
+      color.a!,
     );
   }
 
-  BorderRadius _extractBorderRadius(figma_api.Node node) {
+  BorderRadius _extractBorderRadius(figma_api.Rectangle node) {
     if (node.rectangleCornerRadii?.isNotEmpty == true) {
       return BorderRadius.only(
         topLeft: Radius.circular(node.rectangleCornerRadii![0].toDouble()),
@@ -49,20 +48,21 @@ class FigmaRectangleConverter {
     return BorderRadius.circular(node.cornerRadius?.toDouble() ?? 0);
   }
 
-  Border? _extractBorder(figma_api.Node node) {
-    if (node.strokes == null || node.strokes!.isEmpty) return null;
+  Border? _extractBorder(figma_api.Rectangle rectangle) {
+    if (rectangle.strokes.isEmpty) return null;
 
-    final stroke = node.strokes!.first;
-    if (!stroke.visible!) return null;
+    final stroke = rectangle.strokes.first;
+    if (!stroke.visible) return null;
 
+    final color = stroke.color!;
     return Border.all(
       color: Color.fromRGBO(
-        (stroke.color!.r * 255).round(),
-        (stroke.color!.g * 255).round(),
-        (stroke.color!.b * 255).round(),
-        stroke.color!.a.toDouble(),
+        (color.r! * 255).round(),
+        (color.g! * 255).round(),
+        (color.b! * 255).round(),
+        color.a!,
       ),
-      width: node.strokeWeight?.toDouble() ?? 1,
+      width: rectangle.strokeWeight?.toDouble() ?? 1,
     );
   }
 
@@ -70,30 +70,27 @@ class FigmaRectangleConverter {
     if (fills == null || fills.isEmpty) return null;
 
     final gradientFill = fills
-        .where(
-          (fill) =>
-              fill.type != figma_api.PaintTypeEnum.SOLID &&
-              fill.visible != false,
-        )
+        .where((fill) => fill.type != figma_api.PaintType.solid && fill.visible)
         .firstOrNull;
 
     if (gradientFill == null) return null;
 
     final stops = gradientFill.gradientStops?.map((stop) {
+      final color = stop.color!;
       return Color.fromRGBO(
-        (stop.color.r * 255).round(),
-        (stop.color.g * 255).round(),
-        (stop.color.b * 255).round(),
-        stop.color.a.toDouble(),
+        (color.r! * 255).round(),
+        (color.g! * 255).round(),
+        (color.b! * 255).round(),
+        color.a!,
       );
     }).toList();
 
     final positions = gradientFill.gradientStops
-        ?.map((stop) => stop.position.toDouble())
+        ?.map((stop) => stop.position!.toDouble())
         .toList();
 
     switch (gradientFill.type) {
-      case figma_api.PaintTypeEnum.GRADIENT_LINEAR:
+      case figma_api.PaintType.gradientLinear:
         if (gradientFill.gradientHandlePositions?.length != 3) return null;
 
         final start = gradientFill.gradientHandlePositions![0];
@@ -106,7 +103,7 @@ class FigmaRectangleConverter {
           end: Alignment(end.x * 2 - 1, end.y * 2 - 1),
         );
 
-      case figma_api.PaintTypeEnum.GRADIENT_RADIAL:
+      case figma_api.PaintType.gradientRadial:
         if (gradientFill.gradientHandlePositions?.length != 3) return null;
 
         final center = gradientFill.gradientHandlePositions![0];

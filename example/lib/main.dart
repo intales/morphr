@@ -1,26 +1,17 @@
-import 'package:dio/dio.dart';
 import 'package:figflow/figflow.dart';
 import 'package:flutter/material.dart';
-import 'package:figma_api/figma_api.dart' as figma_api;
+import 'package:figma/figma.dart' as figma_api;
 
 void main() async {
   const token = String.fromEnvironment("TOKEN");
   const fileKey = String.fromEnvironment("FILE_KEY");
 
-  final client = figma_api.FigmaApi(
-    dio: Dio(
-      BaseOptions(
-        baseUrl: "https://api.figma.com",
-        headers: {
-          "X-Figma-Token": token,
-        },
-      ),
-    ),
-  );
+  final client = figma_api.FigmaClient(token);
 
-  final document = await client.getFilesApi().getFile(fileKey: fileKey);
+  final document = await client.getFile(fileKey);
+  final canvas = (document.document?.children?.first as figma_api.Canvas);
 
-  final root = document.data?.document?.children?.first.children?.first;
+  final root = canvas.children?.first;
   if (root == null) throw Exception("Unable to find root node.");
 
   runApp(FigmaTestApp(

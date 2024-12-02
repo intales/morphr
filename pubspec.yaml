@@ -11,9 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  figma_api:
-    path: "packages/figma_api"
-  dio: ^5.7.0
+  figma: ^7.1.1
 
 dev_dependencies:
   flutter_test:
