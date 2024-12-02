@@ -116,13 +116,14 @@ class FigmaRectangleConverter {
         final focalY = center.y;
         final radiusX = radius.x - center.x;
         final radiusY = radius.y - center.y;
-        final r = math.sqrt(radiusX * radiusX + radiusY * radiusY);
 
         return RadialGradient(
           colors: stops ?? [],
           stops: positions,
           center: Alignment(focalX * 2 - 1, focalY * 2 - 1),
-          radius: r,
+          radius: math.max(radiusX.abs(), radiusY.abs()) * 2,
+          focal: Alignment(focalX * 2 - 1, focalY * 2 - 1),
+          tileMode: TileMode.clamp,
         );
 
       default:

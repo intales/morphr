@@ -81,11 +81,25 @@ class FigmaConverter {
             children: children,
           );
 
+    final padding = EdgeInsets.only(
+      left: node.paddingLeft?.toDouble() ?? 0,
+      right: node.paddingRight?.toDouble() ?? 0,
+      top: node.paddingTop?.toDouble() ?? 0,
+      bottom: node.paddingBottom?.toDouble() ?? 0,
+    );
+
+    if (padding != EdgeInsets.zero) {
+      layout = Padding(
+        padding: padding,
+        child: layout,
+      );
+    }
+
     return SizedBox(
-      width: width,
-      height: height,
+      width: node.absoluteBoundingBox?.width.toDouble() ?? 0,
+      height: node.absoluteBoundingBox?.height.toDouble() ?? 0,
       child: ClipRect(
-        clipBehavior: clipBehavior,
+        clipBehavior: node.clipsContent == true ? Clip.hardEdge : Clip.none,
         child: layout,
       ),
     );
