@@ -1,7 +1,27 @@
-import 'package:figflow/figma_style_helper.dart';
 import 'package:figma/figma.dart' as figma_api;
 import 'package:flutter/widgets.dart';
 import 'figma_node_converter.dart';
+
+class FigmaScaleHelper {
+  static const double designWidth = 390.0;
+  static const double designHeight = 844.0; // iPhone 14 height
+
+  static double getScaleFactor(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Usiamo il fattore di scala più piccolo tra width e height
+    // per evitare overflow
+    final widthScale = screenWidth / designWidth;
+    final heightScale = screenHeight / designHeight;
+
+    return widthScale < heightScale ? widthScale : heightScale;
+  }
+
+  static double scale(double dimension, BuildContext context) {
+    return dimension * getScaleFactor(context);
+  }
+}
 
 class FigmaFrameConverter extends FigmaNodeConverter {
   final FigmaNodeFactory _factory;
@@ -11,35 +31,43 @@ class FigmaFrameConverter extends FigmaNodeConverter {
   @override
   Widget convert(figma_api.Node node) {
     if (node is! figma_api.Frame) throw ArgumentError('Not a Frame node');
-    return applyLayoutAlign(
-      node.layoutAlign,
-      convertLayout(node),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scaleFactor = FigmaScaleHelper.getScaleFactor(context);
+        return _buildScaledLayout(node, scaleFactor, context);
+      },
     );
   }
 
-  Widget convertLayout(figma_api.Frame frame) {
+  Widget _buildScaledLayout(
+      figma_api.Frame frame, double scale, BuildContext context) {
     var children = frame.children?.nonNulls
             .map((child) => _convertChild(child))
             .toList() ??
         [];
+
+    // Gestione dimensioni fisse
     final useFixedWidth =
         frame.counterAxisSizingMode != figma_api.CounterAxisSizingMode.auto;
     final useFixedHeight =
         frame.primaryAxisSizingMode != figma_api.PrimaryAxisSizingMode.auto;
 
-    final width =
-        useFixedWidth ? (frame.absoluteBoundingBox?.width ?? 0) : null;
-    final height =
-        useFixedHeight ? (frame.absoluteBoundingBox?.height ?? 0) : null;
-    final clipBehavior = frame.clipsContent == true ? Clip.hardEdge : Clip.none;
+    final width = useFixedWidth
+        ? FigmaScaleHelper.scale(frame.absoluteBoundingBox?.width ?? 0, context)
+        : null;
+    final height = useFixedHeight
+        ? FigmaScaleHelper.scale(
+            frame.absoluteBoundingBox?.height ?? 0, context)
+        : null;
 
+    // Caso base: nessun layout mode = Stack
     if (frame.layoutMode == null ||
         frame.layoutMode == figma_api.LayoutMode.none) {
       final stackWidget = SizedBox(
         width: width,
         height: height,
         child: Stack(
-          clipBehavior: clipBehavior,
+          clipBehavior: frame.clipsContent == true ? Clip.hardEdge : Clip.none,
           children: children,
         ),
       );
@@ -49,74 +77,65 @@ class FigmaFrameConverter extends FigmaNodeConverter {
         child: stackWidget,
         width: width,
         height: height,
+        context: context,
       );
     }
 
+    // Layout orizzontale o verticale
     final isHorizontal = frame.layoutMode == figma_api.LayoutMode.horizontal;
-    final itemSpacing = frame.itemSpacing;
 
-    if (itemSpacing > 0) {
+    // Gestione spacing
+    if (frame.itemSpacing > 0) {
       children = _addSpacingBetweenChildren(
         children: children,
-        spacing: itemSpacing,
+        spacing: FigmaScaleHelper.scale(frame.itemSpacing, context),
         isHorizontal: isHorizontal,
       );
     }
 
+    // Creazione layout base
     Widget layout = isHorizontal
         ? Row(
-            mainAxisAlignment: _convertMainAxisAlignment(
-              align: frame.primaryAxisAlignItems,
-            ),
-            crossAxisAlignment: _convertCrossAxisAlignment(
-              align: frame.counterAxisAlignItems,
-            ),
-            mainAxisSize: _convertAxisSize(
-              sizingMode: isHorizontal
-                  ? frame.primaryAxisSizingMode
-                  : frame.counterAxisSizingMode,
-            ),
+            mainAxisAlignment:
+                _convertMainAxisAlignment(align: frame.primaryAxisAlignItems),
+            crossAxisAlignment:
+                _convertCrossAxisAlignment(align: frame.counterAxisAlignItems),
+            mainAxisSize: MainAxisSize.min,
             children: children,
           )
         : Column(
-            mainAxisAlignment: _convertMainAxisAlignment(
-              align: frame.primaryAxisAlignItems,
-            ),
-            crossAxisAlignment: _convertCrossAxisAlignment(
-              align: frame.counterAxisAlignItems,
-            ),
-            mainAxisSize: _convertAxisSize(
-              sizingMode: isHorizontal
-                  ? frame.primaryAxisSizingMode
-                  : frame.counterAxisSizingMode,
-            ),
+            mainAxisAlignment:
+                _convertMainAxisAlignment(align: frame.primaryAxisAlignItems),
+            crossAxisAlignment:
+                _convertCrossAxisAlignment(align: frame.counterAxisAlignItems),
+            mainAxisSize: MainAxisSize.min,
             children: children,
           );
 
-    layout = _applyPadding(
-      frame: frame,
-      child: layout,
-    );
+    // Applica padding se presente
+    if (frame.paddingLeft > 0 ||
+        frame.paddingRight > 0 ||
+        frame.paddingTop > 0 ||
+        frame.paddingBottom > 0) {
+      layout = Padding(
+        padding: EdgeInsets.only(
+          left: FigmaScaleHelper.scale(frame.paddingLeft, context),
+          right: FigmaScaleHelper.scale(frame.paddingRight, context),
+          top: FigmaScaleHelper.scale(frame.paddingTop, context),
+          bottom: FigmaScaleHelper.scale(frame.paddingBottom, context),
+        ),
+        child: layout,
+      );
+    }
 
+    // Applica scroll se necessario
     layout = _applyScrollToLayout(
       frame: frame,
       child: layout,
       isHorizontal: isHorizontal,
     );
 
-    final decoration = FigmaStyleHelper.extractBoxDecoration(
-      fills: frame.fills,
-      strokes: frame.strokes,
-      strokeWeight: frame.strokeWeight,
-    );
-
-    if (decoration != null) {
-      layout = Container(
-        decoration: decoration,
-        child: layout,
-      );
-    }
-
+    // Applica dimensioni finali
     if (width != null || height != null) {
       layout = SizedBox(
         width: width,
@@ -125,14 +144,7 @@ class FigmaFrameConverter extends FigmaNodeConverter {
       );
     }
 
-    return SizedBox(
-      width: frame.absoluteBoundingBox?.width ?? 0,
-      height: frame.absoluteBoundingBox?.height ?? 0,
-      child: ClipRect(
-        clipBehavior: frame.clipsContent == true ? Clip.hardEdge : Clip.none,
-        child: layout,
-      ),
-    );
+    return layout;
   }
 
   Widget _applyScrollToStack({
@@ -140,6 +152,7 @@ class FigmaFrameConverter extends FigmaNodeConverter {
     required Widget child,
     required double? width,
     required double? height,
+    required BuildContext context,
   }) {
     if (frame.overflowDirection == figma_api.OverflowDirection.none) {
       return child;
@@ -208,31 +221,6 @@ class FigmaFrameConverter extends FigmaNodeConverter {
     return spacedChildren;
   }
 
-  Widget _applyPadding({
-    required figma_api.Frame frame,
-    required Widget child,
-  }) {
-    final padding = EdgeInsets.only(
-      left: frame.paddingLeft,
-      right: frame.paddingRight,
-      top: frame.paddingTop,
-      bottom: frame.paddingBottom,
-    );
-
-    if (padding != EdgeInsets.zero) {
-      return Padding(
-        padding: padding,
-        child: child,
-      );
-    }
-
-    return child;
-  }
-
-  Widget _convertChild(figma_api.Node child) {
-    return _factory.convertNode(child);
-  }
-
   MainAxisAlignment _convertMainAxisAlignment({
     final figma_api.PrimaryAxisAlignItems? align,
   }) {
@@ -261,17 +249,11 @@ class FigmaFrameConverter extends FigmaNodeConverter {
       case figma_api.CounterAxisAlignItems.max:
         return CrossAxisAlignment.end;
       default:
-        return CrossAxisAlignment.center;
+        return CrossAxisAlignment.start;
     }
   }
 
-  MainAxisSize _convertAxisSize({
-    final dynamic sizingMode,
-  }) {
-    if (sizingMode == figma_api.PrimaryAxisSizingMode.auto ||
-        sizingMode == figma_api.CounterAxisSizingMode.auto) {
-      return MainAxisSize.min;
-    }
-    return MainAxisSize.max;
+  Widget _convertChild(figma_api.Node child) {
+    return _factory.convertNode(child);
   }
 }

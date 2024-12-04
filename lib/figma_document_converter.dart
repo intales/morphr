@@ -16,8 +16,14 @@ class FigmaDocumentConverter extends FigmaNodeConverter {
     final canvas = node.children?.first;
     if (canvas == null) return SizedBox.shrink();
 
-    final frame = (canvas as figma_api.Canvas).children?.first;
-    if (frame == null) return SizedBox.shrink();
+    final frame =
+        (canvas as figma_api.Canvas).children?.first as figma_api.Frame;
+    print('Layout Mode: ${frame.layoutMode}');
+    print('Item Spacing: ${frame.itemSpacing}');
+    print('Primary Axis Align: ${frame.primaryAxisAlignItems}');
+    print('Padding: ${frame.paddingTop}, ${frame.paddingBottom}');
+
+    return _factory.convertNode(frame);
 
     return _wrapPageContent(frame as figma_api.Frame);
   }
