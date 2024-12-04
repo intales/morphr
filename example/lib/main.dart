@@ -9,10 +9,8 @@ void main() async {
   final client = figma_api.FigmaClient(token);
 
   final document = await client.getFile(fileKey);
-  final canvas = (document.document?.children?.first as figma_api.Canvas);
 
-  final root = canvas.children?.first;
-  if (root == null) throw Exception("Unable to find root node.");
+  final root = document.document!;
 
   runApp(FigmaTestApp(
     node: root,

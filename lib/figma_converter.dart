@@ -1,4 +1,5 @@
 import 'package:figflow/figflow.dart';
+import 'package:figflow/figma_document_converter.dart';
 import 'package:figflow/figma_frame_converter.dart';
 import 'package:figflow/figma_node_converter.dart';
 import 'package:figma/figma.dart' as figma_api;
@@ -10,6 +11,8 @@ class FigmaConverter {
   FigmaConverter() {
     _factory.registerConverter(figma_api.Rectangle, FigmaRectangleConverter());
     _factory.registerConverter(figma_api.Frame, FigmaFrameConverter(_factory));
+    _factory.registerConverter(
+        figma_api.Document, FigmaDocumentConverter(_factory));
   }
 
   Widget convertNode(figma_api.Node node) {
