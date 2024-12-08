@@ -1,6 +1,49 @@
+import 'dart:math' as math;
 import 'package:figflow/figma_node_converter.dart';
+import 'package:figflow/figma_style_helper.dart';
 import 'package:figma/figma.dart' as figma_api;
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+
+class FigmaScaleHelper {
+  static const double designWidth = 390.0;
+  static const double designHeight = 844.0;
+
+  static FigmaScreenMetrics getMetrics(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
+
+    final widthScale = screenWidth / designWidth;
+    final heightScale = screenHeight / designHeight;
+
+    final contentScale = math.min(widthScale, heightScale);
+
+    return FigmaScreenMetrics(
+      screenSize: screenSize,
+      widthScale: widthScale,
+      heightScale: heightScale,
+      contentScale: contentScale,
+    );
+  }
+}
+
+class FigmaScreenMetrics {
+  final Size screenSize;
+  final double widthScale;
+  final double heightScale;
+  final double contentScale;
+
+  const FigmaScreenMetrics({
+    required this.screenSize,
+    required this.widthScale,
+    required this.heightScale,
+    required this.contentScale,
+  });
+
+  double scaleWidth(double value) => value * widthScale;
+  double scaleHeight(double value) => value * heightScale;
+  double scaleContent(double value) => value * contentScale;
+}
 
 class FigmaDocumentConverter extends FigmaNodeConverter {
   final FigmaNodeFactory _factory;
@@ -18,39 +61,22 @@ class FigmaDocumentConverter extends FigmaNodeConverter {
 
     final frame =
         (canvas as figma_api.Canvas).children?.first as figma_api.Frame;
-    print('Layout Mode: ${frame.layoutMode}');
-    print('Item Spacing: ${frame.itemSpacing}');
-    print('Primary Axis Align: ${frame.primaryAxisAlignItems}');
-    print('Padding: ${frame.paddingTop}, ${frame.paddingBottom}');
 
-    return _factory.convertNode(frame);
-
-    return _wrapPageContent(frame as figma_api.Frame);
+    return _wrapPageContent(frame);
   }
 
   Widget _wrapPageContent(figma_api.Frame frame) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Determina se siamo in una viewport molto diversa dal design
-        final frameWidth = frame.absoluteBoundingBox?.width ?? 0;
-        final frameHeight = frame.absoluteBoundingBox?.height ?? 0;
-        final designAspectRatio = frameWidth / frameHeight;
-        final screenAspectRatio = constraints.maxWidth / constraints.maxHeight;
+        final metrics = FigmaScaleHelper.getMetrics(context);
 
-        if ((screenAspectRatio - designAspectRatio).abs() < 0.2) {
-          return SizedBox(
-            width: constraints.maxWidth,
-            child: _factory.convertNode(frame),
-          );
-        }
+        final content = _factory.convertNode(frame);
 
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: constraints.maxWidth * 0.05, // 5% padding
-            ),
-            child: _factory.convertNode(frame),
-          ),
+        return Container(
+          width: metrics.screenSize.width,
+          height: metrics.screenSize.height,
+          color: FigmaStyleHelper.extractFillColor(frame.fills) ?? Colors.white,
+          child: content,
         );
       },
     );
