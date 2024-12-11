@@ -1,4 +1,2 @@
-library figflow;
-
-export 'figma_rectangle_converter.dart';
-export 'figma_converter.dart';
+export 'package:figflow/figma_component.dart';
+export 'package:figflow/figma_service.dart';
