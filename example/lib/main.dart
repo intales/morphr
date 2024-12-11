@@ -20,14 +20,10 @@ class FigmaTestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Figma Layout + Rectangle Tests',
-          ),
-        ),
-        body: const Center(
+        //backgroundColor: Colors.black,
+        body: Center(
           child: TextExample(),
         ),
       ),

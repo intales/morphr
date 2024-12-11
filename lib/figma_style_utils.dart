@@ -1,5 +1,7 @@
+import 'dart:ui';
+
 import 'package:figma/figma.dart' as figma;
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 class FigmaStyleUtils {
   const FigmaStyleUtils._();
@@ -12,7 +14,9 @@ class FigmaStyleUtils {
       orElse: () => fills.first,
     );
 
-    if (solidFill.type != figma.PaintType.solid) return null;
+    if (solidFill.type != figma.PaintType.solid) {
+      return _getGradientFirstColor(solidFill);
+    }
 
     final color = solidFill.color;
     if (color == null) return null;
@@ -25,25 +29,123 @@ class FigmaStyleUtils {
     );
   }
 
+  static Gradient? getGradient(final figma.Paint fill) {
+    if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
+
+    switch (fill.type) {
+      case figma.PaintType.gradientLinear:
+        return _createLinearGradient(fill);
+      case figma.PaintType.gradientRadial:
+        return _createRadialGradient(fill);
+      default:
+        return null;
+    }
+  }
+
+  static LinearGradient? _createLinearGradient(final figma.Paint fill) {
+    if (fill.gradientStops == null) return null;
+
+    return LinearGradient(
+      colors: fill.gradientStops!
+          .map((stop) => Color.fromRGBO(
+                (stop.color!.r! * 255).round(),
+                (stop.color!.g! * 255).round(),
+                (stop.color!.b! * 255).round(),
+                stop.color!.a!,
+              ))
+          .toList()
+          .reversed
+          .toList(),
+      stops: fill.gradientStops!.map((stop) => stop.position!).toList(),
+      transform: _getGradientTransform(fill),
+    );
+  }
+
+  static RadialGradient? _createRadialGradient(final figma.Paint fill) {
+    if (fill.gradientStops == null) return null;
+
+    return RadialGradient(
+      colors: fill.gradientStops!
+          .map((stop) => Color.fromRGBO(
+                (stop.color!.r! * 255).round(),
+                (stop.color!.g! * 255).round(),
+                (stop.color!.b! * 255).round(),
+                stop.color!.a!,
+              ))
+          .toList()
+          .reversed
+          .toList(),
+      stops: fill.gradientStops!.map((stop) => stop.position!).toList(),
+      transform: _getGradientTransform(fill),
+    );
+  }
+
+  static GradientTransform? _getGradientTransform(final figma.Paint fill) {
+    return null;
+  }
+
+  static Color? _getGradientFirstColor(final figma.Paint fill) {
+    if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
+
+    final firstStop = fill.gradientStops!.first;
+    return Color.fromRGBO(
+      (firstStop.color!.r! * 255).round(),
+      (firstStop.color!.g! * 255).round(),
+      (firstStop.color!.b! * 255).round(),
+      firstStop.color!.a!,
+    );
+  }
+
   static TextStyle? getTextStyle(final figma.Text text) {
     if (text.style == null) return null;
 
     final style = text.style!;
-    final fills = text.fills;
+    final hasStroke = text.strokes.isNotEmpty == true;
+    final hasFill = text.fills.isNotEmpty == true;
 
     return TextStyle(
-      color: getColor(fills),
+      color: !hasStroke ? getColor(text.fills) : null,
+      foreground: !hasFill && hasStroke
+          ? (Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = text.strokeWeight?.toDouble() ?? 1.0
+            ..color = (getColor(text.strokes) ?? Colors.black))
+          : null,
       fontSize: style.fontSize!.toDouble(),
       fontWeight: _getFontWeight(style.fontWeight?.toInt()),
       fontStyle: style.italic == true ? FontStyle.italic : FontStyle.normal,
       letterSpacing: style.letterSpacing?.toDouble(),
-      height: _calculateHeight(style),
+      height: _calculateTextHeight(style),
       decoration: _getTextDecoration(style),
       fontFamily: style.fontFamily,
+      decorationColor: getColor(text.fills),
+      shadows: getEffects(text.effects),
     );
   }
 
-  static double? _calculateHeight(final figma.TypeStyle style) {
+  static Paint? createTextPaint(
+    final List<figma.Paint>? fills,
+    final List<figma.Paint>? strokes,
+    final double? strokeWeight,
+  ) {
+    if (strokes == null || strokes.isEmpty) {
+      return null;
+    }
+
+    final paint = Paint();
+
+    if (fills != null && fills.isNotEmpty) {
+      paint.color = getColor(fills) ?? Colors.black;
+    }
+
+    paint.style = PaintingStyle.stroke;
+    paint.strokeWidth = strokeWeight ?? 1.0;
+    paint.color = getColor(strokes) ?? Colors.black;
+
+    return paint;
+  }
+
+  static double? _calculateTextHeight(final figma.TypeStyle style) {
     if (style.lineHeightPx == null || style.fontSize == null) return null;
     return style.lineHeightPx! / style.fontSize!;
   }
@@ -97,6 +199,98 @@ class FigmaStyleUtils {
         return TextAlign.justify;
       default:
         return TextAlign.left;
+    }
+  }
+
+  static List<BoxShadow>? getEffects(List<figma.Effect>? effects) {
+    if (effects == null || effects.isEmpty) return null;
+
+    final shadows = <BoxShadow>[];
+
+    for (final effect in effects) {
+      if (effect.type == figma.EffectType.dropShadow ||
+          effect.type == figma.EffectType.innerShadow) {
+        shadows.add(BoxShadow(
+          color: Color.fromRGBO(
+            (effect.color?.r ?? 0 * 255).round(),
+            (effect.color?.g ?? 0 * 255).round(),
+            (effect.color?.b ?? 0 * 255).round(),
+            effect.color?.a ?? 1,
+          ),
+          offset: Offset(
+            effect.offset?.x.toDouble() ?? 0,
+            effect.offset?.y.toDouble() ?? 0,
+          ),
+          blurRadius: effect.radius?.toDouble() ?? 0,
+          spreadRadius: effect.spread?.toDouble() ?? 0,
+        ));
+      }
+    }
+
+    return shadows.isEmpty ? null : shadows;
+  }
+
+  static Widget wrapWithBlur(Widget child, List<figma.Effect>? effects) {
+    if (effects == null || effects.isEmpty) return child;
+
+    Widget result = child;
+
+    for (final effect in effects) {
+      if (effect.type == figma.EffectType.layerBlur) {
+        result = ImageFiltered(
+          imageFilter: ImageFilter.blur(
+            sigmaX: effect.radius?.toDouble() ?? 0,
+            sigmaY: effect.radius?.toDouble() ?? 0,
+          ),
+          child: result,
+        );
+      } else if (effect.type == figma.EffectType.backgroundBlur) {
+        result = BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: effect.radius?.toDouble() ?? 0,
+            sigmaY: effect.radius?.toDouble() ?? 0,
+          ),
+          child: result,
+        );
+      }
+    }
+
+    return result;
+  }
+
+  static Border? getBorder(final figma.Node node) {
+    final strokes = _getStrokes(node);
+    if (strokes == null || strokes.isEmpty) return null;
+
+    return Border.all(
+      color: getColor(strokes) ?? Colors.transparent,
+      width: _getStrokeWieght(node) ?? 1.0,
+    );
+  }
+
+  static double? _getStrokeWieght(final figma.Node node) {
+    switch (node) {
+      case figma.Text text:
+        return text.strokeWeight;
+      case figma.Ellipse ellipse:
+        return ellipse.strokeWeight;
+      case figma.Rectangle rectangle:
+        return rectangle.strokeWeight;
+      default:
+        return null;
+    }
+  }
+
+  static List<figma.Paint>? _getStrokes(final figma.Node node) {
+    switch (node) {
+      case figma.Text text:
+        return text.strokes;
+      case figma.Ellipse ellipse:
+        return ellipse.strokes;
+      case figma.Rectangle rectangle:
+        return rectangle.strokes;
+      default:
+        return null;
     }
   }
 }
