@@ -26,7 +26,11 @@ class FigmaService {
   }
 
   Future<void> _loadDocument() async {
-    final file = await _client.getFile(_fileId);
+    final file = await _client.getFile(
+      _fileId,
+      figma.FigmaQuery(geometry: "paths"),
+    );
+
     _document = file.document;
   }
 

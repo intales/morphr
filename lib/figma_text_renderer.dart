@@ -39,36 +39,38 @@ class FigmaTextRenderer extends FigmaRenderer {
             f.type == figma.PaintType.gradientLinear ||
             f.type == figma.PaintType.gradientRadial);
 
-    late Widget result;
     if (hasGradient || (hasFill && hasStroke)) {
-      result = LayoutBuilder(
+      return LayoutBuilder(
         builder: (context, constraints) {
           final textSpan = TextSpan(
             text: text,
             style: baseStyle?.copyWith(
-              color: Colors.black,
+              color: Colors.white,
             ),
           );
+
           final textPainter = TextPainter(
             text: textSpan,
             textDirection: TextDirection.ltr,
             textAlign: textAlign,
           );
           textPainter.layout(maxWidth: constraints.maxWidth);
-          final textRect =
-              Rect.fromLTWH(0, 0, textPainter.width, textPainter.height);
+
+          final textSize = textPainter.size;
+          final textRect = Rect.fromLTWH(0, 0, textSize.width, textSize.height);
 
           final children = <Widget>[];
 
           if (hasFill) {
             final fillPaint = Paint();
             if (hasGradient) {
-              final gradient = FigmaStyleUtils.getGradient(
-                node.fills.firstWhere((f) =>
-                    f.type == figma.PaintType.gradientLinear ||
-                    f.type == figma.PaintType.gradientRadial),
-              );
-              fillPaint.shader = gradient?.createShader(textRect);
+              final gradientFill = node.fills.firstWhere((f) =>
+                  f.type == figma.PaintType.gradientLinear ||
+                  f.type == figma.PaintType.gradientRadial);
+              final gradient = FigmaStyleUtils.getGradient(gradientFill);
+              if (gradient != null) {
+                fillPaint.shader = gradient.createShader(textRect);
+              }
             } else {
               fillPaint.color =
                   FigmaStyleUtils.getColor(node.fills) ?? Colors.black;
@@ -88,24 +90,17 @@ class FigmaTextRenderer extends FigmaRenderer {
             );
           }
 
-          if (hasFill) {
-            final fillPaint = Paint();
-            if (hasGradient) {
-              final gradient = FigmaStyleUtils.getGradient(
-                node.fills.firstWhere((f) =>
-                    f.type == figma.PaintType.gradientLinear ||
-                    f.type == figma.PaintType.gradientRadial),
-              );
-              fillPaint.shader = gradient?.createShader(textRect);
-            } else {
-              fillPaint.color =
-                  FigmaStyleUtils.getColor(node.fills) ?? Colors.black;
-            }
-
+          if (hasStroke) {
             children.add(
               Text(
                 text,
-                style: baseStyle?.copyWith(foreground: fillPaint),
+                style: baseStyle?.copyWith(
+                  foreground: Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
+                    ..color =
+                        FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
+                ),
                 textAlign: textAlign,
                 maxLines: rendererContext.get<int>(FigmaProperties.maxLines),
                 overflow:
@@ -116,20 +111,24 @@ class FigmaTextRenderer extends FigmaRenderer {
             );
           }
 
-          return Stack(children: children);
+          return FigmaStyleUtils.wrapWithBlur(
+            Stack(children: children),
+            node.effects,
+          );
         },
       );
     }
 
-    result = Text(
-      text,
-      style: baseStyle,
-      textAlign: textAlign,
-      maxLines: rendererContext.get<int>(FigmaProperties.maxLines),
-      overflow: rendererContext.get<TextOverflow>(FigmaProperties.overflow),
-      softWrap: rendererContext.get<bool>(FigmaProperties.softWrap) ?? true,
+    return FigmaStyleUtils.wrapWithBlur(
+      Text(
+        text,
+        style: baseStyle,
+        textAlign: textAlign,
+        maxLines: rendererContext.get<int>(FigmaProperties.maxLines),
+        overflow: rendererContext.get<TextOverflow>(FigmaProperties.overflow),
+        softWrap: rendererContext.get<bool>(FigmaProperties.softWrap) ?? true,
+      ),
+      node.effects,
     );
-
-    return FigmaStyleUtils.wrapWithBlur(result, node.effects);
   }
 }

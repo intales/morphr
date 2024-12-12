@@ -14,6 +14,8 @@ abstract class FigmaComponent extends StatelessWidget {
   TextOverflow? get overflow => null;
   bool? get softWrap => null;
 
+  Widget? get child => null;
+
   @override
   Widget build(BuildContext context) {
     final component = FigmaService.instance.getComponent(figmaComponentId);
@@ -38,6 +40,7 @@ abstract class FigmaComponent extends StatelessWidget {
       if (overflow != null) FigmaProperties.overflow: overflow,
       if (maxLines != null) FigmaProperties.maxLines: maxLines,
       if (softWrap != null) FigmaProperties.softWrap: softWrap,
+      if (child != null) FigmaProperties.child: child,
     };
   }
 }

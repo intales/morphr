@@ -5,4 +5,6 @@ class FigmaProperties {
   static const String maxLines = 'maxLines';
   static const String overflow = 'overflow';
   static const String softWrap = 'softWrap';
+
+  static const String child = 'child';
 }

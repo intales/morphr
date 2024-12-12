@@ -43,45 +43,59 @@ class FigmaStyleUtils {
   }
 
   static LinearGradient? _createLinearGradient(final figma.Paint fill) {
-    if (fill.gradientStops == null) return null;
+    if (fill.gradientStops == null || fill.gradientHandlePositions == null) {
+      return null;
+    }
+
+    final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
+
+    final colors = fill.gradientStops!
+        .map((stop) => Color.fromRGBO(
+              (stop.color!.r! * 255).round(),
+              (stop.color!.g! * 255).round(),
+              (stop.color!.b! * 255).round(),
+              stop.color!.a!,
+            ))
+        .toList();
+
+    final handles = fill.gradientHandlePositions!;
+    if (handles.length < 2) return null;
+
+    final start = handles[0];
+    final end = handles[1];
 
     return LinearGradient(
-      colors: fill.gradientStops!
-          .map((stop) => Color.fromRGBO(
-                (stop.color!.r! * 255).round(),
-                (stop.color!.g! * 255).round(),
-                (stop.color!.b! * 255).round(),
-                stop.color!.a!,
-              ))
-          .toList()
-          .reversed
-          .toList(),
-      stops: fill.gradientStops!.map((stop) => stop.position!).toList(),
-      transform: _getGradientTransform(fill),
+      begin: Alignment(start.x * 2 - 1, start.y * 2 - 1),
+      end: Alignment(end.x * 2 - 1, end.y * 2 - 1),
+      colors: colors,
+      stops: stops,
     );
   }
 
   static RadialGradient? _createRadialGradient(final figma.Paint fill) {
     if (fill.gradientStops == null) return null;
 
-    return RadialGradient(
-      colors: fill.gradientStops!
-          .map((stop) => Color.fromRGBO(
-                (stop.color!.r! * 255).round(),
-                (stop.color!.g! * 255).round(),
-                (stop.color!.b! * 255).round(),
-                stop.color!.a!,
-              ))
-          .toList()
-          .reversed
-          .toList(),
-      stops: fill.gradientStops!.map((stop) => stop.position!).toList(),
-      transform: _getGradientTransform(fill),
-    );
-  }
+    final stops = fill.gradientStops!
+        .map((stop) => stop.position!)
+        .toList()
+        .reversed
+        .toList();
 
-  static GradientTransform? _getGradientTransform(final figma.Paint fill) {
-    return null;
+    final colors = fill.gradientStops!
+        .map((stop) => Color.fromRGBO(
+              (stop.color!.r! * 255).round(),
+              (stop.color!.g! * 255).round(),
+              (stop.color!.b! * 255).round(),
+              stop.color!.a!,
+            ))
+        .toList()
+        .reversed
+        .toList();
+
+    return RadialGradient(
+      colors: colors,
+      stops: stops,
+    );
   }
 
   static Color? _getGradientFirstColor(final figma.Paint fill) {
