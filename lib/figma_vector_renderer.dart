@@ -159,7 +159,6 @@ class _VectorPainter extends CustomPainter {
 
     if (paths.isEmpty) return;
 
-    // Combiniamo tutti i path in uno solo per il clipping
     final Path combinedPath = Path();
     for (final path in paths) {
       combinedPath.addPath(path, Offset.zero);
@@ -187,13 +186,11 @@ class _VectorPainter extends CustomPainter {
             effect.offset?.y.toDouble() ?? 0,
           );
 
-          // Prima disegniamo l'ombra
           for (final path in paths) {
             final shadowPath = path.shift(offset);
             canvas.drawPath(shadowPath, shadowPaint);
           }
 
-          // Usando il path come clip, rimuoviamo l'ombra all'interno della forma
           canvas.save();
           canvas.clipPath(combinedPath);
           canvas.drawRect(
@@ -207,7 +204,6 @@ class _VectorPainter extends CustomPainter {
       }
     }
 
-    // Disegna i fill solo se presenti
     if (fills != null && fills!.isNotEmpty) {
       for (final fill in fills!) {
         final paint = Paint()..style = PaintingStyle.fill;
@@ -230,7 +226,6 @@ class _VectorPainter extends CustomPainter {
       }
     }
 
-    // Disegna gli strokes
     if (strokes != null) {
       for (final stroke in strokes!) {
         final paint = Paint()
