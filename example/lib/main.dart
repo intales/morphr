@@ -31,8 +31,8 @@ class FigmaTestApp extends StatelessWidget {
           child: FigmaComponent(
             componentId: "main_page",
             recursive: true,
-            propertyScopes: [
-              FigmaPropertyScope(
+            overrides: [
+              FigmaOverride(
                 nodeId: "headline",
                 properties: {
                   FigmaProperties.text: "Buon compleanno Elia!",
