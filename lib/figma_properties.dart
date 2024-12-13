@@ -7,4 +7,5 @@ class FigmaProperties {
   static const String softWrap = 'softWrap';
 
   static const String child = 'child';
+  static const String children = 'children';
 }

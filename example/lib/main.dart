@@ -1,5 +1,6 @@
 import 'package:figflow/figflow.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   const token = String.fromEnvironment("TOKEN");
@@ -20,43 +21,27 @@ class FigmaTestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        //backgroundColor: Colors.black,
+    return MaterialApp(
+      theme: ThemeData(
+        fontFamily: GoogleFonts.robotoMono().fontFamily,
+      ),
+      home: const Scaffold(
+        backgroundColor: Colors.black,
         body: Center(
-          child: VectExample(),
+          child: FigmaComponent(
+            componentId: "main_page",
+            recursive: true,
+            propertyScopes: [
+              FigmaPropertyScope(
+                nodeId: "headline",
+                properties: {
+                  FigmaProperties.text: "Buon compleanno Elia!",
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
-
-class VectExample extends FigmaComponent {
-  const VectExample({super.key});
-
-  @override
-  String get figmaComponentId => "vect_example";
-}
-
-class RectExample extends FigmaComponent {
-  const RectExample({super.key});
-
-  @override
-  String get figmaComponentId => "rect_example";
-}
-
-class TextExample extends FigmaComponent {
-  const TextExample({super.key});
-
-  @override
-  int? get maxLines => 1;
-
-  @override
-  bool? get softWrap => true;
-
-  @override
-  TextOverflow? get overflow => TextOverflow.ellipsis;
-
-  @override
-  String get figmaComponentId => "text_example";
 }

@@ -1,46 +1,40 @@
 import 'package:figflow/figflow.dart';
 import 'package:figflow/figma_component_context.dart';
-import 'package:figflow/figma_properties.dart';
+import 'package:figflow/figma_property_scope.dart';
 import 'package:figflow/figma_renderer_factory.dart';
 import 'package:flutter/widgets.dart';
 
-abstract class FigmaComponent extends StatelessWidget {
-  const FigmaComponent({super.key});
+class FigmaComponent extends StatelessWidget {
+  final String componentId;
+  final Map<String, dynamic> properties;
+  final List<FigmaPropertyScope> propertyScopes;
+  final bool recursive;
 
-  String get figmaComponentId;
-
-  String? get text => null;
-  int? get maxLines => null;
-  TextOverflow? get overflow => null;
-  bool? get softWrap => null;
-
-  Widget? get child => null;
+  const FigmaComponent({
+    required this.componentId,
+    this.properties = const {},
+    this.propertyScopes = const [],
+    this.recursive = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final component = FigmaService.instance.getComponent(figmaComponentId);
+    final component = FigmaService.instance.getComponent(componentId);
     if (component == null) {
-      throw Exception("Cannot find $figmaComponentId component");
+      throw Exception('Cannot find $componentId component');
     }
 
     final componentContext = FigmaComponentContext(
+      properties: properties,
+      propertyScopes: propertyScopes,
       buildContext: context,
-      properties: _properties,
     );
 
     return FigmaRendererFactory.createRenderer(
       componentContext: componentContext,
       node: component,
+      recursive: recursive,
     );
-  }
-
-  Map<String, dynamic> get _properties {
-    return {
-      if (text != null) FigmaProperties.text: text,
-      if (overflow != null) FigmaProperties.overflow: overflow,
-      if (maxLines != null) FigmaProperties.maxLines: maxLines,
-      if (softWrap != null) FigmaProperties.softWrap: softWrap,
-      if (child != null) FigmaProperties.child: child,
-    };
   }
 }

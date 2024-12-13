@@ -30,7 +30,10 @@ class FigmaShapeRenderer extends FigmaRenderer {
       width: _getWidth(node),
       height: _getHeight(node),
       decoration: decoration,
-      child: rendererContext.get<Widget>(FigmaProperties.child),
+      child: rendererContext.get<Widget>(
+        FigmaProperties.child,
+        nodeId: node.name!,
+      ),
     );
 
     return FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));

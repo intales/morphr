@@ -131,7 +131,6 @@ class FigmaStyleUtils {
       letterSpacing: style.letterSpacing?.toDouble(),
       height: _calculateTextHeight(style),
       decoration: _getTextDecoration(style),
-      fontFamily: style.fontFamily,
       decorationColor: getColor(text.fills),
       shadows: getEffects(text.effects),
     );

@@ -17,7 +17,10 @@ class FigmaTextRenderer extends FigmaRenderer {
       throw ArgumentError('Node must be a TEXT node');
     }
 
-    String text = rendererContext.get<String>(FigmaProperties.text) ??
+    String text = rendererContext.get<String>(
+          FigmaProperties.text,
+          nodeId: node.name!,
+        ) ??
         node.characters ??
         'Text value not provided.';
 
@@ -39,96 +42,112 @@ class FigmaTextRenderer extends FigmaRenderer {
             f.type == figma.PaintType.gradientLinear ||
             f.type == figma.PaintType.gradientRadial);
 
-    if (hasGradient || (hasFill && hasStroke)) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final textSpan = TextSpan(
-            text: text,
-            style: baseStyle?.copyWith(
-              color: Colors.white,
-            ),
-          );
+    Widget textWidget;
 
-          final textPainter = TextPainter(
-            text: textSpan,
-            textDirection: TextDirection.ltr,
+    if (hasGradient) {
+      final gradientFill = node.fills.firstWhere((f) =>
+          f.type == figma.PaintType.gradientLinear ||
+          f.type == figma.PaintType.gradientRadial);
+
+      final gradient = FigmaStyleUtils.getGradient(gradientFill);
+      if (gradient != null) {
+        textWidget = ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => gradient.createShader(
+            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+          ),
+          child: Text(
+            text,
+            style: baseStyle,
             textAlign: textAlign,
-          );
-          textPainter.layout(maxWidth: constraints.maxWidth);
-
-          final textSize = textPainter.size;
-          final textRect = Rect.fromLTWH(0, 0, textSize.width, textSize.height);
-
-          final children = <Widget>[];
-
-          if (hasFill) {
-            final fillPaint = Paint();
-            if (hasGradient) {
-              final gradientFill = node.fills.firstWhere((f) =>
-                  f.type == figma.PaintType.gradientLinear ||
-                  f.type == figma.PaintType.gradientRadial);
-              final gradient = FigmaStyleUtils.getGradient(gradientFill);
-              if (gradient != null) {
-                fillPaint.shader = gradient.createShader(textRect);
-              }
-            } else {
-              fillPaint.color =
-                  FigmaStyleUtils.getColor(node.fills) ?? Colors.black;
-            }
-
-            children.add(
-              Text(
-                text,
-                style: baseStyle?.copyWith(foreground: fillPaint),
-                textAlign: textAlign,
-                maxLines: rendererContext.get<int>(FigmaProperties.maxLines),
-                overflow:
-                    rendererContext.get<TextOverflow>(FigmaProperties.overflow),
-                softWrap:
-                    rendererContext.get<bool>(FigmaProperties.softWrap) ?? true,
-              ),
-            );
-          }
-
-          if (hasStroke) {
-            children.add(
-              Text(
-                text,
-                style: baseStyle?.copyWith(
-                  foreground: Paint()
-                    ..style = PaintingStyle.stroke
-                    ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
-                    ..color =
-                        FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
-                ),
-                textAlign: textAlign,
-                maxLines: rendererContext.get<int>(FigmaProperties.maxLines),
-                overflow:
-                    rendererContext.get<TextOverflow>(FigmaProperties.overflow),
-                softWrap:
-                    rendererContext.get<bool>(FigmaProperties.softWrap) ?? true,
-              ),
-            );
-          }
-
-          return FigmaStyleUtils.wrapWithBlur(
-            Stack(children: children),
-            node.effects,
-          );
-        },
-      );
-    }
-
-    return FigmaStyleUtils.wrapWithBlur(
-      Text(
+            maxLines: rendererContext.get<int>(
+              FigmaProperties.maxLines,
+              nodeId: node.name!,
+            ),
+            overflow: rendererContext.get<TextOverflow>(
+              FigmaProperties.overflow,
+              nodeId: node.name!,
+            ),
+            softWrap: rendererContext.get<bool>(
+                  FigmaProperties.softWrap,
+                  nodeId: node.name!,
+                ) ??
+                true,
+          ),
+        );
+      } else {
+        textWidget = Text(
+          text,
+          style: baseStyle,
+          textAlign: textAlign,
+          maxLines: rendererContext.get<int>(
+            FigmaProperties.maxLines,
+            nodeId: node.name!,
+          ),
+          overflow: rendererContext.get<TextOverflow>(
+            FigmaProperties.overflow,
+            nodeId: node.name!,
+          ),
+          softWrap: rendererContext.get<bool>(
+                FigmaProperties.softWrap,
+                nodeId: node.name!,
+              ) ??
+              true,
+        );
+      }
+    } else {
+      textWidget = Text(
         text,
         style: baseStyle,
         textAlign: textAlign,
-        maxLines: rendererContext.get<int>(FigmaProperties.maxLines),
-        overflow: rendererContext.get<TextOverflow>(FigmaProperties.overflow),
-        softWrap: rendererContext.get<bool>(FigmaProperties.softWrap) ?? true,
-      ),
-      node.effects,
-    );
+        maxLines: rendererContext.get<int>(
+          FigmaProperties.maxLines,
+          nodeId: node.name!,
+        ),
+        overflow: rendererContext.get<TextOverflow>(
+          FigmaProperties.overflow,
+          nodeId: node.name!,
+        ),
+        softWrap: rendererContext.get<bool>(
+              FigmaProperties.softWrap,
+              nodeId: node.name!,
+            ) ??
+            true,
+      );
+    }
+
+    if (hasStroke) {
+      textWidget = Stack(
+        children: [
+          textWidget,
+          Text(
+            text,
+            style: baseStyle?.copyWith(
+              foreground: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
+                ..color =
+                    FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
+            ),
+            textAlign: textAlign,
+            maxLines: rendererContext.get<int>(
+              FigmaProperties.maxLines,
+              nodeId: node.name!,
+            ),
+            overflow: rendererContext.get<TextOverflow>(
+              FigmaProperties.overflow,
+              nodeId: node.name!,
+            ),
+            softWrap: rendererContext.get<bool>(
+                  FigmaProperties.softWrap,
+                  nodeId: node.name!,
+                ) ??
+                true,
+          ),
+        ],
+      );
+    }
+
+    return FigmaStyleUtils.wrapWithBlur(textWidget, node.effects);
   }
 }
