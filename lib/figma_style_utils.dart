@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:figflow/figma_service.dart';
 import 'package:figma/figma.dart' as figma;
@@ -76,12 +77,7 @@ class FigmaStyleUtils {
   static RadialGradient? _createRadialGradient(final figma.Paint fill) {
     if (fill.gradientStops == null) return null;
 
-    final stops = fill.gradientStops!
-        .map((stop) => stop.position!)
-        .toList()
-        .reversed
-        .toList();
-
+    final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
     final colors = fill.gradientStops!
         .map((stop) => Color.fromRGBO(
               (stop.color!.r! * 255).round(),
@@ -89,14 +85,39 @@ class FigmaStyleUtils {
               (stop.color!.b! * 255).round(),
               stop.color!.a!,
             ))
-        .toList()
-        .reversed
         .toList();
 
+    final transforms = fill.imageTransform;
+    Alignment center = Alignment.center;
+    double radius = 0.75;
+
+    if (transforms != null && transforms.isNotEmpty) {
+      try {
+        final translateX = transforms[4][0].toDouble();
+        final translateY = transforms[5][0].toDouble();
+
+        final x = (translateX * 2.0) - 1.0;
+        final y = (translateY * 2.0) - 1.0;
+        center = Alignment(x, y);
+
+        final scaleX = transforms[0][0].toDouble();
+        final scaleY = transforms[3][0].toDouble();
+
+        // Applichiamo un fattore di correzione al radius
+        radius = math.max(scaleX.abs(), scaleY.abs()) * 0.7;
+      } catch (e) {
+        debugPrint('Error processing gradient transform: $e');
+      }
+    }
+
     return RadialGradient(
-      colors: colors,
-      stops: stops,
-    );
+        center: center,
+        radius: radius,
+        colors: colors,
+        stops: stops,
+        focal: center,
+        focalRadius: 0.0,
+        tileMode: TileMode.clamp);
   }
 
   static Color? _getGradientFirstColor(final figma.Paint fill) {

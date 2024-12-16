@@ -45,6 +45,14 @@ class FigmaTestApp extends StatelessWidget {
                   FigmaProperties.fit: FigmaFrameFit.cover,
                 },
               ),
+              FigmaOverride(
+                nodeId: "blur_frame",
+                properties: {
+                  FigmaProperties.width: MediaQuery.of(context).size.width,
+                  FigmaProperties.height: MediaQuery.of(context).size.height,
+                  FigmaProperties.fit: FigmaFrameFit.fill,
+                },
+              ),
             ],
           ),
         ),
