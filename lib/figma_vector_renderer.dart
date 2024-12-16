@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:figflow/figma_component_context.dart';
 import 'package:figflow/figma_renderer.dart';
 import 'package:figflow/figma_style_utils.dart';
+import 'package:figflow/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:path_parsing/path_parsing.dart';
@@ -43,7 +44,8 @@ class FigmaVectorRenderer extends FigmaRenderer {
       ),
     );
 
-    return wrapWithTap(result, rendererContext, node);
+    final withTap = wrapWithTap(result, rendererContext, node);
+    return FigmaTransformUtils.wrapWithRotation(withTap, node);
   }
 
   EdgeInsets _calculateShadowPadding(figma.Node node) {

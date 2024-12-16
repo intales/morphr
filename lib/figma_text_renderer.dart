@@ -2,6 +2,7 @@ import 'package:figflow/figma_component_context.dart';
 import 'package:figflow/figma_renderer.dart';
 import 'package:figflow/figma_properties.dart';
 import 'package:figflow/figma_style_utils.dart';
+import 'package:figflow/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 
@@ -30,7 +31,9 @@ class FigmaTextRenderer extends FigmaRenderer {
       result = _renderText(node, rendererContext);
     }
 
-    return wrapWithTap(result, rendererContext, node);
+    final withBlur = FigmaStyleUtils.wrapWithBlur(result, node.effects);
+    final withTap = wrapWithTap(withBlur, rendererContext, node);
+    return FigmaTransformUtils.wrapWithRotation(withTap, node);
   }
 
   Widget _renderInput(figma.Text node, FigmaComponentContext rendererContext) {
@@ -45,10 +48,9 @@ class FigmaTextRenderer extends FigmaRenderer {
             f.type == figma.PaintType.gradientRadial);
 
     final controller = rendererContext.get<TextEditingController>(
-          FigmaProperties.controller,
-          nodeId: node.name!,
-        ) ??
-        TextEditingController();
+      FigmaProperties.controller,
+      nodeId: node.name!,
+    );
     final onChanged = rendererContext.get<ValueChanged<String>>(
       FigmaProperties.onChanged,
       nodeId: node.name!,
@@ -152,7 +154,8 @@ class FigmaTextRenderer extends FigmaRenderer {
       );
     }
 
-    return FigmaStyleUtils.wrapWithBlur(inputWidget, node.effects);
+    final withBlur = FigmaStyleUtils.wrapWithBlur(inputWidget, node.effects);
+    return FigmaTransformUtils.wrapWithRotation(withBlur, node);
   }
 
   Widget _renderText(figma.Text node, FigmaComponentContext rendererContext) {

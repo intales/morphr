@@ -14,10 +14,28 @@ void main() async {
   runApp(const FigmaTestApp());
 }
 
-class FigmaTestApp extends StatelessWidget {
+class FigmaTestApp extends StatefulWidget {
   const FigmaTestApp({
     super.key,
   });
+
+  @override
+  State<StatefulWidget> createState() => _FigmaTestAppState();
+}
+
+class _FigmaTestAppState extends State<FigmaTestApp> {
+  late final TextEditingController _controller;
+  late String _email;
+
+  @override
+  void initState() {
+    super.initState();
+    _email = "";
+    _controller = TextEditingController()
+      ..addListener(() => setState(() {
+            _email = _controller.text;
+          }));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +49,23 @@ class FigmaTestApp extends StatelessWidget {
             componentId: "main_page",
             recursive: true,
             overrides: [
-              const FigmaOverride(
+              FigmaOverride(
                 nodeId: "email_text_field",
                 properties: {
                   FigmaProperties.isInput: true,
+                  FigmaProperties.controller: _controller,
+                },
+              ),
+              FigmaOverride(
+                nodeId: "join_button",
+                properties: {
+                  FigmaProperties.onTap: () => print(_email),
+                },
+              ),
+              FigmaOverride(
+                nodeId: "join_button_text",
+                properties: {
+                  FigmaProperties.onTap: () => print(_email),
                 },
               ),
               FigmaOverride(
@@ -43,14 +74,6 @@ class FigmaTestApp extends StatelessWidget {
                   FigmaProperties.width: MediaQuery.of(context).size.width,
                   FigmaProperties.height: MediaQuery.of(context).size.height,
                   FigmaProperties.fit: FigmaFrameFit.cover,
-                },
-              ),
-              FigmaOverride(
-                nodeId: "blur_frame",
-                properties: {
-                  FigmaProperties.width: MediaQuery.of(context).size.width,
-                  FigmaProperties.height: MediaQuery.of(context).size.height,
-                  FigmaProperties.fit: FigmaFrameFit.fill,
                 },
               ),
             ],

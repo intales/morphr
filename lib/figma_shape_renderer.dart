@@ -2,6 +2,7 @@ import 'package:figflow/figma_component_context.dart';
 import 'package:figflow/figma_properties.dart';
 import 'package:figflow/figma_renderer.dart';
 import 'package:figflow/figma_style_utils.dart';
+import 'package:figflow/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 
@@ -44,7 +45,8 @@ class FigmaShapeRenderer extends FigmaRenderer {
 
       final withBlur =
           FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));
-      return wrapWithTap(withBlur, rendererContext, node);
+      final withTap = wrapWithTap(withBlur, rendererContext, node);
+      return FigmaTransformUtils.wrapWithRotation(withTap, node);
     }
 
     if (hasImage) {

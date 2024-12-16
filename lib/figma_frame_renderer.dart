@@ -3,6 +3,7 @@ import 'package:figflow/figma_node_layout_info.dart';
 import 'package:figflow/figma_properties.dart';
 import 'package:figflow/figma_renderer.dart';
 import 'package:figflow/figma_style_utils.dart';
+import 'package:figflow/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 
@@ -98,12 +99,13 @@ class FigmaFrameRenderer extends FigmaRenderer {
             customHeight ?? constraints.maxHeight,
           );
 
-          return _applyScaling(
+          final withFit = _applyScaling(
             child: withTap,
             originalSize: originalSize,
             targetSize: targetSize,
             fit: fit,
           );
+          return FigmaTransformUtils.wrapWithRotation(withFit, node);
         },
       );
     }
