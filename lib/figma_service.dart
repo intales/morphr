@@ -25,6 +25,17 @@ class FigmaService {
     return _findComponent(_document, componentId);
   }
 
+  Future<String?> getImageUrl(final String imageHash) async {
+    final response = await _client.getImages(
+      _fileId,
+      figma.FigmaQuery(
+        ids: [imageHash],
+      ),
+    );
+
+    return response.images?.values.first;
+  }
+
   Future<void> _loadDocument() async {
     final file = await _client.getFile(
       _fileId,

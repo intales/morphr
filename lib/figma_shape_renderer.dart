@@ -17,28 +17,49 @@ class FigmaShapeRenderer extends FigmaRenderer {
       throw ArgumentError('Node must be a RECTANGLE or ELLIPSE node');
     }
 
-    final decoration = BoxDecoration(
-      shape: _getShape(node),
-      borderRadius: _getBorderRadius(node),
-      color: _getSolidColor(node),
-      gradient: _getGradient(node),
-      border: _getBorder(node),
-      boxShadow: _getBoxShadow(node),
-    );
+    final fills = _getFills(node);
+    final hasImage =
+        fills?.any((f) => f.type == figma.PaintType.image) ?? false;
 
-    final container = Container(
-      width: _getWidth(node),
-      height: _getHeight(node),
-      decoration: decoration,
-      child: rendererContext.get<Widget>(
-        FigmaProperties.child,
-        nodeId: node.name!,
-      ),
-    );
+    Widget buildShapeContent(DecorationImage? imageDecoration) {
+      final decoration = BoxDecoration(
+        shape: _getShape(node),
+        borderRadius: _getBorderRadius(node),
+        color: !hasImage && !_hasGradient(node) ? _getSolidColor(node) : null,
+        gradient: !hasImage ? _getGradient(node) : null,
+        image: imageDecoration,
+        border: _getBorder(node),
+        boxShadow: _getBoxShadow(node),
+      );
 
-    final result = FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));
+      final container = Container(
+        width: _getWidth(node),
+        height: _getHeight(node),
+        decoration: decoration,
+        child: rendererContext.get<Widget>(
+          FigmaProperties.child,
+          nodeId: node.name!,
+        ),
+      );
 
-    return wrapWithTap(result, rendererContext, node);
+      final withBlur =
+          FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));
+      return wrapWithTap(withBlur, rendererContext, node);
+    }
+
+    if (hasImage) {
+      return FutureBuilder<DecorationImage?>(
+        future: FigmaStyleUtils.getImageFill(
+          fills,
+          node.id,
+        ),
+        builder: (context, snapshot) {
+          return buildShapeContent(snapshot.data);
+        },
+      );
+    }
+
+    return buildShapeContent(null);
   }
 
   BoxShape _getShape(figma.Node node) {

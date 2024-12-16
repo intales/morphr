@@ -59,53 +59,68 @@ class FigmaFrameRenderer extends FigmaRenderer {
     final borderWidth = node.strokeWeight?.toDouble();
     final cornerRadius = node.cornerRadius?.toDouble();
 
-    Widget framedContent = Container(
-      width: originalSize.width,
-      height: originalSize.height,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: gradient,
-        boxShadow: effects,
-        border: hasBorder
-            ? Border.all(
-                color: borderColor ?? Colors.black,
-                width: borderWidth ?? 1.0,
-              )
-            : null,
-        borderRadius:
-            cornerRadius != null ? BorderRadius.circular(cornerRadius) : null,
-      ),
-      child: content,
-    );
+    final hasImage = node.fills.any((f) => f.type == figma.PaintType.image);
 
-    framedContent = FigmaStyleUtils.wrapWithBlur(framedContent, node.effects);
+    Widget buildFrameContent(DecorationImage? imageDecoration) {
+      final container = Container(
+        width: originalSize.width,
+        height: originalSize.height,
+        decoration: BoxDecoration(
+          color: !hasImage ? backgroundColor : null,
+          gradient: !hasImage ? gradient : null,
+          image: imageDecoration,
+          boxShadow: effects,
+          border: hasBorder
+              ? Border.all(
+                  color: borderColor ?? Colors.black,
+                  width: borderWidth ?? 1.0,
+                )
+              : null,
+          borderRadius:
+              cornerRadius != null ? BorderRadius.circular(cornerRadius) : null,
+        ),
+        child: content,
+      );
 
-    if ((customWidth == null && customHeight == null) ||
-        fit == FigmaFrameFit.none) {
-      return framedContent;
+      final blurred = FigmaStyleUtils.wrapWithBlur(container, node.effects);
+
+      if ((customWidth == null && customHeight == null) ||
+          fit == FigmaFrameFit.none) {
+        return blurred;
+      }
+
+      final withTap = wrapWithTap(blurred, rendererContext, node);
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final targetSize = Size(
+            customWidth ?? constraints.maxWidth,
+            customHeight ?? constraints.maxHeight,
+          );
+
+          return _applyScaling(
+            child: withTap,
+            originalSize: originalSize,
+            targetSize: targetSize,
+            fit: fit,
+          );
+        },
+      );
     }
 
-    final result = wrapWithTap(
-      framedContent,
-      rendererContext,
-      node,
-    );
+    if (hasImage) {
+      return FutureBuilder<DecorationImage?>(
+        future: FigmaStyleUtils.getImageFill(
+          node.fills,
+          node.id,
+        ),
+        builder: (context, snapshot) {
+          return buildFrameContent(snapshot.data);
+        },
+      );
+    }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final targetSize = Size(
-          customWidth ?? constraints.maxWidth,
-          customHeight ?? constraints.maxHeight,
-        );
-
-        return _applyScaling(
-          child: result,
-          originalSize: originalSize,
-          targetSize: targetSize,
-          fit: fit,
-        );
-      },
-    );
+    return buildFrameContent(null);
   }
 
   Widget _buildAutoLayoutContent(
