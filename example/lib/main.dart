@@ -26,7 +26,6 @@ class FigmaTestApp extends StatelessWidget {
         fontFamily: GoogleFonts.robotoMono().fontFamily,
       ),
       home: Scaffold(
-        backgroundColor: Colors.black,
         body: Center(
           child: FigmaComponent(
             componentId: "main_page",
@@ -43,7 +42,7 @@ class FigmaTestApp extends StatelessWidget {
                 properties: {
                   FigmaProperties.width: MediaQuery.of(context).size.width,
                   FigmaProperties.height: MediaQuery.of(context).size.height,
-                  FigmaProperties.fit: FigmaFrameFit.contain,
+                  FigmaProperties.fit: FigmaFrameFit.cover,
                 },
               ),
             ],

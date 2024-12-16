@@ -20,6 +20,8 @@ class FigmaProperties {
   static const String onChanged = 'onChanged';
   static const String onSubmitted = 'onSubmitted';
   static const String hint = 'hint';
+
+  static const String onTap = 'onTap';
 }
 
 enum FigmaFrameFit {

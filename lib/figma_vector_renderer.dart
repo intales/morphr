@@ -30,7 +30,7 @@ class FigmaVectorRenderer extends FigmaRenderer {
     final width = baseWidth + shadowPadding.left + shadowPadding.right;
     final height = baseHeight + shadowPadding.top + shadowPadding.bottom;
 
-    return CustomPaint(
+    final result = CustomPaint(
       size: Size(width, height),
       painter: _VectorPainter(
         fills: _getFills(node),
@@ -42,6 +42,8 @@ class FigmaVectorRenderer extends FigmaRenderer {
         shadowPadding: shadowPadding,
       ),
     );
+
+    return wrapWithTap(result, rendererContext, node);
   }
 
   EdgeInsets _calculateShadowPadding(figma.Node node) {

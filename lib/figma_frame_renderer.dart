@@ -2,6 +2,7 @@ import 'package:figflow/figma_component_context.dart';
 import 'package:figflow/figma_node_layout_info.dart';
 import 'package:figflow/figma_properties.dart';
 import 'package:figflow/figma_renderer.dart';
+import 'package:figflow/figma_style_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 
@@ -41,14 +42,54 @@ class FigmaFrameRenderer extends FigmaRenderer {
             ? _buildAutoLayoutContent(node, rendererContext)
             : _buildManualLayoutContent(node, rendererContext);
 
+    final effects = FigmaStyleUtils.getEffects(node.effects);
+    final backgroundColor = FigmaStyleUtils.getColor(node.fills);
+    final gradient = node.fills.isNotEmpty
+        ? FigmaStyleUtils.getGradient(node.fills.firstWhere(
+            (f) =>
+                f.type == figma.PaintType.gradientLinear ||
+                f.type == figma.PaintType.gradientRadial,
+            orElse: () => node.fills.first,
+          ))
+        : null;
+
+    final hasBorder = node.strokes.isNotEmpty;
+    final borderColor =
+        hasBorder ? FigmaStyleUtils.getColor(node.strokes) : null;
+    final borderWidth = node.strokeWeight?.toDouble();
+    final cornerRadius = node.cornerRadius?.toDouble();
+
+    Widget framedContent = Container(
+      width: originalSize.width,
+      height: originalSize.height,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        gradient: gradient,
+        boxShadow: effects,
+        border: hasBorder
+            ? Border.all(
+                color: borderColor ?? Colors.black,
+                width: borderWidth ?? 1.0,
+              )
+            : null,
+        borderRadius:
+            cornerRadius != null ? BorderRadius.circular(cornerRadius) : null,
+      ),
+      child: content,
+    );
+
+    framedContent = FigmaStyleUtils.wrapWithBlur(framedContent, node.effects);
+
     if ((customWidth == null && customHeight == null) ||
         fit == FigmaFrameFit.none) {
-      return SizedBox(
-        width: originalSize.width,
-        height: originalSize.height,
-        child: content,
-      );
+      return framedContent;
     }
+
+    final result = wrapWithTap(
+      framedContent,
+      rendererContext,
+      node,
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -58,7 +99,7 @@ class FigmaFrameRenderer extends FigmaRenderer {
         );
 
         return _applyScaling(
-          child: content,
+          child: result,
           originalSize: originalSize,
           targetSize: targetSize,
           fit: fit,

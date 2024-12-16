@@ -23,11 +23,14 @@ class FigmaTextRenderer extends FigmaRenderer {
         ) ??
         false;
 
+    late final Widget result;
     if (isInput) {
-      return _renderInput(node, rendererContext);
+      result = _renderInput(node, rendererContext);
+    } else {
+      result = _renderText(node, rendererContext);
     }
 
-    return _renderText(node, rendererContext);
+    return wrapWithTap(result, rendererContext, node);
   }
 
   Widget _renderInput(figma.Text node, FigmaComponentContext rendererContext) {

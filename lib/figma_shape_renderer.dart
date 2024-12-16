@@ -36,7 +36,9 @@ class FigmaShapeRenderer extends FigmaRenderer {
       ),
     );
 
-    return FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));
+    final result = FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));
+
+    return wrapWithTap(result, rendererContext, node);
   }
 
   BoxShape _getShape(figma.Node node) {
