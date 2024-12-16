@@ -1,5 +1,6 @@
 import 'package:figflow/figma_component_context.dart';
 import 'package:figflow/figma_frame_renderer.dart';
+import 'package:figflow/figma_node_layout_info.dart';
 import 'package:figflow/figma_properties.dart';
 import 'package:figflow/figma_renderer.dart';
 import 'package:figflow/figma_shape_renderer.dart';
@@ -76,19 +77,32 @@ class RecursiveRendererWrapper {
     required FigmaComponentContext componentContext,
     required figma.Node node,
   }) {
-    // Se il nodo è un container, renderizza prima i children
     List<Widget> renderedChildren = [];
+    List<NodeLayoutInfo> layoutInfos = [];
+
     if (node is figma.Frame) {
-      renderedChildren = node.children?.nonNulls
-              .map((child) => render(
-                    componentContext: componentContext,
-                    node: child,
-                  ))
-              .toList() ??
-          [];
+      for (final child in node.children?.nonNulls ?? <figma.Node>[]) {
+        final childWidget = render(
+          componentContext: componentContext,
+          node: child,
+        );
+
+        final isInput = child is figma.Text &&
+            (componentContext.get<bool>(
+                  FigmaProperties.isInput,
+                  nodeId: child.name!,
+                ) ??
+                false);
+
+        layoutInfos.add(NodeLayoutInfo(
+          node: child,
+          widget: childWidget,
+          isInput: isInput,
+        ));
+        renderedChildren.add(childWidget);
+      }
     }
 
-    // Crea un nuovo context con i children renderizzati
     final updatedContext = FigmaComponentContext(
       buildContext: componentContext.buildContext,
       properties: {
@@ -97,15 +111,14 @@ class RecursiveRendererWrapper {
           FigmaProperties.children: renderedChildren,
         if (renderedChildren.length == 1)
           FigmaProperties.child: renderedChildren.first,
+        if (layoutInfos.isNotEmpty) FigmaProperties.layoutInfo: layoutInfos,
       },
       propertyScopes: componentContext.propertyScopes,
     );
 
-    // Usa il renderer esistente con il context aggiornato
-    final renderer = FigmaRendererFactory.createBaseRenderer(
+    return FigmaRendererFactory.createBaseRenderer(
       componentContext: updatedContext,
       node: node,
     );
-    return renderer;
   }
 }

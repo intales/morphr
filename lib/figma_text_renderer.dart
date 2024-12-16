@@ -17,6 +17,142 @@ class FigmaTextRenderer extends FigmaRenderer {
       throw ArgumentError('Node must be a TEXT node');
     }
 
+    final isInput = rendererContext.get<bool>(
+          FigmaProperties.isInput,
+          nodeId: node.name!,
+        ) ??
+        false;
+
+    if (isInput) {
+      return _renderInput(node, rendererContext);
+    }
+
+    return _renderText(node, rendererContext);
+  }
+
+  Widget _renderInput(figma.Text node, FigmaComponentContext rendererContext) {
+    final baseStyle = FigmaStyleUtils.getTextStyle(node);
+    final textAlign =
+        FigmaStyleUtils.getTextAlign(node.style?.textAlignHorizontal);
+    final hasStroke = node.strokes.isNotEmpty == true;
+    final hasFill = node.fills.isNotEmpty == true;
+    final hasGradient = hasFill &&
+        node.fills.any((f) =>
+            f.type == figma.PaintType.gradientLinear ||
+            f.type == figma.PaintType.gradientRadial);
+
+    final controller = rendererContext.get<TextEditingController>(
+          FigmaProperties.controller,
+          nodeId: node.name!,
+        ) ??
+        TextEditingController();
+    final onChanged = rendererContext.get<ValueChanged<String>>(
+      FigmaProperties.onChanged,
+      nodeId: node.name!,
+    );
+    final onSubmitted = rendererContext.get<ValueChanged<String>>(
+      FigmaProperties.onSubmitted,
+      nodeId: node.name!,
+    );
+    final hint = rendererContext.get<String>(
+          FigmaProperties.hint,
+          nodeId: node.name!,
+        ) ??
+        node.characters ??
+        '';
+
+    Widget inputWidget = SizedBox.expand(
+      child: TextFormField(
+        controller: controller,
+        onChanged: onChanged,
+        onFieldSubmitted: onSubmitted,
+        style: baseStyle,
+        textAlign: textAlign,
+        maxLines: rendererContext.get<int>(
+          FigmaProperties.maxLines,
+          nodeId: node.name!,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: baseStyle?.copyWith(
+            color: baseStyle.color?.withOpacity(0.5),
+          ),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
+          isDense: true,
+          isCollapsed: true,
+        ),
+        expands: true,
+      ),
+    );
+
+    if (hasGradient) {
+      final gradientFill = node.fills.firstWhere((f) =>
+          f.type == figma.PaintType.gradientLinear ||
+          f.type == figma.PaintType.gradientRadial);
+
+      final gradient = FigmaStyleUtils.getGradient(gradientFill);
+      if (gradient != null) {
+        inputWidget = ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => gradient.createShader(
+            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+          ),
+          child: inputWidget,
+        );
+      }
+    }
+
+    if (hasStroke) {
+      inputWidget = Stack(
+        fit: StackFit.expand,
+        children: [
+          SizedBox.expand(
+            child: TextFormField(
+              enabled: false,
+              controller: controller,
+              style: baseStyle?.copyWith(
+                foreground: Paint()
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
+                  ..color =
+                      FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
+              ),
+              textAlign: textAlign,
+              maxLines: rendererContext.get<int>(
+                FigmaProperties.maxLines,
+                nodeId: node.name!,
+              ),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: baseStyle?.copyWith(
+                  foreground: Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
+                    ..color =
+                        FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+                isCollapsed: true,
+              ),
+              expands: true,
+            ),
+          ),
+          inputWidget,
+        ],
+      );
+    }
+
+    return FigmaStyleUtils.wrapWithBlur(inputWidget, node.effects);
+  }
+
+  Widget _renderText(figma.Text node, FigmaComponentContext rendererContext) {
     String text = rendererContext.get<String>(
           FigmaProperties.text,
           nodeId: node.name!,

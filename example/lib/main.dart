@@ -25,17 +25,25 @@ class FigmaTestApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: GoogleFonts.robotoMono().fontFamily,
       ),
-      home: const Scaffold(
+      home: Scaffold(
         backgroundColor: Colors.black,
         body: Center(
           child: FigmaComponent(
             componentId: "main_page",
             recursive: true,
             overrides: [
-              FigmaOverride(
-                nodeId: "headline",
+              const FigmaOverride(
+                nodeId: "email_text_field",
                 properties: {
-                  FigmaProperties.text: "Buon compleanno Elia!",
+                  FigmaProperties.isInput: true,
+                },
+              ),
+              FigmaOverride(
+                nodeId: "main_page",
+                properties: {
+                  FigmaProperties.width: MediaQuery.of(context).size.width,
+                  FigmaProperties.height: MediaQuery.of(context).size.height,
+                  FigmaProperties.fit: FigmaFrameFit.contain,
                 },
               ),
             ],

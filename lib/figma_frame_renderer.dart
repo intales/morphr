@@ -1,4 +1,5 @@
 import 'package:figflow/figma_component_context.dart';
+import 'package:figflow/figma_node_layout_info.dart';
 import 'package:figflow/figma_properties.dart';
 import 'package:figflow/figma_renderer.dart';
 import 'package:flutter/material.dart';
@@ -9,49 +10,150 @@ class FigmaFrameRenderer extends FigmaRenderer {
 
   @override
   Widget render({
-    required final FigmaComponentContext rendererContext,
-    required final figma.Node node,
+    required FigmaComponentContext rendererContext,
+    required figma.Node node,
   }) {
     if (node is! figma.Frame) {
       throw ArgumentError('Node must be a FRAME node');
     }
 
-    final children = rendererContext.get<List<Widget>>(
-          FigmaProperties.children,
+    final originalSize = Size(
+      node.absoluteBoundingBox?.width?.toDouble() ?? 0,
+      node.absoluteBoundingBox?.height?.toDouble() ?? 0,
+    );
+
+    final customWidth = rendererContext.get<double>(
+      FigmaProperties.width,
+      nodeId: node.name!,
+    );
+    final customHeight = rendererContext.get<double>(
+      FigmaProperties.height,
+      nodeId: node.name!,
+    );
+    final fit = rendererContext.get<FigmaFrameFit>(
+          FigmaProperties.fit,
           nodeId: node.name!,
+        ) ??
+        FigmaFrameFit.none;
+
+    final content =
+        node.layoutMode != null && node.layoutMode != figma.LayoutMode.none
+            ? _buildAutoLayoutContent(node, rendererContext)
+            : _buildManualLayoutContent(node, rendererContext);
+
+    if ((customWidth == null && customHeight == null) ||
+        fit == FigmaFrameFit.none) {
+      return SizedBox(
+        width: originalSize.width,
+        height: originalSize.height,
+        child: content,
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final targetSize = Size(
+          customWidth ?? constraints.maxWidth,
+          customHeight ?? constraints.maxHeight,
+        );
+
+        return _applyScaling(
+          child: content,
+          originalSize: originalSize,
+          targetSize: targetSize,
+          fit: fit,
+        );
+      },
+    );
+  }
+
+  Widget _buildAutoLayoutContent(
+      figma.Frame frame, FigmaComponentContext context) {
+    final children = context.get<List<Widget>>(
+          FigmaProperties.children,
+          nodeId: frame.name!,
         ) ??
         [];
 
-    if (node.layoutMode != null && node.layoutMode != figma.LayoutMode.none) {
-      return _buildAutoLayout(node, children);
-    }
-
-    return Stack(
-      alignment: Alignment.center,
+    return Flex(
+      direction: frame.layoutMode == figma.LayoutMode.horizontal
+          ? Axis.horizontal
+          : Axis.vertical,
+      mainAxisAlignment: _getMainAxisAlignment(frame.primaryAxisAlignItems),
+      crossAxisAlignment: _getCrossAxisAlignment(frame.counterAxisAlignItems),
+      mainAxisSize: MainAxisSize.min,
       children: children,
     );
   }
 
-  Widget _buildAutoLayout(figma.Frame frame, List<Widget> children) {
-    final direction = frame.layoutMode == figma.LayoutMode.horizontal
-        ? Axis.horizontal
-        : Axis.vertical;
+  Widget _buildManualLayoutContent(
+      figma.Frame frame, FigmaComponentContext context) {
+    final layoutInfos = context.get<List<NodeLayoutInfo>>(
+          FigmaProperties.layoutInfo,
+          nodeId: frame.name!,
+        ) ??
+        [];
 
-    final mainAxisAlignment =
-        _getMainAxisAlignment(frame.primaryAxisAlignItems);
-    final crossAxisAlignment =
-        _getCrossAxisAlignment(frame.counterAxisAlignItems);
-
-    final spacing = frame.itemSpacing.toDouble();
-    final spacedChildren = _addSpacing(children, spacing, direction);
-
-    return Flex(
-      direction: direction,
-      mainAxisAlignment: mainAxisAlignment,
-      crossAxisAlignment: crossAxisAlignment,
-      mainAxisSize: MainAxisSize.min,
-      children: spacedChildren,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        for (final info in layoutInfos)
+          if (info.getPosition() != null && info.getSize() != null)
+            Positioned(
+              left: info.getPosition()!.x,
+              top: info.getPosition()!.y,
+              width: info.getSize()!.width,
+              height: info.getSize()!.height,
+              child: info.widget,
+            ),
+      ],
     );
+  }
+
+  Widget _applyScaling({
+    required Widget child,
+    required Size originalSize,
+    required Size targetSize,
+    required FigmaFrameFit fit,
+  }) {
+    final contentBox = SizedBox(
+      width: originalSize.width,
+      height: originalSize.height,
+      child: child,
+    );
+
+    switch (fit) {
+      case FigmaFrameFit.contain:
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: contentBox,
+          ),
+        );
+
+      case FigmaFrameFit.cover:
+        return SizedBox(
+          width: targetSize.width,
+          height: targetSize.height,
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: contentBox,
+          ),
+        );
+
+      case FigmaFrameFit.fill:
+        return SizedBox(
+          width: targetSize.width,
+          height: targetSize.height,
+          child: FittedBox(
+            fit: BoxFit.fill,
+            child: contentBox,
+          ),
+        );
+
+      case FigmaFrameFit.none:
+        return contentBox;
+    }
   }
 
   MainAxisAlignment _getMainAxisAlignment(figma.PrimaryAxisAlignItems? align) {
@@ -61,7 +163,7 @@ class FigmaFrameRenderer extends FigmaRenderer {
       figma.PrimaryAxisAlignItems.max => MainAxisAlignment.end,
       figma.PrimaryAxisAlignItems.spaceBetween =>
         MainAxisAlignment.spaceBetween,
-      null => MainAxisAlignment.start,
+      _ => MainAxisAlignment.start,
     };
   }
 
@@ -72,23 +174,7 @@ class FigmaFrameRenderer extends FigmaRenderer {
       figma.CounterAxisAlignItems.center => CrossAxisAlignment.center,
       figma.CounterAxisAlignItems.max => CrossAxisAlignment.end,
       figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
-      null => CrossAxisAlignment.start,
+      _ => CrossAxisAlignment.start,
     };
-  }
-
-  List<Widget> _addSpacing(
-      List<Widget> widgets, double spacing, Axis direction) {
-    if (spacing == 0 || widgets.length < 2) return widgets;
-
-    return widgets
-        .expand((widget) sync* {
-          yield widget;
-          yield SizedBox(
-            width: direction == Axis.horizontal ? spacing : 0,
-            height: direction == Axis.vertical ? spacing : 0,
-          );
-        })
-        .take(widgets.length * 2 - 1)
-        .toList();
   }
 }
