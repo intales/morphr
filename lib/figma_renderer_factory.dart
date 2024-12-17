@@ -89,7 +89,7 @@ class RecursiveRendererWrapper {
 
         final isInput = child is figma.Text &&
             (componentContext.get<bool>(
-                  FigmaProperties.isInput,
+                  FigmaProperties.isTextField,
                   nodeId: child.name!,
                 ) ??
                 false);

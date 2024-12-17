@@ -19,7 +19,7 @@ class FigmaTextRenderer extends FigmaRenderer {
     }
 
     final isInput = rendererContext.get<bool>(
-          FigmaProperties.isInput,
+          FigmaProperties.isTextField,
           nodeId: node.name!,
         ) ??
         false;

@@ -15,7 +15,7 @@ class FigmaProperties {
   static const String height = 'height';
   static const String fit = 'fit';
 
-  static const String isInput = 'isInput';
+  static const String isTextField = 'isTextField';
   static const String controller = 'controller';
   static const String onChanged = 'onChanged';
   static const String onSubmitted = 'onSubmitted';

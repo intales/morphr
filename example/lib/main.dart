@@ -52,7 +52,7 @@ class _FigmaTestAppState extends State<FigmaTestApp> {
               FigmaOverride(
                 nodeId: "email_text_field",
                 properties: {
-                  FigmaProperties.isInput: true,
+                  FigmaProperties.isTextField: true,
                   FigmaProperties.controller: _controller,
                 },
               ),
