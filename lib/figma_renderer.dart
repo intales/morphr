@@ -1,5 +1,5 @@
-import 'package:figflow/figma_component_context.dart';
-import 'package:figflow/figma_properties.dart';
+import 'package:morphr/figma_component_context.dart';
+import 'package:morphr/figma_properties.dart';
 import 'package:flutter/widgets.dart';
 import 'package:figma/figma.dart' as figma;
 

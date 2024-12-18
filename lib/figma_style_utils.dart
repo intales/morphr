@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'dart:math' as math;
 
-import 'package:figflow/figma_service.dart';
+import 'package:morphr/figma_service.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
 

@@ -1,8 +1,8 @@
-import 'package:figflow/figma_component_context.dart';
-import 'package:figflow/figma_properties.dart';
-import 'package:figflow/figma_renderer.dart';
-import 'package:figflow/figma_style_utils.dart';
-import 'package:figflow/figma_transform_utils.dart';
+import 'package:morphr/figma_component_context.dart';
+import 'package:morphr/figma_properties.dart';
+import 'package:morphr/figma_renderer.dart';
+import 'package:morphr/figma_style_utils.dart';
+import 'package:morphr/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 

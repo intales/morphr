@@ -1,11 +1,11 @@
-import 'package:figflow/figma_component_context.dart';
-import 'package:figflow/figma_frame_renderer.dart';
-import 'package:figflow/figma_node_layout_info.dart';
-import 'package:figflow/figma_properties.dart';
-import 'package:figflow/figma_renderer.dart';
-import 'package:figflow/figma_shape_renderer.dart';
-import 'package:figflow/figma_text_renderer.dart';
-import 'package:figflow/figma_vector_renderer.dart';
+import 'package:morphr/figma_component_context.dart';
+import 'package:morphr/figma_frame_renderer.dart';
+import 'package:morphr/figma_node_layout_info.dart';
+import 'package:morphr/figma_properties.dart';
+import 'package:morphr/figma_renderer.dart';
+import 'package:morphr/figma_shape_renderer.dart';
+import 'package:morphr/figma_text_renderer.dart';
+import 'package:morphr/figma_vector_renderer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:figma/figma.dart' as figma;
 

@@ -1,4 +1,4 @@
-name: figflow
+name: morphr
 description: "A bridge between Figma and Flutter. Transform your Figma designs into pixel-perfect Flutter widgets with real-time updates and zero manual coding."
 version: 0.0.1
 homepage:

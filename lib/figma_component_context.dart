@@ -1,4 +1,4 @@
-import 'package:figflow/figma_property_scope.dart';
+import 'package:morphr/figma_property_scope.dart';
 import 'package:flutter/widgets.dart';
 
 class FigmaComponentContext {
