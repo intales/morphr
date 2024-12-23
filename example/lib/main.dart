@@ -40,21 +40,9 @@ class MyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FigmaComponent(
-      componentId: "button_example",
+      componentId: "main_page",
       recursive: true,
-      overrides: [
-        FigmaOverride(
-          properties: {
-            FigmaProperties.onTap: () => print("Hello, World!"),
-          },
-        ),
-        FigmaOverride(
-          nodeId: "button_text",
-          properties: {
-            FigmaProperties.text: "Figma!!",
-          },
-        ),
-      ],
+      overrides: [],
     );
   }
 }

@@ -1,11 +1,11 @@
 import 'package:morphr/figma_component_context.dart';
-import 'package:morphr/figma_node_layout_info.dart';
 import 'package:morphr/figma_properties.dart';
 import 'package:morphr/figma_renderer.dart';
 import 'package:morphr/figma_style_utils.dart';
-import 'package:morphr/figma_transform_utils.dart';
+import 'package:morphr/figma_node_layout_info.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
+import 'dart:math' show Point;
 
 class FigmaFrameRenderer extends FigmaRenderer {
   const FigmaFrameRenderer();
@@ -19,199 +19,187 @@ class FigmaFrameRenderer extends FigmaRenderer {
       throw ArgumentError('Node must be a FRAME node');
     }
 
-    final originalSize = Size(
-      node.absoluteBoundingBox?.width?.toDouble() ?? 0,
-      node.absoluteBoundingBox?.height?.toDouble() ?? 0,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Base content
+        final content =
+            node.layoutMode != null && node.layoutMode != figma.LayoutMode.none
+                ? _buildAutoLayoutContent(node, rendererContext, constraints)
+                : _buildManualLayoutContent(node, rendererContext, constraints);
+
+        // Apply visual styles while maintaining fluidity
+        return _applyVisualStyles(content, node);
+      },
     );
-
-    final customWidth = rendererContext.get<double>(
-      FigmaProperties.width,
-      nodeId: node.name!,
-    );
-    final customHeight = rendererContext.get<double>(
-      FigmaProperties.height,
-      nodeId: node.name!,
-    );
-    final fit = rendererContext.get<FigmaFrameFit>(
-          FigmaProperties.fit,
-          nodeId: node.name!,
-        ) ??
-        FigmaFrameFit.none;
-
-    final content =
-        node.layoutMode != null && node.layoutMode != figma.LayoutMode.none
-            ? _buildAutoLayoutContent(node, rendererContext)
-            : _buildManualLayoutContent(node, rendererContext);
-
-    final effects = FigmaStyleUtils.getEffects(node.effects);
-    final backgroundColor = FigmaStyleUtils.getColor(node.fills);
-    final gradient = node.fills.isNotEmpty
-        ? FigmaStyleUtils.getGradient(node.fills.firstWhere(
-            (f) =>
-                f.type == figma.PaintType.gradientLinear ||
-                f.type == figma.PaintType.gradientRadial,
-            orElse: () => node.fills.first,
-          ))
-        : null;
-
-    final hasBorder = node.strokes.isNotEmpty;
-    final borderColor =
-        hasBorder ? FigmaStyleUtils.getColor(node.strokes) : null;
-    final borderWidth = node.strokeWeight?.toDouble();
-    final cornerRadius = node.cornerRadius?.toDouble();
-
-    final hasImage = node.fills.any((f) => f.type == figma.PaintType.image);
-
-    Widget buildFrameContent(DecorationImage? imageDecoration) {
-      final container = Container(
-        width: originalSize.width,
-        height: originalSize.height,
-        decoration: BoxDecoration(
-          color: !hasImage ? backgroundColor : null,
-          gradient: !hasImage ? gradient : null,
-          image: imageDecoration,
-          boxShadow: effects,
-          border: hasBorder
-              ? Border.all(
-                  color: borderColor ?? Colors.black,
-                  width: borderWidth ?? 1.0,
-                )
-              : null,
-          borderRadius:
-              cornerRadius != null ? BorderRadius.circular(cornerRadius) : null,
-        ),
-        child: content,
-      );
-
-      final blurred = FigmaStyleUtils.wrapWithBlur(container, node.effects);
-
-      if ((customWidth == null && customHeight == null) ||
-          fit == FigmaFrameFit.none) {
-        return blurred;
-      }
-
-      final withTap = wrapWithTap(blurred, rendererContext, node);
-
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final targetSize = Size(
-            customWidth ?? constraints.maxWidth,
-            customHeight ?? constraints.maxHeight,
-          );
-
-          final withFit = _applyScaling(
-            child: withTap,
-            originalSize: originalSize,
-            targetSize: targetSize,
-            fit: fit,
-          );
-          return FigmaTransformUtils.wrapWithRotation(withFit, node);
-        },
-      );
-    }
-
-    if (hasImage) {
-      return FutureBuilder<DecorationImage?>(
-        future: FigmaStyleUtils.getImageFill(
-          node.fills,
-          node.id,
-        ),
-        builder: (context, snapshot) {
-          return buildFrameContent(snapshot.data);
-        },
-      );
-    }
-
-    return buildFrameContent(null);
   }
 
   Widget _buildAutoLayoutContent(
-      figma.Frame frame, FigmaComponentContext context) {
+    figma.Frame frame,
+    FigmaComponentContext context,
+    BoxConstraints constraints,
+  ) {
     final children = context.get<List<Widget>>(
           FigmaProperties.children,
           nodeId: frame.name!,
         ) ??
         [];
 
-    return Flex(
+    // In auto-layout, usiamo Flex per mantenere le relazioni tra elementi
+    final flex = Flex(
       direction: frame.layoutMode == figma.LayoutMode.horizontal
           ? Axis.horizontal
           : Axis.vertical,
       mainAxisAlignment: _getMainAxisAlignment(frame.primaryAxisAlignItems),
       crossAxisAlignment: _getCrossAxisAlignment(frame.counterAxisAlignItems),
-      mainAxisSize: MainAxisSize.min,
-      children: children,
+      // Usiamo MainAxisSize.max per default per sfruttare lo spazio disponibile
+      mainAxisSize: MainAxisSize.max,
+      children: _addSpacingToChildren(
+        children: children
+            .map((child) => _ResponsiveChildWrapper(
+                  child: child,
+                  constraints: constraints,
+                ))
+            .toList(),
+        spacing: frame.itemSpacing?.toDouble(),
+        isHorizontal: frame.layoutMode == figma.LayoutMode.horizontal,
+      ),
     );
+
+    // Aggiungiamo padding mantenendo la fluidità
+    if (_hasPadding(frame)) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: _getHorizontalPaddingFactor(frame) * constraints.maxWidth,
+          vertical: _getVerticalPaddingFactor(frame) * constraints.maxHeight,
+        ),
+        child: flex,
+      );
+    }
+
+    return flex;
   }
 
   Widget _buildManualLayoutContent(
-      figma.Frame frame, FigmaComponentContext context) {
+    figma.Frame frame,
+    FigmaComponentContext context,
+    BoxConstraints constraints,
+  ) {
     final layoutInfos = context.get<List<NodeLayoutInfo>>(
           FigmaProperties.layoutInfo,
           nodeId: frame.name!,
         ) ??
         [];
 
+    // Per il layout manuale, usiamo Stack ma con posizionamento relativo
     return Stack(
-      clipBehavior: Clip.none,
       children: [
         for (final info in layoutInfos)
           if (info.getPosition() != null && info.getSize() != null)
-            Positioned(
-              left: info.getPosition()!.x,
-              top: info.getPosition()!.y,
-              width: info.getSize()!.width,
-              height: info.getSize()!.height,
-              child: info.widget,
+            Positioned.fill(
+              child: Align(
+                alignment: _getRelativeAlignment(
+                  info.getPosition()!,
+                  info.getSize()!,
+                  frame.absoluteBoundingBox!,
+                ),
+                child: _ResponsiveChildWrapper(
+                  child: info.widget,
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth *
+                        (info.getSize()!.width /
+                            frame.absoluteBoundingBox!.width!),
+                    maxHeight: constraints.maxHeight *
+                        (info.getSize()!.height /
+                            frame.absoluteBoundingBox!.height!),
+                  ),
+                ),
+              ),
             ),
       ],
     );
   }
 
-  Widget _applyScaling({
-    required Widget child,
-    required Size originalSize,
-    required Size targetSize,
-    required FigmaFrameFit fit,
-  }) {
-    final contentBox = SizedBox(
-      width: originalSize.width,
-      height: originalSize.height,
+  Widget _applyVisualStyles(Widget child, figma.Frame node) {
+    // Applichiamo stili visuali mantenendo il layout fluido
+    return Container(
+      decoration: BoxDecoration(
+        color: FigmaStyleUtils.getColor(node.fills),
+        borderRadius: node.cornerRadius != null
+            ? BorderRadius.circular(node.cornerRadius!.toDouble())
+            : null,
+        boxShadow: FigmaStyleUtils.getEffects(node.effects),
+      ),
       child: child,
     );
+  }
 
-    switch (fit) {
-      case FigmaFrameFit.contain:
-        return Center(
-          child: FittedBox(
-            fit: BoxFit.contain,
-            child: contentBox,
-          ),
-        );
+  double _getHorizontalPaddingFactor(figma.Frame frame) {
+    final frameWidth = frame.absoluteBoundingBox?.width ?? 1;
+    return ((frame.paddingLeft ?? 0) + (frame.paddingRight ?? 0)) /
+        (2 * frameWidth);
+  }
 
-      case FigmaFrameFit.cover:
-        return SizedBox(
-          width: targetSize.width,
-          height: targetSize.height,
-          child: FittedBox(
-            fit: BoxFit.cover,
-            child: contentBox,
-          ),
-        );
+  double _getVerticalPaddingFactor(figma.Frame frame) {
+    final frameHeight = frame.absoluteBoundingBox?.height ?? 1;
+    return ((frame.paddingTop ?? 0) + (frame.paddingBottom ?? 0)) /
+        (2 * frameHeight);
+  }
 
-      case FigmaFrameFit.fill:
-        return SizedBox(
-          width: targetSize.width,
-          height: targetSize.height,
-          child: FittedBox(
-            fit: BoxFit.fill,
-            child: contentBox,
-          ),
-        );
+  bool _hasPadding(figma.Frame frame) {
+    return (frame.paddingLeft ?? 0) > 0 ||
+        (frame.paddingRight ?? 0) > 0 ||
+        (frame.paddingTop ?? 0) > 0 ||
+        (frame.paddingBottom ?? 0) > 0;
+  }
 
-      case FigmaFrameFit.none:
-        return contentBox;
+  Alignment _getRelativeAlignment(
+      Point<double> position, Size size, figma.SizeRectangle frameBounds) {
+    // Calcoliamo l'allineamento relativo basato sulla posizione nel frame
+    final centerX = (position.x + (size.width / 2)) / frameBounds.width!;
+    final centerY = (position.y + (size.height / 2)) / frameBounds.height!;
+
+    // Convertiamo in coordinate di Alignment (-1 to 1)
+    return Alignment(
+      (centerX * 2) - 1,
+      (centerY * 2) - 1,
+    );
+  }
+
+  List<Widget> _addSpacingToChildren({
+    required List<Widget> children,
+    required double? spacing,
+    required bool isHorizontal,
+  }) {
+    if (spacing == null || spacing == 0 || children.isEmpty) {
+      return children;
     }
+
+    // Per mantenere il layout fluido, usiamo Expanded per gli elementi
+    // e Spacer per lo spacing quando possibile
+    final spacedChildren = <Widget>[];
+
+    for (var i = 0; i < children.length; i++) {
+      // Wrap del child in Expanded se non è già un Expanded
+      if (children[i] is! Expanded) {
+        spacedChildren.add(Expanded(
+          child: children[i],
+        ));
+      } else {
+        spacedChildren.add(children[i]);
+      }
+
+      // Aggiungi spacing tra gli elementi (non dopo l'ultimo)
+      if (i < children.length - 1) {
+        spacedChildren.add(
+          Spacer(
+            flex: (spacing / 8)
+                .round(), // Convertiamo lo spacing in un flex value
+          ),
+        );
+      }
+    }
+
+    return spacedChildren;
   }
 
   MainAxisAlignment _getMainAxisAlignment(figma.PrimaryAxisAlignItems? align) {
@@ -234,5 +222,26 @@ class FigmaFrameRenderer extends FigmaRenderer {
       figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
       _ => CrossAxisAlignment.start,
     };
+  }
+}
+
+// Widget wrapper che privilegia la responsività
+class _ResponsiveChildWrapper extends StatelessWidget {
+  final Widget child;
+  final BoxConstraints constraints;
+
+  const _ResponsiveChildWrapper({
+    required this.child,
+    required this.constraints,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Permettiamo al child di espandersi fino ai limiti disponibili
+    // ma senza forzare dimensioni specifiche
+    return ConstrainedBox(
+      constraints: constraints,
+      child: child,
+    );
   }
 }
