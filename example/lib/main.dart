@@ -14,28 +14,8 @@ void main() async {
   runApp(const FigmaTestApp());
 }
 
-class FigmaTestApp extends StatefulWidget {
-  const FigmaTestApp({
-    super.key,
-  });
-
-  @override
-  State<StatefulWidget> createState() => _FigmaTestAppState();
-}
-
-class _FigmaTestAppState extends State<FigmaTestApp> {
-  late final TextEditingController _controller;
-  late String _email;
-
-  @override
-  void initState() {
-    super.initState();
-    _email = "";
-    _controller = TextEditingController()
-      ..addListener(() => setState(() {
-            _email = _controller.text;
-          }));
-  }
+class FigmaTestApp extends StatelessWidget {
+  const FigmaTestApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,43 +23,38 @@ class _FigmaTestAppState extends State<FigmaTestApp> {
       theme: ThemeData(
         fontFamily: GoogleFonts.robotoMono().fontFamily,
       ),
-      home: Scaffold(
-        body: Center(
-          child: FigmaComponent(
-            componentId: "main_page",
-            recursive: true,
-            overrides: [
-              FigmaOverride(
-                nodeId: "email_text_field",
-                properties: {
-                  FigmaProperties.isTextField: true,
-                  FigmaProperties.controller: _controller,
-                },
-              ),
-              FigmaOverride(
-                nodeId: "join_button",
-                properties: {
-                  FigmaProperties.onTap: () => print(_email),
-                },
-              ),
-              FigmaOverride(
-                nodeId: "join_button_text",
-                properties: {
-                  FigmaProperties.onTap: () => print(_email),
-                },
-              ),
-              FigmaOverride(
-                nodeId: "main_page",
-                properties: {
-                  FigmaProperties.width: MediaQuery.of(context).size.width,
-                  FigmaProperties.height: MediaQuery.of(context).size.height,
-                  FigmaProperties.fit: FigmaFrameFit.cover,
-                },
-              ),
-            ],
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: MyButton(),
           ),
         ),
       ),
+    );
+  }
+}
+
+class MyButton extends StatelessWidget {
+  const MyButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FigmaComponent(
+      componentId: "button_example",
+      recursive: true,
+      overrides: [
+        FigmaOverride(
+          properties: {
+            FigmaProperties.onTap: () => print("Hello, World!"),
+          },
+        ),
+        FigmaOverride(
+          nodeId: "button_text",
+          properties: {
+            FigmaProperties.text: "Figma!!",
+          },
+        ),
+      ],
     );
   }
 }

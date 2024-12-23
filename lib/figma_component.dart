@@ -1,7 +1,7 @@
-import 'package:figflow/figma_component_context.dart';
-import 'package:figflow/figma_property_scope.dart';
-import 'package:figflow/figma_renderer_factory.dart';
-import 'package:figflow/figma_service.dart';
+import 'package:morphr/figma_component_context.dart';
+import 'package:morphr/figma_property_scope.dart';
+import 'package:morphr/figma_renderer_factory.dart';
+import 'package:morphr/figma_service.dart';
 import 'package:flutter/widgets.dart';
 
 class FigmaOverride {
