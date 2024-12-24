@@ -40,9 +40,8 @@ class MyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FigmaComponent(
-      componentId: "main_page",
+      componentId: "button",
       recursive: true,
-      overrides: [],
     );
   }
 }

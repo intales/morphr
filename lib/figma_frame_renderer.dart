@@ -62,6 +62,7 @@ class FigmaFrameRenderer extends FigmaRenderer {
             .toList(),
         spacing: frame.itemSpacing?.toDouble(),
         isHorizontal: frame.layoutMode == figma.LayoutMode.horizontal,
+        constraints: constraints,
       ),
     );
 
@@ -120,10 +121,20 @@ class FigmaFrameRenderer extends FigmaRenderer {
   }
 
   Widget _applyVisualStyles(Widget child, figma.Frame node) {
-    // Applichiamo stili visuali mantenendo il layout fluido
-    return Container(
+    final hasGradient = node.fills.any((f) =>
+        f.type == figma.PaintType.gradientLinear ||
+        f.type == figma.PaintType.gradientRadial);
+
+    final styledContent = Container(
       decoration: BoxDecoration(
-        color: FigmaStyleUtils.getColor(node.fills),
+        color: !hasGradient ? FigmaStyleUtils.getColor(node.fills) : null,
+        gradient: hasGradient
+            ? FigmaStyleUtils.getGradient(
+                node.fills.firstWhere((f) =>
+                    f.type == figma.PaintType.gradientLinear ||
+                    f.type == figma.PaintType.gradientRadial),
+              )
+            : null,
         borderRadius: node.cornerRadius != null
             ? BorderRadius.circular(node.cornerRadius!.toDouble())
             : null,
@@ -131,6 +142,8 @@ class FigmaFrameRenderer extends FigmaRenderer {
       ),
       child: child,
     );
+
+    return FigmaStyleUtils.wrapWithBlur(styledContent, node.effects);
   }
 
   double _getHorizontalPaddingFactor(figma.Frame frame) {
@@ -169,13 +182,17 @@ class FigmaFrameRenderer extends FigmaRenderer {
     required List<Widget> children,
     required double? spacing,
     required bool isHorizontal,
+    required BoxConstraints constraints,
   }) {
     if (spacing == null || spacing == 0 || children.isEmpty) {
       return children;
     }
 
-    // Per mantenere il layout fluido, usiamo Expanded per gli elementi
-    // e Spacer per lo spacing quando possibile
+    // Calcola lo spacing come proporzione dello spazio disponibile
+    final availableSpace =
+        isHorizontal ? constraints.maxWidth : constraints.maxHeight;
+    final spacingFlex = ((spacing / availableSpace) * 100).round();
+
     final spacedChildren = <Widget>[];
 
     for (var i = 0; i < children.length; i++) {
@@ -192,8 +209,7 @@ class FigmaFrameRenderer extends FigmaRenderer {
       if (i < children.length - 1) {
         spacedChildren.add(
           Spacer(
-            flex: (spacing / 8)
-                .round(), // Convertiamo lo spacing in un flex value
+            flex: spacingFlex,
           ),
         );
       }

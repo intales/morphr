@@ -1,5 +1,6 @@
 import 'package:morphr/figma_component_context.dart';
 import 'package:morphr/figma_frame_renderer.dart';
+import 'package:morphr/figma_group_renderer.dart';
 import 'package:morphr/figma_node_layout_info.dart';
 import 'package:morphr/figma_properties.dart';
 import 'package:morphr/figma_renderer.dart';
@@ -53,6 +54,8 @@ class FigmaRendererFactory {
         return const FigmaShapeRenderer();
       case figma.Vector _:
         return const FigmaVectorRenderer();
+      case figma.Group _:
+        return const FigmaGroupRenderer();
       case figma.Frame _:
         return const FigmaFrameRenderer();
       default:
