@@ -66,7 +66,9 @@ class FigmaTextRenderer extends FigmaRenderer {
         node.characters ??
         '';
 
-    Widget inputWidget = SizedBox.expand(
+    Widget inputWidget = SizedBox(
+      width: node.absoluteBoundingBox?.width,
+      height: node.absoluteBoundingBox?.height,
       child: TextFormField(
         controller: controller,
         onChanged: onChanged,

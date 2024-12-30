@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class FigmaProperties {
   const FigmaProperties._();
 
@@ -22,6 +24,8 @@ class FigmaProperties {
   static const String hint = 'hint';
 
   static const String onTap = 'onTap';
+
+  static const String scrollableContent = 'scrollableContent';
 }
 
 enum FigmaFrameFit {
@@ -29,4 +33,19 @@ enum FigmaFrameFit {
   contain,
   cover,
   fill,
+}
+
+typedef ScrollableItemBuilder = Widget Function(
+  BuildContext context,
+  int index,
+);
+
+class ScrollableContent {
+  final int itemCount;
+  final ScrollableItemBuilder itemBuilder;
+
+  const ScrollableContent({
+    required this.itemCount,
+    required this.itemBuilder,
+  });
 }

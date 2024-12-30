@@ -1,11 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:figma/figma.dart' as figma;
 import 'package:morphr/figma_component_context.dart';
+import 'package:morphr/figma_node_layout_info.dart';
 import 'package:morphr/figma_properties.dart';
 import 'package:morphr/figma_renderer.dart';
 import 'package:morphr/figma_style_utils.dart';
-import 'package:morphr/figma_node_layout_info.dart';
-import 'package:flutter/material.dart';
-import 'package:figma/figma.dart' as figma;
-import 'dart:math' show Point;
+import 'package:morphr/figma_transform_utils.dart';
 
 class FigmaFrameRenderer extends FigmaRenderer {
   const FigmaFrameRenderer();
@@ -21,234 +21,323 @@ class FigmaFrameRenderer extends FigmaRenderer {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Base content
-        final content =
-            node.layoutMode != null && node.layoutMode != figma.LayoutMode.none
-                ? _buildAutoLayoutContent(node, rendererContext, constraints)
-                : _buildManualLayoutContent(node, rendererContext, constraints);
+        final frame = node;
 
-        // Apply visual styles while maintaining fluidity
-        return _applyVisualStyles(content, node);
+        // Determina le dimensioni del frame in base alle regole di layout
+        final adjustedConstraints = _getFrameConstraints(frame, constraints);
+
+        Widget content =
+            node.layoutMode != null && node.layoutMode != figma.LayoutMode.none
+                ? _buildAutoLayoutContent(
+                    frame, rendererContext, adjustedConstraints)
+                : _buildManualLayoutContent(
+                    frame, rendererContext, adjustedConstraints);
+
+        content = SizedBox(
+          width: _getFrameWidth(frame, constraints),
+          height: _getFrameHeight(frame, constraints),
+          child: content,
+        );
+
+        final withStyles = _applyVisualStyles(content, frame);
+        final withTap = wrapWithTap(withStyles, rendererContext, frame);
+        return FigmaTransformUtils.wrapWithRotation(withTap, frame);
       },
     );
   }
 
-  Widget _buildAutoLayoutContent(
-    figma.Frame frame,
-    FigmaComponentContext context,
-    BoxConstraints constraints,
-  ) {
-    final children = context.get<List<Widget>>(
-          FigmaProperties.children,
-          nodeId: frame.name!,
-        ) ??
-        [];
-
-    // In auto-layout, usiamo Flex per mantenere le relazioni tra elementi
-    final flex = Flex(
-      direction: frame.layoutMode == figma.LayoutMode.horizontal
-          ? Axis.horizontal
-          : Axis.vertical,
-      mainAxisAlignment: _getMainAxisAlignment(frame.primaryAxisAlignItems),
-      crossAxisAlignment: _getCrossAxisAlignment(frame.counterAxisAlignItems),
-      // Usiamo MainAxisSize.max per default per sfruttare lo spazio disponibile
-      mainAxisSize: MainAxisSize.max,
-      children: _addSpacingToChildren(
-        children: children
-            .map((child) => _ResponsiveChildWrapper(
-                  child: child,
-                  constraints: constraints,
-                ))
-            .toList(),
-        spacing: frame.itemSpacing?.toDouble(),
-        isHorizontal: frame.layoutMode == figma.LayoutMode.horizontal,
-        constraints: constraints,
-      ),
+  BoxConstraints _getFrameConstraints(
+      figma.Frame frame, BoxConstraints parentConstraints) {
+    return BoxConstraints(
+      maxWidth: _getFrameWidth(frame, parentConstraints),
+      maxHeight: _getFrameHeight(frame, parentConstraints),
+      minWidth: _getFrameMinWidth(frame, parentConstraints),
+      minHeight: _getFrameMinHeight(frame, parentConstraints),
     );
+  }
 
-    // Aggiungiamo padding mantenendo la fluidità
-    if (_hasPadding(frame)) {
-      return Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: _getHorizontalPaddingFactor(frame) * constraints.maxWidth,
-          vertical: _getVerticalPaddingFactor(frame) * constraints.maxHeight,
-        ),
-        child: flex,
-      );
+  double _getFrameWidth(figma.Frame frame, BoxConstraints constraints) {
+    if (frame.layoutAlign == figma.LayoutAlign.stretch) {
+      return constraints.maxWidth;
     }
-
-    return flex;
+    return frame.absoluteBoundingBox?.width?.toDouble() ?? constraints.maxWidth;
   }
 
-  Widget _buildManualLayoutContent(
-    figma.Frame frame,
-    FigmaComponentContext context,
-    BoxConstraints constraints,
-  ) {
-    final layoutInfos = context.get<List<NodeLayoutInfo>>(
-          FigmaProperties.layoutInfo,
-          nodeId: frame.name!,
-        ) ??
-        [];
-
-    // Per il layout manuale, usiamo Stack ma con posizionamento relativo
-    return Stack(
-      children: [
-        for (final info in layoutInfos)
-          if (info.getPosition() != null && info.getSize() != null)
-            Positioned.fill(
-              child: Align(
-                alignment: _getRelativeAlignment(
-                  info.getPosition()!,
-                  info.getSize()!,
-                  frame.absoluteBoundingBox!,
-                ),
-                child: _ResponsiveChildWrapper(
-                  child: info.widget,
-                  constraints: BoxConstraints(
-                    maxWidth: constraints.maxWidth *
-                        (info.getSize()!.width /
-                            frame.absoluteBoundingBox!.width!),
-                    maxHeight: constraints.maxHeight *
-                        (info.getSize()!.height /
-                            frame.absoluteBoundingBox!.height!),
-                  ),
-                ),
-              ),
-            ),
-      ],
-    );
-  }
-
-  Widget _applyVisualStyles(Widget child, figma.Frame node) {
-    final hasGradient = node.fills.any((f) =>
-        f.type == figma.PaintType.gradientLinear ||
-        f.type == figma.PaintType.gradientRadial);
-
-    final styledContent = Container(
-      decoration: BoxDecoration(
-        color: !hasGradient ? FigmaStyleUtils.getColor(node.fills) : null,
-        gradient: hasGradient
-            ? FigmaStyleUtils.getGradient(
-                node.fills.firstWhere((f) =>
-                    f.type == figma.PaintType.gradientLinear ||
-                    f.type == figma.PaintType.gradientRadial),
-              )
-            : null,
-        borderRadius: node.cornerRadius != null
-            ? BorderRadius.circular(node.cornerRadius!.toDouble())
-            : null,
-        boxShadow: FigmaStyleUtils.getEffects(node.effects),
-      ),
-      child: child,
-    );
-
-    return FigmaStyleUtils.wrapWithBlur(styledContent, node.effects);
-  }
-
-  double _getHorizontalPaddingFactor(figma.Frame frame) {
-    final frameWidth = frame.absoluteBoundingBox?.width ?? 1;
-    return ((frame.paddingLeft ?? 0) + (frame.paddingRight ?? 0)) /
-        (2 * frameWidth);
-  }
-
-  double _getVerticalPaddingFactor(figma.Frame frame) {
-    final frameHeight = frame.absoluteBoundingBox?.height ?? 1;
-    return ((frame.paddingTop ?? 0) + (frame.paddingBottom ?? 0)) /
-        (2 * frameHeight);
-  }
-
-  bool _hasPadding(figma.Frame frame) {
-    return (frame.paddingLeft ?? 0) > 0 ||
-        (frame.paddingRight ?? 0) > 0 ||
-        (frame.paddingTop ?? 0) > 0 ||
-        (frame.paddingBottom ?? 0) > 0;
-  }
-
-  Alignment _getRelativeAlignment(
-      Point<double> position, Size size, figma.SizeRectangle frameBounds) {
-    // Calcoliamo l'allineamento relativo basato sulla posizione nel frame
-    final centerX = (position.x + (size.width / 2)) / frameBounds.width!;
-    final centerY = (position.y + (size.height / 2)) / frameBounds.height!;
-
-    // Convertiamo in coordinate di Alignment (-1 to 1)
-    return Alignment(
-      (centerX * 2) - 1,
-      (centerY * 2) - 1,
-    );
-  }
-
-  List<Widget> _addSpacingToChildren({
-    required List<Widget> children,
-    required double? spacing,
-    required bool isHorizontal,
-    required BoxConstraints constraints,
-  }) {
-    if (spacing == null || spacing == 0 || children.isEmpty) {
-      return children;
+  double _getFrameHeight(figma.Frame frame, BoxConstraints constraints) {
+    if (frame.layoutMode == figma.LayoutMode.vertical &&
+        frame.layoutGrow == true) {
+      return constraints.maxHeight;
     }
+    return frame.absoluteBoundingBox?.height?.toDouble() ??
+        constraints.maxHeight;
+  }
 
-    // Calcola lo spacing come proporzione dello spazio disponibile
-    final availableSpace =
-        isHorizontal ? constraints.maxWidth : constraints.maxHeight;
-    final spacingFlex = ((spacing / availableSpace) * 100).round();
-
-    final spacedChildren = <Widget>[];
-
-    for (var i = 0; i < children.length; i++) {
-      // Wrap del child in Expanded se non è già un Expanded
-      if (children[i] is! Expanded) {
-        spacedChildren.add(Expanded(
-          child: children[i],
-        ));
-      } else {
-        spacedChildren.add(children[i]);
-      }
-
-      // Aggiungi spacing tra gli elementi (non dopo l'ultimo)
-      if (i < children.length - 1) {
-        spacedChildren.add(
-          Spacer(
-            flex: spacingFlex,
-          ),
-        );
-      }
+  double _getFrameMinWidth(figma.Frame frame, BoxConstraints constraints) {
+    if (frame.layoutAlign == figma.LayoutAlign.stretch) {
+      return constraints.maxWidth;
     }
-
-    return spacedChildren;
+    return 0.0;
   }
 
-  MainAxisAlignment _getMainAxisAlignment(figma.PrimaryAxisAlignItems? align) {
-    return switch (align) {
-      figma.PrimaryAxisAlignItems.min => MainAxisAlignment.start,
-      figma.PrimaryAxisAlignItems.center => MainAxisAlignment.center,
-      figma.PrimaryAxisAlignItems.max => MainAxisAlignment.end,
-      figma.PrimaryAxisAlignItems.spaceBetween =>
-        MainAxisAlignment.spaceBetween,
-      _ => MainAxisAlignment.start,
-    };
-  }
-
-  CrossAxisAlignment _getCrossAxisAlignment(
-      figma.CounterAxisAlignItems? align) {
-    return switch (align) {
-      figma.CounterAxisAlignItems.min => CrossAxisAlignment.start,
-      figma.CounterAxisAlignItems.center => CrossAxisAlignment.center,
-      figma.CounterAxisAlignItems.max => CrossAxisAlignment.end,
-      figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
-      _ => CrossAxisAlignment.start,
-    };
+  double _getFrameMinHeight(figma.Frame frame, BoxConstraints constraints) {
+    if (frame.layoutMode == figma.LayoutMode.vertical &&
+        frame.layoutGrow == true) {
+      return constraints.maxHeight;
+    }
+    return 0.0;
   }
 }
 
-// Widget wrapper che privilegia la responsività
+Widget _buildAutoLayoutContent(
+  figma.Frame frame,
+  FigmaComponentContext context,
+  BoxConstraints constraints,
+) {
+  // Rispetta le dimensioni specificate nel frame
+  final boundingBox = frame.absoluteBoundingBox;
+  final specifiedHeight = boundingBox?.height?.toDouble();
+  final specifiedWidth = boundingBox?.width?.toDouble();
+
+  // Aggiorniamo i constraints in base alle dimensioni specificate
+  final adjustedConstraints = BoxConstraints(
+    maxWidth: specifiedWidth ?? constraints.maxWidth,
+    maxHeight: specifiedHeight ?? constraints.maxHeight,
+    minHeight: specifiedHeight ?? 0.0,
+    minWidth: specifiedWidth ?? 0.0,
+  );
+  // Ottieni contenuto scrollabile se presente
+  final scrollableContent = context.get<ScrollableContent>(
+    FigmaProperties.scrollableContent,
+    nodeId: frame.name!,
+  );
+
+  if (scrollableContent != null) {
+    return _buildScrollableContent(frame, scrollableContent);
+  }
+
+  // Layout standard non scrollabile
+  final children = context.get<List<Widget>>(
+        FigmaProperties.children,
+        nodeId: frame.name!,
+      ) ??
+      [];
+
+  if (children.isEmpty) return const SizedBox.shrink();
+
+  final isHorizontal = frame.layoutMode == figma.LayoutMode.horizontal;
+  final padding = _getFramePadding(frame);
+
+  // Gestione spacing automatico o manuale
+  final hasAutoSpacing = frame.itemSpacing == null;
+  final spacing = hasAutoSpacing
+      ? _calculateAutoSpacing(
+          isHorizontal: isHorizontal,
+          containerSize:
+              isHorizontal ? constraints.maxWidth : constraints.maxHeight,
+          itemCount: children.length,
+          padding: padding)
+      : frame.itemSpacing?.toDouble() ?? 0;
+
+  // Costruzione lista di widgets con separatori
+  final childrenWithSpacing = <Widget>[];
+  for (var i = 0; i < children.length; i++) {
+    childrenWithSpacing.add(
+      _ResponsiveChildWrapper(
+        child: children[i],
+        constraints: adjustedConstraints,
+        isHorizontal: isHorizontal,
+      ),
+    );
+
+    if (i < children.length - 1 && spacing > 0) {
+      childrenWithSpacing.add(
+        SizedBox(
+          width: isHorizontal ? spacing : 0,
+          height: isHorizontal ? 0 : spacing,
+        ),
+      );
+    }
+  }
+
+  final flex = Flex(
+    direction: isHorizontal ? Axis.horizontal : Axis.vertical,
+    mainAxisAlignment: _getMainAxisAlignment(frame.primaryAxisAlignItems),
+    crossAxisAlignment: _getCrossAxisAlignment(frame.counterAxisAlignItems),
+    mainAxisSize: _getMainAxisSize(frame),
+    children: childrenWithSpacing,
+  );
+
+  if (padding != EdgeInsets.zero) {
+    return Padding(
+      padding: padding,
+      child: flex,
+    );
+  }
+
+  return flex;
+}
+
+Widget _buildScrollableContent(
+  figma.Frame frame,
+  ScrollableContent scrollableContent,
+) {
+  final isHorizontal = frame.layoutMode == figma.LayoutMode.horizontal;
+  final padding = _getFramePadding(frame);
+  final spacing = frame.itemSpacing?.toDouble() ?? 0;
+
+  return ListView.separated(
+    scrollDirection: isHorizontal ? Axis.horizontal : Axis.vertical,
+    padding: padding,
+    itemCount: scrollableContent.itemCount,
+    separatorBuilder: (context, index) => SizedBox(
+      width: isHorizontal ? spacing : 0,
+      height: isHorizontal ? 0 : spacing,
+    ),
+    itemBuilder: scrollableContent.itemBuilder,
+  );
+}
+
+Widget _buildManualLayoutContent(
+  figma.Frame frame,
+  FigmaComponentContext context,
+  BoxConstraints constraints,
+) {
+  final layoutInfos = context.get<List<NodeLayoutInfo>>(
+        FigmaProperties.layoutInfo,
+        nodeId: frame.name!,
+      ) ??
+      [];
+
+  if (layoutInfos.isEmpty) return const SizedBox.shrink();
+
+  final boundingBox = frame.absoluteBoundingBox;
+  if (boundingBox == null) return const SizedBox.shrink();
+
+  return SizedBox(
+    width: boundingBox.width?.toDouble(),
+    height: boundingBox.height?.toDouble(),
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        for (final info in layoutInfos)
+          if (info.getPosition() != null && info.getSize() != null)
+            Positioned(
+              left: info.getPosition()!.x,
+              top: info.getPosition()!.y,
+              width: info.getSize()!.width,
+              height: info.getSize()!.height,
+              child: _ResponsiveChildWrapper(
+                child: info.widget,
+                constraints: BoxConstraints(
+                  maxWidth: constraints.maxWidth *
+                      (info.getSize()!.width / boundingBox.width!),
+                  maxHeight: constraints.maxHeight *
+                      (info.getSize()!.height / boundingBox.height!),
+                ),
+                isHorizontal: true,
+              ),
+            ),
+      ],
+    ),
+  );
+}
+
+Widget _applyVisualStyles(Widget content, figma.Frame frame) {
+  final hasGradient = frame.fills.any((f) =>
+      f.type == figma.PaintType.gradientLinear ||
+      f.type == figma.PaintType.gradientRadial);
+
+  final decoration = BoxDecoration(
+    color: !hasGradient ? FigmaStyleUtils.getColor(frame.fills) : null,
+    gradient: hasGradient
+        ? FigmaStyleUtils.getGradient(frame.fills.firstWhere((f) =>
+            f.type == figma.PaintType.gradientLinear ||
+            f.type == figma.PaintType.gradientRadial))
+        : null,
+    borderRadius: frame.cornerRadius != null
+        ? BorderRadius.circular(frame.cornerRadius!.toDouble())
+        : null,
+    border: FigmaStyleUtils.getBorder(frame),
+    boxShadow: FigmaStyleUtils.getEffects(frame.effects),
+  );
+
+  final container = Container(
+    decoration: decoration,
+    child: content,
+  );
+
+  return FigmaStyleUtils.wrapWithBlur(container, frame.effects);
+}
+
+EdgeInsets _getFramePadding(figma.Frame frame) {
+  return EdgeInsets.only(
+    left: frame.paddingLeft?.toDouble() ?? 0,
+    top: frame.paddingTop?.toDouble() ?? 0,
+    right: frame.paddingRight?.toDouble() ?? 0,
+    bottom: frame.paddingBottom?.toDouble() ?? 0,
+  );
+}
+
+double _calculateAutoSpacing(
+    {required bool isHorizontal,
+    required double containerSize,
+    required int itemCount,
+    required EdgeInsets padding}) {
+  if (itemCount <= 1) return 0;
+
+  final availableSpace = containerSize -
+      (isHorizontal
+          ? (padding.left + padding.right)
+          : (padding.top + padding.bottom));
+
+  // Base spacing del 2% dello spazio disponibile
+  final baseSpacing = availableSpace * 0.02;
+
+  // Limiti di spacing per mantenere una buona leggibilità
+  const minSpacing = 8.0;
+  const maxSpacing = 24.0;
+
+  return baseSpacing.clamp(minSpacing, maxSpacing);
+}
+
+MainAxisAlignment _getMainAxisAlignment(figma.PrimaryAxisAlignItems? align) {
+  return switch (align) {
+    figma.PrimaryAxisAlignItems.min => MainAxisAlignment.start,
+    figma.PrimaryAxisAlignItems.center => MainAxisAlignment.center,
+    figma.PrimaryAxisAlignItems.max => MainAxisAlignment.end,
+    figma.PrimaryAxisAlignItems.spaceBetween => MainAxisAlignment.spaceBetween,
+    _ => MainAxisAlignment.start,
+  };
+}
+
+CrossAxisAlignment _getCrossAxisAlignment(figma.CounterAxisAlignItems? align) {
+  return switch (align) {
+    figma.CounterAxisAlignItems.min => CrossAxisAlignment.start,
+    figma.CounterAxisAlignItems.center => CrossAxisAlignment.center,
+    figma.CounterAxisAlignItems.max => CrossAxisAlignment.end,
+    figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
+    _ => CrossAxisAlignment.start,
+  };
+}
+
+MainAxisSize _getMainAxisSize(figma.Frame frame) {
+  // Se il frame ha un constraint di crescita, usiamo max
+  if (frame.layoutGrow == true) {
+    return MainAxisSize.max;
+  }
+  // Altrimenti lasciamo che il contenuto determini la dimensione
+  return MainAxisSize.min;
+}
+
 class _ResponsiveChildWrapper extends StatelessWidget {
   final Widget child;
   final BoxConstraints constraints;
+  final bool isHorizontal;
 
   const _ResponsiveChildWrapper({
     required this.child,
     required this.constraints,
+    required this.isHorizontal,
   });
 
   @override
@@ -256,7 +345,10 @@ class _ResponsiveChildWrapper extends StatelessWidget {
     // Permettiamo al child di espandersi fino ai limiti disponibili
     // ma senza forzare dimensioni specifiche
     return ConstrainedBox(
-      constraints: constraints,
+      constraints: BoxConstraints(
+        maxWidth: isHorizontal ? double.infinity : constraints.maxWidth,
+        maxHeight: isHorizontal ? constraints.maxHeight : double.infinity,
+      ),
       child: child,
     );
   }

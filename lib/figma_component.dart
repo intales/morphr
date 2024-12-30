@@ -22,7 +22,7 @@ class FigmaComponent extends StatelessWidget {
   const FigmaComponent({
     required this.componentId,
     this.overrides = const [],
-    this.recursive = false,
+    this.recursive = true,
     super.key,
   });
 
