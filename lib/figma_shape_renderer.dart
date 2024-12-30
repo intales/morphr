@@ -1,67 +1,35 @@
-import 'package:morphr/figma_component_context.dart';
-import 'package:morphr/figma_properties.dart';
-import 'package:morphr/figma_renderer.dart';
 import 'package:morphr/figma_style_utils.dart';
-import 'package:morphr/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 
-class FigmaShapeRenderer extends FigmaRenderer {
+class FigmaShapeRenderer {
   const FigmaShapeRenderer();
 
-  @override
   Widget render({
-    required final FigmaComponentContext rendererContext,
     required final figma.Node node,
+    final Widget? child,
   }) {
     if (node is! figma.Rectangle && node is! figma.Ellipse) {
       throw ArgumentError('Node must be a RECTANGLE or ELLIPSE node');
     }
 
-    final fills = _getFills(node);
-    final hasImage =
-        fills?.any((f) => f.type == figma.PaintType.image) ?? false;
+    final decoration = BoxDecoration(
+      shape: _getShape(node),
+      borderRadius: _getBorderRadius(node),
+      color: _getSolidColor(node),
+      gradient: _getGradient(node),
+      border: _getBorder(node),
+      boxShadow: _getBoxShadow(node),
+    );
 
-    Widget buildShapeContent(DecorationImage? imageDecoration) {
-      final decoration = BoxDecoration(
-        shape: _getShape(node),
-        borderRadius: _getBorderRadius(node),
-        color: !hasImage && !_hasGradient(node) ? _getSolidColor(node) : null,
-        gradient: !hasImage ? _getGradient(node) : null,
-        image: imageDecoration,
-        border: _getBorder(node),
-        boxShadow: _getBoxShadow(node),
-      );
+    final container = Container(
+      width: _getWidth(node),
+      height: _getHeight(node),
+      decoration: decoration,
+      child: child,
+    );
 
-      final container = Container(
-        width: _getWidth(node),
-        height: _getHeight(node),
-        decoration: decoration,
-        child: rendererContext.get<Widget>(
-          FigmaProperties.child,
-          nodeId: node.name!,
-        ),
-      );
-
-      final withBlur =
-          FigmaStyleUtils.wrapWithBlur(container, _getEffects(node));
-      final withTap = wrapWithTap(withBlur, rendererContext, node);
-      return FigmaTransformUtils.wrapWithRotation(withTap, node);
-    }
-
-    if (hasImage) {
-      return FutureBuilder<DecorationImage?>(
-        future: FigmaStyleUtils.getImageFill(
-          fills,
-          node.id,
-        ),
-        builder: (context, snapshot) {
-          return buildShapeContent(snapshot.data);
-        },
-      );
-    }
-
-    return buildShapeContent(null);
+    return container;
   }
 
   BoxShape _getShape(figma.Node node) {

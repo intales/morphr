@@ -1,181 +1,23 @@
-import 'package:morphr/figma_component_context.dart';
-import 'package:morphr/figma_renderer.dart';
-import 'package:morphr/figma_properties.dart';
 import 'package:morphr/figma_style_utils.dart';
-import 'package:morphr/figma_transform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 
-class FigmaTextRenderer extends FigmaRenderer {
+class FigmaTextRenderer {
   const FigmaTextRenderer();
 
-  @override
   Widget render({
-    required final FigmaComponentContext rendererContext,
     required final figma.Node node,
+    required final String content,
   }) {
     if (node is! figma.Text) {
       throw ArgumentError('Node must be a TEXT node');
     }
 
-    final isInput = rendererContext.get<bool>(
-          FigmaProperties.isTextField,
-          nodeId: node.name!,
-        ) ??
-        false;
-
-    late final Widget result;
-    if (isInput) {
-      result = _renderInput(node, rendererContext);
-    } else {
-      result = _renderText(node, rendererContext);
-    }
-
-    final withBlur = FigmaStyleUtils.wrapWithBlur(result, node.effects);
-    final withTap = wrapWithTap(withBlur, rendererContext, node);
-    return FigmaTransformUtils.wrapWithRotation(withTap, node);
+    final text = _renderText(node, content);
+    return text;
   }
 
-  Widget _renderInput(figma.Text node, FigmaComponentContext rendererContext) {
-    final baseStyle = FigmaStyleUtils.getTextStyle(node);
-    final textAlign =
-        FigmaStyleUtils.getTextAlign(node.style?.textAlignHorizontal);
-    final hasStroke = node.strokes.isNotEmpty == true;
-    final hasFill = node.fills.isNotEmpty == true;
-    final hasGradient = hasFill &&
-        node.fills.any((f) =>
-            f.type == figma.PaintType.gradientLinear ||
-            f.type == figma.PaintType.gradientRadial);
-
-    final controller = rendererContext.get<TextEditingController>(
-      FigmaProperties.controller,
-      nodeId: node.name!,
-    );
-    final onChanged = rendererContext.get<ValueChanged<String>>(
-      FigmaProperties.onChanged,
-      nodeId: node.name!,
-    );
-    final onSubmitted = rendererContext.get<ValueChanged<String>>(
-      FigmaProperties.onSubmitted,
-      nodeId: node.name!,
-    );
-    final hint = rendererContext.get<String>(
-          FigmaProperties.hint,
-          nodeId: node.name!,
-        ) ??
-        node.characters ??
-        '';
-
-    Widget inputWidget = SizedBox(
-      width: node.absoluteBoundingBox?.width,
-      height: node.absoluteBoundingBox?.height,
-      child: TextFormField(
-        controller: controller,
-        onChanged: onChanged,
-        onFieldSubmitted: onSubmitted,
-        style: baseStyle,
-        textAlign: textAlign,
-        maxLines: rendererContext.get<int>(
-          FigmaProperties.maxLines,
-          nodeId: node.name!,
-        ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: baseStyle?.copyWith(
-            color: baseStyle.color?.withOpacity(0.5),
-          ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          isDense: true,
-          isCollapsed: true,
-        ),
-        expands: true,
-      ),
-    );
-
-    if (hasGradient) {
-      final gradientFill = node.fills.firstWhere((f) =>
-          f.type == figma.PaintType.gradientLinear ||
-          f.type == figma.PaintType.gradientRadial);
-
-      final gradient = FigmaStyleUtils.getGradient(gradientFill);
-      if (gradient != null) {
-        inputWidget = ShaderMask(
-          blendMode: BlendMode.srcIn,
-          shaderCallback: (bounds) => gradient.createShader(
-            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-          ),
-          child: inputWidget,
-        );
-      }
-    }
-
-    if (hasStroke) {
-      inputWidget = Stack(
-        fit: StackFit.expand,
-        children: [
-          SizedBox.expand(
-            child: TextFormField(
-              enabled: false,
-              controller: controller,
-              style: baseStyle?.copyWith(
-                foreground: Paint()
-                  ..style = PaintingStyle.stroke
-                  ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
-                  ..color =
-                      FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
-              ),
-              textAlign: textAlign,
-              maxLines: rendererContext.get<int>(
-                FigmaProperties.maxLines,
-                nodeId: node.name!,
-              ),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: baseStyle?.copyWith(
-                  foreground: Paint()
-                    ..style = PaintingStyle.stroke
-                    ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
-                    ..color =
-                        FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
-                ),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                isDense: true,
-                isCollapsed: true,
-              ),
-              expands: true,
-            ),
-          ),
-          inputWidget,
-        ],
-      );
-    }
-
-    final withBlur = FigmaStyleUtils.wrapWithBlur(inputWidget, node.effects);
-    return FigmaTransformUtils.wrapWithRotation(withBlur, node);
-  }
-
-  Widget _renderText(figma.Text node, FigmaComponentContext rendererContext) {
-    String text = rendererContext.get<String>(
-          FigmaProperties.text,
-          nodeId: node.name!,
-        ) ??
-        node.characters ??
-        'Text value not provided.';
-
-    if (node.style?.textCase != null) {
-      text = switch (node.style!.textCase) {
-        figma.TextCase.upper => text.toUpperCase(),
-        figma.TextCase.lower => text.toLowerCase(),
-        _ => text,
-      };
-    }
-
+  Widget _renderText(figma.Text node, String text) {
     final baseStyle = FigmaStyleUtils.getTextStyle(node);
     final textAlign =
         FigmaStyleUtils.getTextAlign(node.style?.textAlignHorizontal);
@@ -204,19 +46,6 @@ class FigmaTextRenderer extends FigmaRenderer {
             text,
             style: baseStyle,
             textAlign: textAlign,
-            maxLines: rendererContext.get<int>(
-              FigmaProperties.maxLines,
-              nodeId: node.name!,
-            ),
-            overflow: rendererContext.get<TextOverflow>(
-              FigmaProperties.overflow,
-              nodeId: node.name!,
-            ),
-            softWrap: rendererContext.get<bool>(
-                  FigmaProperties.softWrap,
-                  nodeId: node.name!,
-                ) ??
-                true,
           ),
         );
       } else {
@@ -224,19 +53,6 @@ class FigmaTextRenderer extends FigmaRenderer {
           text,
           style: baseStyle,
           textAlign: textAlign,
-          maxLines: rendererContext.get<int>(
-            FigmaProperties.maxLines,
-            nodeId: node.name!,
-          ),
-          overflow: rendererContext.get<TextOverflow>(
-            FigmaProperties.overflow,
-            nodeId: node.name!,
-          ),
-          softWrap: rendererContext.get<bool>(
-                FigmaProperties.softWrap,
-                nodeId: node.name!,
-              ) ??
-              true,
         );
       }
     } else {
@@ -244,19 +60,6 @@ class FigmaTextRenderer extends FigmaRenderer {
         text,
         style: baseStyle,
         textAlign: textAlign,
-        maxLines: rendererContext.get<int>(
-          FigmaProperties.maxLines,
-          nodeId: node.name!,
-        ),
-        overflow: rendererContext.get<TextOverflow>(
-          FigmaProperties.overflow,
-          nodeId: node.name!,
-        ),
-        softWrap: rendererContext.get<bool>(
-              FigmaProperties.softWrap,
-              nodeId: node.name!,
-            ) ??
-            true,
       );
     }
 
@@ -274,24 +77,11 @@ class FigmaTextRenderer extends FigmaRenderer {
                     FigmaStyleUtils.getColor(node.strokes) ?? Colors.black,
             ),
             textAlign: textAlign,
-            maxLines: rendererContext.get<int>(
-              FigmaProperties.maxLines,
-              nodeId: node.name!,
-            ),
-            overflow: rendererContext.get<TextOverflow>(
-              FigmaProperties.overflow,
-              nodeId: node.name!,
-            ),
-            softWrap: rendererContext.get<bool>(
-                  FigmaProperties.softWrap,
-                  nodeId: node.name!,
-                ) ??
-                true,
           ),
         ],
       );
     }
 
-    return FigmaStyleUtils.wrapWithBlur(textWidget, node.effects);
+    return textWidget;
   }
 }

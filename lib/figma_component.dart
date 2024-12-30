@@ -1,68 +1,44 @@
-import 'package:morphr/figma_component_context.dart';
-import 'package:morphr/figma_property_scope.dart';
-import 'package:morphr/figma_renderer_factory.dart';
-import 'package:morphr/figma_service.dart';
 import 'package:flutter/widgets.dart';
+import 'package:morphr/figma_container_component.dart';
+import 'package:morphr/figma_flex_component.dart';
+import 'package:morphr/figma_text_component.dart';
 
-class FigmaOverride {
-  final String? nodeId;
-  final Map<String, dynamic> properties;
+abstract class FigmaComponent extends StatelessWidget {
+  const FigmaComponent({super.key});
 
-  const FigmaOverride({
-    this.nodeId,
-    required this.properties,
-  });
-}
+  static Widget container(
+    final String componentName, {
+    final Widget? child,
+  }) =>
+      FigmaContainerComponent(
+        componentName,
+        child: child,
+      );
 
-class FigmaComponent extends StatelessWidget {
-  final String componentId;
-  final List<FigmaOverride> overrides;
-  final bool recursive;
+  static Widget column(
+    final String componentName, {
+    required final List<Widget> children,
+  }) =>
+      FigmaFlexComponent(
+        componentName,
+        children: children,
+      );
 
-  const FigmaComponent({
-    required this.componentId,
-    this.overrides = const [],
-    this.recursive = true,
-    super.key,
-  });
+  static Widget row(
+    final String componentName, {
+    required final List<Widget> children,
+  }) =>
+      FigmaFlexComponent(
+        componentName,
+        children: children,
+      );
 
-  @override
-  Widget build(BuildContext context) {
-    final component = FigmaService.instance.getComponent(componentId);
-    if (component == null) {
-      throw Exception('Cannot find $componentId component');
-    }
-
-    final componentContext = FigmaComponentContext(
-      buildContext: context,
-      properties: _getGlobalOverrides(),
-      propertyScopes: _getTargetedOverrides(),
-    );
-
-    return FigmaRendererFactory.createRenderer(
-      componentContext: componentContext,
-      node: component,
-      recursive: recursive,
-    );
-  }
-
-  Map<String, dynamic> _getGlobalOverrides() {
-    final globalOverrides =
-        overrides.where((override) => override.nodeId == null);
-    return {
-      for (final override in globalOverrides) ...override.properties,
-    };
-  }
-
-  List<FigmaPropertyScope> _getTargetedOverrides() {
-    final targetedOverrides =
-        overrides.where((override) => override.nodeId != null);
-    return [
-      for (final override in targetedOverrides)
-        FigmaPropertyScope(
-          nodeId: override.nodeId!,
-          properties: override.properties,
-        ),
-    ];
-  }
+  static Widget text(
+    final String componentName, {
+    required final String text,
+  }) =>
+      FigmaTextComponent(
+        componentName,
+        text: text,
+      );
 }
