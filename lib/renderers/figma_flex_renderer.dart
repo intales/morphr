@@ -1,6 +1,6 @@
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
-import 'package:morphr/figma_frame_decoration_renderer.dart';
+import 'package:morphr/renderers/figma_frame_decoration_renderer.dart';
 
 class FigmaFlexRenderer with FigmaFrameDecorationRenderer {
   const FigmaFlexRenderer();
