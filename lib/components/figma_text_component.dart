@@ -3,6 +3,11 @@ import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
 import 'package:morphr/renderers/figma_text_renderer.dart';
 
+typedef FigmaTextComponentParams = (
+  String componentName, {
+  String text,
+});
+
 class FigmaTextComponent extends FigmaComponent {
   final String componentName;
   final String text;
