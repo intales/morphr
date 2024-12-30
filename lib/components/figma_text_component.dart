@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/figma_component.dart';
+import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
-import 'package:morphr/figma_text_renderer.dart';
+import 'package:morphr/renderers/figma_text_renderer.dart';
 
 class FigmaTextComponent extends FigmaComponent {
   final String componentName;

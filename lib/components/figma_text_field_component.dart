@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
-import 'package:morphr/figma_text_field_renderer.dart';
+import 'package:morphr/renderers/figma_text_field_renderer.dart';
 
-class FigmaTextFieldComponent extends StatelessWidget {
+class FigmaTextFieldComponent extends FigmaComponent {
   final String componentName;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;

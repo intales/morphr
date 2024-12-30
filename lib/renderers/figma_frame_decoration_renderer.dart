@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
-import 'package:morphr/figma_style_utils.dart';
+import 'package:morphr/utils/figma_style_utils.dart';
 
 mixin FigmaFrameDecorationRenderer {
   BoxDecoration getDecoration(figma.Frame node) {
