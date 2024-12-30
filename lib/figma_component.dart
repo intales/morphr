@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:morphr/figma_container_component.dart';
 import 'package:morphr/figma_flex_component.dart';
 import 'package:morphr/figma_text_component.dart';
+import 'package:morphr/figma_text_field_component.dart';
 
 abstract class FigmaComponent extends StatelessWidget {
   const FigmaComponent({super.key});
@@ -40,5 +41,20 @@ abstract class FigmaComponent extends StatelessWidget {
       FigmaTextComponent(
         componentName,
         text: text,
+      );
+
+  static Widget textField(
+    final String componentName, {
+    final TextEditingController? controller,
+    final ValueChanged<String>? onChanged,
+    final ValueChanged<String>? onSubmitted,
+    final String? hint,
+  }) =>
+      FigmaTextFieldComponent(
+        componentName,
+        controller: controller,
+        onChanged: onChanged,
+        onSubmitted: onSubmitted,
+        hint: hint,
       );
 }

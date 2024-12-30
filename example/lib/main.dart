@@ -27,14 +27,8 @@ class FigmaTestApp extends StatelessWidget {
         builder: (context) {
           return Scaffold(
             body: Center(
-              child: FigmaComponent.container(
-                "my_rect",
-                child: Center(
-                  child: FigmaComponent.text(
-                    "recent_activity_subtitle",
-                    text: "Ciaoo",
-                  ),
-                ),
+              child: FigmaComponent.textField(
+                "recent_activity_title",
               ),
             ),
           );
