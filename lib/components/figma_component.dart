@@ -4,6 +4,9 @@ import 'package:morphr/components/figma_flex_component.dart';
 import 'package:morphr/components/figma_text_component.dart';
 import 'package:morphr/components/figma_text_field_component.dart';
 import 'package:morphr/components/figma_button_component.dart';
+import 'package:morphr/components/figma_icon_component.dart';
+import 'package:morphr/components/figma_bottombar_component.dart';
+import 'package:morphr/components/figma_appbar_component.dart';
 
 abstract class FigmaComponent extends StatelessWidget {
   const FigmaComponent({super.key});
@@ -23,10 +26,30 @@ abstract class FigmaComponent extends StatelessWidget {
     required final List<Widget> children,
   }) = FigmaFlexComponent;
 
+  static PreferredSizeWidget appBar(
+    final String componentName, {
+    required final BuildContext context,
+    required final List<Widget> children,
+  }) =>
+      FigmaAppbarComponent(
+        componentName,
+        context: context,
+        children: children,
+      );
+
+  const factory FigmaComponent.bottomBar(
+    final String componentName, {
+    required final List<Widget> children,
+  }) = FigmaBottombarComponent;
+
   const factory FigmaComponent.text(
     final String componentName, {
     required final String text,
   }) = FigmaTextComponent;
+
+  const factory FigmaComponent.icon(
+    final String componentName,
+  ) = FigmaIconComponent;
 
   const factory FigmaComponent.button(
     final String componentName, {
