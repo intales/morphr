@@ -32,7 +32,14 @@ class FigmaTestApp extends StatelessWidget {
               children: [],
             ),
             body: Center(
-              child: FigmaComponent.icon("icon"),
+              child: FigmaComponent.button(
+                "button",
+                onPressed: () => print("Hello, World!"),
+                child: const FigmaComponent.text(
+                  "button_text",
+                  text: "Hello, World!",
+                ),
+              ),
             ),
           );
         },

@@ -13,6 +13,8 @@ dependencies:
 
   figma: ^7.1.1
   path_parsing: ^1.1.0
+  args: ^2.6.0
+  interact: ^2.2.0
 
 dev_dependencies:
   flutter_test:

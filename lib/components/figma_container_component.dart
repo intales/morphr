@@ -11,10 +11,12 @@ typedef FigmaContainerComponentParams = (
 class FigmaContainerComponent extends FigmaComponent {
   final String componentName;
   final Widget? child;
+  final AlignmentGeometry? alignment;
 
   const FigmaContainerComponent(
     this.componentName, {
     this.child,
+    this.alignment,
     super.key,
   });
 
@@ -26,6 +28,7 @@ class FigmaContainerComponent extends FigmaComponent {
     return const FigmaShapeRenderer().render(
       node: node,
       child: child,
+      alignment: alignment,
     );
   }
 }

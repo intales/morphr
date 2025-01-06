@@ -8,6 +8,7 @@ class FigmaShapeRenderer with FigmaShapeDecorationRenderer {
   Widget render({
     required final figma.Node node,
     final Widget? child,
+    final AlignmentGeometry? alignment = Alignment.center,
   }) {
     if (node is! figma.Rectangle && node is! figma.Ellipse) {
       throw ArgumentError('Node must be a RECTANGLE or ELLIPSE node');
@@ -17,6 +18,7 @@ class FigmaShapeRenderer with FigmaShapeDecorationRenderer {
       width: _getWidth(node),
       height: _getHeight(node),
       decoration: getDecoration(node),
+      alignment: alignment,
       child: child,
     );
 
