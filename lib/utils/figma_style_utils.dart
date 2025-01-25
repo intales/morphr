@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'dart:math' as math;
 
-import 'package:morphr/figma_service.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
 
@@ -327,47 +326,5 @@ class FigmaStyleUtils {
       default:
         return null;
     }
-  }
-
-  static Future<DecorationImage?> getImageFill(
-    final List<figma.Paint>? fills,
-    String nodeId,
-  ) async {
-    if (fills == null || fills.isEmpty) return null;
-
-    final imageFill = fills.firstWhere(
-      (fill) => fill.type == figma.PaintType.image,
-      orElse: () => fills.first,
-    );
-
-    if (imageFill.type != figma.PaintType.image) return null;
-
-    try {
-      final imageUrl = await FigmaService.instance.getImageUrl(nodeId);
-      if (imageUrl == null) return null;
-
-      return DecorationImage(
-        image: NetworkImage(imageUrl),
-        fit: _getImageScaleMode(imageFill.scaleMode),
-        repeat: _getImageRepeatMode(imageFill.scalingFactor?.toDouble() ?? 1),
-      );
-    } on figma.FigmaException catch (e) {
-      debugPrint('Error loading image: ${e.message}');
-      return null;
-    }
-  }
-
-  static BoxFit _getImageScaleMode(figma.ScaleMode? scaleMode) {
-    return switch (scaleMode) {
-      figma.ScaleMode.fill => BoxFit.cover,
-      figma.ScaleMode.fit => BoxFit.contain,
-      figma.ScaleMode.tile => BoxFit.none,
-      figma.ScaleMode.stretch => BoxFit.fill,
-      _ => BoxFit.cover,
-    };
-  }
-
-  static ImageRepeat _getImageRepeatMode(double scalingFactor) {
-    return scalingFactor != 1 ? ImageRepeat.repeat : ImageRepeat.noRepeat;
   }
 }

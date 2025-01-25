@@ -15,6 +15,7 @@ dependencies:
   path_parsing: ^1.1.0
   args: ^2.6.0
   interact: ^2.2.0
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:

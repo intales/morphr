@@ -106,7 +106,7 @@ packages:
     source: hosted
     version: "2.1.3"
   figma:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: figma
       sha256: "937631820f2197d343da8061a6edc19a7358cb7e2df283aa9250e291069e6fd9"
@@ -143,10 +143,10 @@ packages:
     dependency: transitive
     description:
       name: http
-      sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
+      sha256: fe7ab022b76f3034adc518fb6ea04a82387620e19977665ea18d30a1cf43442f
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.2"
+    version: "1.3.0"
   http2:
     dependency: transitive
     description:

@@ -1,3 +1,4 @@
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:interact/interact.dart';
@@ -85,14 +86,16 @@ class DownloadCommand extends Command {
     print('\n📥 Downloading Figma file $fileId...');
 
     try {
-      final client = figma.FigmaClient(token);
-      final file = await client.getFile(
-        fileId,
-        figma.FigmaQuery(geometry: "paths"),
+      final response = await http.get(
+        Uri.parse("https://api.figma.com/v1/files/$fileId?geometry=paths"),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Figma-Token": token,
+        },
       );
 
-      final json = jsonEncode(file.toJson());
-      await File(output).writeAsString(json, flush: true);
+      final json = response.body;
+      await File(output).writeAsString(json, encoding: utf8);
 
       print('\n✨ File successfully downloaded and saved to $output');
       print('🎉 Happy coding with Morphr!\n');

@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
-  const token = String.fromEnvironment("TOKEN");
-  const fileKey = String.fromEnvironment("FILE_KEY");
-
+  WidgetsFlutterBinding.ensureInitialized();
   await FigmaService.instance.initialize(
-    accessToken: token,
-    fileId: fileKey,
+    documentPath: 'assets/figma_document.json',
   );
 
   runApp(const FigmaTestApp());

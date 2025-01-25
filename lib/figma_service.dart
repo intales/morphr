@@ -1,19 +1,19 @@
+import 'dart:convert';
+
 import 'package:figma/figma.dart' as figma;
+import 'package:flutter/services.dart' show rootBundle;
 
 class FigmaService {
   FigmaService._();
   static final instance = FigmaService._();
 
-  late final figma.FigmaClient _client;
+  late final String _documentPath;
   late final figma.Document? _document;
-  late final String _fileId;
 
   Future<void> initialize({
-    required final String accessToken,
-    required final String fileId,
+    required final String documentPath,
   }) async {
-    _client = figma.FigmaClient(accessToken);
-    _fileId = fileId;
+    _documentPath = documentPath;
     await _loadDocument();
   }
 
@@ -25,24 +25,10 @@ class FigmaService {
     return _findComponent(_document, componentId);
   }
 
-  Future<String?> getImageUrl(final String imageHash) async {
-    final response = await _client.getImages(
-      _fileId,
-      figma.FigmaQuery(
-        ids: [imageHash],
-      ),
-    );
-
-    return response.images?.values.first;
-  }
-
   Future<void> _loadDocument() async {
-    final file = await _client.getFile(
-      _fileId,
-      figma.FigmaQuery(geometry: "paths"),
-    );
+    final file = await rootBundle.loadString(_documentPath);
 
-    _document = file.document;
+    _document = figma.FileResponse.fromJson(jsonDecode(file)).document;
   }
 
   figma.Node? _findComponent(figma.Node node, String componentId) {
