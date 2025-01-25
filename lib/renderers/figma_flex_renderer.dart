@@ -25,7 +25,7 @@ class FigmaFlexRenderer with FigmaFrameDecorationRenderer {
 
     return Container(
       decoration: getDecoration(node),
-      padding: _getPadding(node),
+      padding: getPadding(node),
       child: flex,
     );
   }
@@ -49,7 +49,7 @@ class FigmaFlexRenderer with FigmaFrameDecorationRenderer {
     return spacedChildren;
   }
 
-  EdgeInsets? _getPadding(figma.Frame node) {
+  EdgeInsets? getPadding(figma.Frame node) {
     return EdgeInsets.only(
       left: node.paddingLeft.toDouble(),
       top: node.paddingTop.toDouble(),

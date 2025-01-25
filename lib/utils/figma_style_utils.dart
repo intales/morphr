@@ -27,7 +27,7 @@ class FigmaStyleUtils {
       (color.r! * 255).round(),
       (color.g! * 255).round(),
       (color.b! * 255).round(),
-      color.a!,
+      solidFill.opacity ?? 1.0,
     );
   }
 

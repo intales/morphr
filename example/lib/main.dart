@@ -25,20 +25,15 @@ class FigmaTestApp extends StatelessWidget {
       ),
       home: Builder(
         builder: (context) {
-          return Scaffold(
-            appBar: FigmaComponent.appBar(
-              "app_bar",
-              context: context,
-              children: [],
-            ),
-            body: Center(
-              child: FigmaComponent.button(
-                "button",
-                onPressed: () => print("Hello, World!"),
-                child: const FigmaComponent.text(
-                  "button_text",
-                  text: "Hello, World!",
-                ),
+          return const Scaffold(
+            body: SafeArea(
+              child: FigmaComponent.row(
+                "toolbar",
+                children: [
+                  FigmaComponent.icon("search"),
+                  FigmaComponent.icon("notifications"),
+                  FigmaComponent.icon("profile"),
+                ],
               ),
             ),
           );
