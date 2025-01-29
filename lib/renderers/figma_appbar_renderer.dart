@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:morphr/renderers/figma_flex_renderer.dart';
-import 'package:morphr/renderers/figma_frame_decoration_renderer.dart';
+import 'package:morphr/adapters/figma_bar_adapter.dart';
+import 'package:morphr/adapters/figma_decoration_adapter.dart';
 
-class FigmaAppbarRenderer with FigmaFrameDecorationRenderer {
+class FigmaAppbarRenderer {
   const FigmaAppbarRenderer();
 
   Widget render({
@@ -11,24 +12,21 @@ class FigmaAppbarRenderer with FigmaFrameDecorationRenderer {
     required final EdgeInsets mediaQueryPadding,
     required final List<Widget> children,
   }) {
-    if (node is! figma.Frame) {
-      throw ArgumentError("Node must be a FRAME node");
-    }
+    final barAdapter = FigmaBarAdapter(node, FigmaBarType.top);
+    final decorationAdapter = FigmaDecorationAdapter(node);
 
-    final totalHeight = (node.absoluteBoundingBox?.height ?? kToolbarHeight) +
-        mediaQueryPadding.top;
+    barAdapter.validateBar();
+
+    final totalHeight = barAdapter.getAdjustedHeight(mediaQueryPadding);
 
     return Stack(
       children: [
         Container(
           height: totalHeight,
-          decoration: getDecoration(node),
+          decoration: decorationAdapter.createBoxDecoration(),
         ),
-        Positioned(
-          top: mediaQueryPadding.top,
-          left: 0,
-          right: 0,
-          height: node.absoluteBoundingBox?.height ?? kToolbarHeight,
+        barAdapter.getContentPosition(
+          mediaQueryPadding: mediaQueryPadding,
           child: const FigmaFlexRenderer().render(
             node: node,
             children: children,
@@ -42,13 +40,9 @@ class FigmaAppbarRenderer with FigmaFrameDecorationRenderer {
     required final figma.Node node,
     required final EdgeInsets mediaQueryPadding,
   }) {
-    if (node is! figma.Frame) {
-      throw ArgumentError("Node must be a FRAME node");
-    }
+    final barAdapter = FigmaBarAdapter(node, FigmaBarType.top);
+    barAdapter.validateBar();
 
-    return Size.fromHeight(
-      (node.absoluteBoundingBox?.height ?? kToolbarHeight) +
-          mediaQueryPadding.top,
-    );
+    return Size.fromHeight(barAdapter.getAdjustedHeight(mediaQueryPadding));
   }
 }

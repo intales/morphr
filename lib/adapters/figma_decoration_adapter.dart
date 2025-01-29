@@ -105,7 +105,6 @@ class FigmaDecorationAdapter {
     final fills = _getFills();
     if (fills == null || fills.isEmpty) return null;
 
-    // Se c'è un gradiente, non usiamo il colore solido
     if (_hasGradient()) return null;
 
     final solidFill = fills.firstWhere(
@@ -179,7 +178,9 @@ class FigmaDecorationAdapter {
     List<double> stops,
   ) {
     if (fill.gradientHandlePositions == null ||
-        fill.gradientHandlePositions!.length < 2) return null;
+        fill.gradientHandlePositions!.length < 2) {
+      return null;
+    }
 
     final handles = fill.gradientHandlePositions!;
     final start = handles[0];

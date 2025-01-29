@@ -1,47 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
-import 'package:morphr/renderers/figma_shape_decoration_renderer.dart';
+import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_shape_adapter.dart';
 
-class FigmaShapeRenderer with FigmaShapeDecorationRenderer {
+class FigmaShapeRenderer {
   const FigmaShapeRenderer();
 
   Widget render({
     required final figma.Node node,
     final Widget? child,
-    final AlignmentGeometry? alignment = Alignment.center,
   }) {
-    if (node is! figma.Rectangle && node is! figma.Ellipse) {
-      throw ArgumentError('Node must be a RECTANGLE or ELLIPSE node');
-    }
+    final shapeAdapter = FigmaShapeAdapter(node);
+    final decorationAdapter = FigmaDecorationAdapter(node);
+
+    shapeAdapter.validateShape();
+    decorationAdapter.validateDecoration();
 
     final container = Container(
-      width: _getWidth(node),
-      height: _getHeight(node),
-      decoration: getDecoration(node),
-      alignment: alignment,
+      width: shapeAdapter.size?.width,
+      height: shapeAdapter.size?.height,
+      decoration: decorationAdapter.createBoxDecoration(),
       child: child,
     );
 
-    return container;
-  }
-
-  double? _getWidth(figma.Node node) {
-    if (node is figma.Rectangle) {
-      return node.absoluteBoundingBox?.width?.toDouble();
-    }
-    if (node is figma.Ellipse) {
-      return node.absoluteBoundingBox?.width?.toDouble();
-    }
-    return null;
-  }
-
-  double? _getHeight(figma.Node node) {
-    if (node is figma.Rectangle) {
-      return node.absoluteBoundingBox?.height?.toDouble();
-    }
-    if (node is figma.Ellipse) {
-      return node.absoluteBoundingBox?.height?.toDouble();
-    }
-    return null;
+    return decorationAdapter.wrapWithBlurEffects(container);
   }
 }

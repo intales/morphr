@@ -28,7 +28,6 @@ class FigmaContainerComponent extends FigmaComponent {
     return const FigmaShapeRenderer().render(
       node: node,
       child: child,
-      alignment: alignment,
     );
   }
 }

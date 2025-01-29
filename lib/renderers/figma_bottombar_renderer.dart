@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:morphr/renderers/figma_flex_renderer.dart';
-import 'package:morphr/renderers/figma_frame_decoration_renderer.dart';
+import 'package:morphr/adapters/figma_bar_adapter.dart';
+import 'package:morphr/adapters/figma_decoration_adapter.dart';
 
-class FigmaBottomBarRenderer with FigmaFrameDecorationRenderer {
+class FigmaBottomBarRenderer {
   const FigmaBottomBarRenderer();
 
   Widget render({
@@ -11,26 +12,21 @@ class FigmaBottomBarRenderer with FigmaFrameDecorationRenderer {
     required final EdgeInsets mediaQueryPadding,
     required final List<Widget> children,
   }) {
-    if (node is! figma.Frame) {
-      throw ArgumentError("Node must be a FRAME node");
-    }
+    final barAdapter = FigmaBarAdapter(node, FigmaBarType.bottom);
+    final decorationAdapter = FigmaDecorationAdapter(node);
 
-    final totalHeight =
-        (node.absoluteBoundingBox?.height ?? kBottomNavigationBarHeight) +
-            mediaQueryPadding.bottom;
+    barAdapter.validateBar();
+
+    final totalHeight = barAdapter.getAdjustedHeight(mediaQueryPadding);
 
     return Stack(
       children: [
         Container(
           height: totalHeight,
-          decoration: getDecoration(node),
+          decoration: decorationAdapter.createBoxDecoration(),
         ),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height:
-              node.absoluteBoundingBox?.height ?? kBottomNavigationBarHeight,
+        barAdapter.getContentPosition(
+          mediaQueryPadding: mediaQueryPadding,
           child: const FigmaFlexRenderer().render(
             node: node,
             children: children,
@@ -38,5 +34,15 @@ class FigmaBottomBarRenderer with FigmaFrameDecorationRenderer {
         ),
       ],
     );
+  }
+
+  Size getPreferredSize({
+    required final figma.Node node,
+    required final EdgeInsets mediaQueryPadding,
+  }) {
+    final barAdapter = FigmaBarAdapter(node, FigmaBarType.bottom);
+    barAdapter.validateBar();
+    
+    return Size.fromHeight(barAdapter.getAdjustedHeight(mediaQueryPadding));
   }
 }

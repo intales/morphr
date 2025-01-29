@@ -1,61 +1,59 @@
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
-import 'package:morphr/renderers/figma_frame_decoration_renderer.dart';
+import 'package:morphr/adapters/figma_layout_adapter.dart';
+import 'package:morphr/adapters/figma_decoration_adapter.dart';
 
-class FigmaFlexRenderer with FigmaFrameDecorationRenderer {
+class FigmaFlexRenderer {
   const FigmaFlexRenderer();
 
   Widget render({
     required final figma.Node node,
     required final List<Widget> children,
   }) {
-    if (node is! figma.Frame) {
-      throw ArgumentError('Node must be a FRAME node');
-    }
+    final layoutAdapter = FigmaLayoutAdapter(node);
+    final decorationAdapter = FigmaDecorationAdapter(node);
 
-    final isRow = node.layoutMode == figma.LayoutMode.horizontal;
+    layoutAdapter.validateLayout();
+
+    final isRow = layoutAdapter.layoutMode == figma.LayoutMode.horizontal;
 
     final flex = Flex(
       direction: isRow ? Axis.horizontal : Axis.vertical,
-      mainAxisAlignment: _getMainAxisAlignment(node.primaryAxisAlignItems),
-      crossAxisAlignment: _getCrossAxisAlignment(node.counterAxisAlignItems),
+      mainAxisAlignment:
+          _getMainAxisAlignment(layoutAdapter.primaryAxisAlignItems),
+      crossAxisAlignment:
+          _getCrossAxisAlignment(layoutAdapter.counterAxisAlignItems),
       mainAxisSize: MainAxisSize.max,
-      children: _addSpacing(children, node),
+      children: _addSpacing(children, layoutAdapter),
     );
 
     return Container(
-      decoration: getDecoration(node),
-      padding: getPadding(node),
-      child: flex,
+      decoration: decorationAdapter.createBoxDecoration(),
+      padding: layoutAdapter.padding,
+      child: decorationAdapter.wrapWithBlurEffects(flex),
     );
   }
 
-  List<Widget> _addSpacing(List<Widget> children, figma.Frame node) {
-    final spacing = node.itemSpacing.toDouble();
+  List<Widget> _addSpacing(List<Widget> children, FigmaLayoutAdapter adapter) {
+    final spacing = adapter.itemSpacing;
     if (spacing == 0 || children.isEmpty) {
       return children;
     }
 
+    final isRow = adapter.layoutMode == figma.LayoutMode.horizontal;
     final spacedChildren = <Widget>[];
+
     for (var i = 0; i < children.length; i++) {
       spacedChildren.add(children[i]);
       if (i < children.length - 1) {
         spacedChildren.add(SizedBox(
-          width: node.layoutMode == figma.LayoutMode.horizontal ? spacing : 0,
-          height: node.layoutMode == figma.LayoutMode.vertical ? spacing : 0,
+          width: isRow ? spacing : 0,
+          height: !isRow ? spacing : 0,
         ));
       }
     }
-    return spacedChildren;
-  }
 
-  EdgeInsets? getPadding(figma.Frame node) {
-    return EdgeInsets.only(
-      left: node.paddingLeft.toDouble(),
-      top: node.paddingTop.toDouble(),
-      right: node.paddingRight.toDouble(),
-      bottom: node.paddingBottom.toDouble(),
-    );
+    return spacedChildren;
   }
 
   MainAxisAlignment _getMainAxisAlignment(figma.PrimaryAxisAlignItems? align) {
@@ -76,7 +74,7 @@ class FigmaFlexRenderer with FigmaFrameDecorationRenderer {
       figma.CounterAxisAlignItems.center => CrossAxisAlignment.center,
       figma.CounterAxisAlignItems.max => CrossAxisAlignment.end,
       figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
-      _ => CrossAxisAlignment.start,
+      _ => CrossAxisAlignment.center,
     };
   }
 }
