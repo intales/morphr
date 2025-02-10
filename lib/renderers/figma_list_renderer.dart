@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
+import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/adapters/figma_layout_adapter.dart';
 import 'package:morphr/adapters/figma_decoration_adapter.dart';
 
@@ -8,16 +9,18 @@ class FigmaListRenderer {
 
   Widget render({
     required final figma.Node node,
+    required final Size parentSize,
     required final int itemCount,
     required final IndexedWidgetBuilder itemBuilder,
     final Axis scrollDirection = Axis.vertical,
   }) {
     final layoutAdapter = FigmaLayoutAdapter(node);
     final decorationAdapter = FigmaDecorationAdapter(node);
+    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
 
     layoutAdapter.validateLayout();
 
-    final result = ListView.separated(
+    Widget list = ListView.separated(
       padding: layoutAdapter.padding,
       scrollDirection: scrollDirection,
       itemCount: itemCount,
@@ -30,9 +33,11 @@ class FigmaListRenderer {
       itemBuilder: itemBuilder,
     );
 
-    return Container(
+    list = Container(
       decoration: decorationAdapter.createBoxDecoration(),
-      child: decorationAdapter.wrapWithBlurEffects(result),
+      child: decorationAdapter.wrapWithBlurEffects(list),
     );
+
+    return constraintsAdapter.applyConstraints(list);
   }
 }

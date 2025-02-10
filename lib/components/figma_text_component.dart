@@ -23,9 +23,15 @@ class FigmaTextComponent extends FigmaComponent {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return SizedBox.shrink();
 
-    return const FigmaTextRenderer().render(
-      node: node,
-      content: text,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+        return const FigmaTextRenderer().render(
+          node: node,
+          parentSize: parentSize,
+          content: text,
+        );
+      },
     );
   }
 }

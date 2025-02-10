@@ -16,6 +16,14 @@ class FigmaIconComponent extends FigmaComponent {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return SizedBox.shrink();
 
-    return const FigmaVectorRenderer().render(node: node);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+        return const FigmaVectorRenderer().render(
+          node: node,
+          parentSize: parentSize,
+        );
+      },
+    );
   }
 }

@@ -20,12 +20,22 @@ class FigmaButtonComponent extends FigmaComponent {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return SizedBox.shrink();
 
-    return GestureDetector(
-      onTap: onPressed,
-      child: const FigmaShapeRenderer().render(
-        node: node,
-        child: child,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(
+          constraints.maxWidth,
+          constraints.maxHeight,
+        );
+
+        return GestureDetector(
+          onTap: onPressed,
+          child: const FigmaShapeRenderer().render(
+            node: node,
+            parentSize: size,
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

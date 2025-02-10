@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
+import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/utils/figma_style_utils.dart';
 import 'package:path_parsing/path_parsing.dart';
 
@@ -9,11 +10,12 @@ class FigmaVectorRenderer {
 
   Widget render({
     required final figma.Node node,
+    required final Size parentSize,
   }) {
     if (node is! figma.Vector) {
       throw ArgumentError('Node must be a VECTOR node');
     }
-
+    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
     final shadowPadding = _calculateShadowPadding(node);
 
     final baseWidth = _getWidth(node);
@@ -39,7 +41,7 @@ class FigmaVectorRenderer {
       ),
     );
 
-    return result;
+    return constraintsAdapter.applyConstraints(result);
   }
 
   EdgeInsets _calculateShadowPadding(figma.Node node) {

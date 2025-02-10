@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
+import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/utils/figma_style_utils.dart';
 
 class FigmaTextRenderer {
@@ -7,14 +8,17 @@ class FigmaTextRenderer {
 
   Widget render({
     required final figma.Node node,
+    required final Size parentSize,
     required final String content,
   }) {
     if (node is! figma.Text) {
       throw ArgumentError('Node must be a TEXT node');
     }
 
-    final text = _renderText(node, content);
-    return text;
+    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
+    Widget text = _renderText(node, content);
+
+    return constraintsAdapter.applyConstraints(text);
   }
 
   Widget _renderText(figma.Text node, String text) {

@@ -1,5 +1,6 @@
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
+import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/adapters/figma_layout_adapter.dart';
 import 'package:morphr/adapters/figma_decoration_adapter.dart';
 
@@ -8,16 +9,18 @@ class FigmaFlexRenderer {
 
   Widget render({
     required final figma.Node node,
+    required final Size parentSize,
     required final List<Widget> children,
   }) {
     final layoutAdapter = FigmaLayoutAdapter(node);
     final decorationAdapter = FigmaDecorationAdapter(node);
+    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
 
     layoutAdapter.validateLayout();
 
     final isRow = layoutAdapter.layoutMode == figma.LayoutMode.horizontal;
 
-    final flex = Flex(
+    Widget flex = Flex(
       direction: isRow ? Axis.horizontal : Axis.vertical,
       mainAxisAlignment:
           _getMainAxisAlignment(layoutAdapter.primaryAxisAlignItems),
@@ -27,11 +30,13 @@ class FigmaFlexRenderer {
       children: _addSpacing(children, layoutAdapter),
     );
 
-    return Container(
+    flex = Container(
       decoration: decorationAdapter.createBoxDecoration(),
       padding: layoutAdapter.padding,
       child: decorationAdapter.wrapWithBlurEffects(flex),
     );
+
+    return constraintsAdapter.applyConstraints(flex);
   }
 
   List<Widget> _addSpacing(List<Widget> children, FigmaLayoutAdapter adapter) {

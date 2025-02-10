@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
-import 'package:morphr/renderers/figma_appbar_renderer.dart';
+import 'package:morphr/renderers/figma_bottombar_renderer.dart';
 
 class FigmaBottombarComponent extends FigmaComponent {
   final String componentName;
@@ -18,10 +18,14 @@ class FigmaBottombarComponent extends FigmaComponent {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return SizedBox.shrink();
 
-    return const FigmaAppbarRenderer().render(
-      node: node,
-      mediaQueryPadding: MediaQuery.of(context).padding,
-      children: children,
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+      return const FigmaBottomBarRenderer().render(
+        node: node,
+        mediaQueryPadding: MediaQuery.of(context).padding,
+        parentSize: parentSize,
+        children: children,
+      );
+    });
   }
 }

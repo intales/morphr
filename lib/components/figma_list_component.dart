@@ -21,11 +21,17 @@ class FigmaListComponent extends StatelessWidget {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return SizedBox.shrink();
 
-    return const FigmaListRenderer().render(
-      node: node,
-      itemCount: itemCount,
-      itemBuilder: itemBuilder,
-      scrollDirection: scrollDirection,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+        return const FigmaListRenderer().render(
+          node: node,
+          parentSize: parentSize,
+          itemCount: itemCount,
+          itemBuilder: itemBuilder,
+          scrollDirection: scrollDirection,
+        );
+      },
     );
   }
 }

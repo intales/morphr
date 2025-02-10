@@ -25,9 +25,19 @@ class FigmaContainerComponent extends FigmaComponent {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return SizedBox.shrink();
 
-    return const FigmaShapeRenderer().render(
-      node: node,
-      child: child,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentSize = Size(
+          constraints.maxWidth,
+          constraints.maxHeight,
+        );
+
+        return const FigmaShapeRenderer().render(
+          node: node,
+          parentSize: parentSize,
+          child: child,
+        );
+      },
     );
   }
 }

@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
+import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/adapters/figma_text_adapter.dart';
 
 class FigmaTextFieldRenderer {
   const FigmaTextFieldRenderer();
 
   Widget render(
-    figma.Node node, {
+    figma.Node node,
+    Size parentSize, {
     TextEditingController? controller,
     ValueChanged<String>? onChanged,
     ValueChanged<String>? onSubmitted,
     String? hint,
   }) {
     final textAdapter = FigmaTextAdapter(node);
+    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
 
     textAdapter.validateText();
 
-    final baseStyle = textAdapter.createTextStyle();
-    final placeholderStyle = baseStyle?.copyWith(
-      color: baseStyle.color?.withOpacity(0.5),
-    );
-
-    final textField = TextField(
+    Widget textField = TextField(
       controller: controller,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
-      style: baseStyle,
+      style: textAdapter.createTextStyle(),
       textAlign: textAdapter.getTextAlign(),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: placeholderStyle,
+        hintStyle: textAdapter.createTextStyle()?.copyWith(
+              color:
+                  textAdapter.createTextStyle()?.color?.withValues(alpha: 0.5),
+            ),
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
@@ -39,6 +40,6 @@ class FigmaTextFieldRenderer {
       ),
     );
 
-    return textField;
+    return constraintsAdapter.applyConstraints(textField);
   }
 }

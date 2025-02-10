@@ -24,12 +24,18 @@ class FigmaTextFieldComponent extends FigmaComponent {
     final node = FigmaService.instance.getComponent(componentName);
     if (node == null) return const SizedBox.shrink();
 
-    return FigmaTextFieldRenderer().render(
-      node,
-      controller: controller,
-      onChanged: onChanged,
-      onSubmitted: onSubmitted,
-      hint: hint,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+        return FigmaTextFieldRenderer().render(
+          node,
+          parentSize,
+          controller: controller,
+          onChanged: onChanged,
+          onSubmitted: onSubmitted,
+          hint: hint,
+        );
+      },
     );
   }
 }

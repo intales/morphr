@@ -32,14 +32,16 @@ class FigmaAppbarComponent extends FigmaComponent
   @override
   Widget build(BuildContext context) {
     final node = FigmaService.instance.getComponent(componentName);
-    if (node == null) {
-      return SizedBox.shrink();
-    }
+    if (node == null) return SizedBox.shrink();
 
-    return const FigmaAppbarRenderer().render(
-      node: node,
-      mediaQueryPadding: MediaQuery.of(context).padding,
-      children: children,
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+      return const FigmaAppbarRenderer().render(
+        node: node,
+        mediaQueryPadding: MediaQuery.of(context).padding,
+        parentSize: parentSize,
+        children: children,
+      );
+    });
   }
 }
