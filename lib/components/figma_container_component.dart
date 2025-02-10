@@ -3,11 +3,6 @@ import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
 import 'package:morphr/renderers/figma_shape_renderer.dart';
 
-typedef FigmaContainerComponentParams = (
-  String componentName, {
-  Widget? child,
-});
-
 class FigmaContainerComponent extends FigmaComponent {
   final String componentName;
   final Widget? child;

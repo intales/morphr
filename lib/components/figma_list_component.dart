@@ -1,15 +1,16 @@
 import 'package:flutter/widgets.dart';
+import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
 import 'package:morphr/renderers/figma_list_renderer.dart';
 
-class FigmaListComponent extends StatelessWidget {
+class FigmaListComponent extends FigmaComponent {
   final String componentName;
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
   final Axis scrollDirection;
 
-  const FigmaListComponent({
-    required this.componentName,
+  const FigmaListComponent(
+    this.componentName, {
     required this.itemCount,
     required this.itemBuilder,
     this.scrollDirection = Axis.vertical,

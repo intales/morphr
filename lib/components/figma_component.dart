@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:morphr/components/figma_container_component.dart';
+import 'package:morphr/components/figma_list_component.dart';
 import 'package:morphr/components/figma_flex_component.dart';
 import 'package:morphr/components/figma_text_component.dart';
 import 'package:morphr/components/figma_text_field_component.dart';
@@ -64,4 +65,11 @@ abstract class FigmaComponent extends StatelessWidget {
     final ValueChanged<String>? onSubmitted,
     final String? hint,
   }) = FigmaTextFieldComponent;
+
+  const factory FigmaComponent.list(
+    final String componentName, {
+    required final int itemCount,
+    required final IndexedWidgetBuilder itemBuilder,
+    required final Axis scrollDirection,
+  }) = FigmaListComponent;
 }
