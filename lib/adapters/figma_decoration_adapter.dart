@@ -118,9 +118,9 @@ class FigmaDecorationAdapter {
     if (color == null) return null;
 
     return Color.fromRGBO(
-      (color.r ?? 0 * 255).round(),
-      (color.g ?? 0 * 255).round(),
-      (color.b ?? 0 * 255).round(),
+      ((color.r ?? 0) * 255).round(),
+      ((color.g ?? 0) * 255).round(),
+      ((color.b ?? 0) * 255).round(),
       solidFill.opacity ?? 1,
     );
   }
@@ -156,9 +156,9 @@ class FigmaDecorationAdapter {
     final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
     final colors = fill.gradientStops!
         .map((stop) => Color.fromRGBO(
-              (stop.color?.r ?? 0 * 255).round(),
-              (stop.color?.g ?? 0 * 255).round(),
-              (stop.color?.b ?? 0 * 255).round(),
+              ((stop.color?.r ?? 0) * 255).round(),
+              ((stop.color?.g ?? 0) * 255).round(),
+              ((stop.color?.b ?? 0) * 255).round(),
               fill.opacity ?? 1,
             ))
         .toList();
@@ -255,9 +255,9 @@ class FigmaDecorationAdapter {
     if (color == null) return null;
 
     return Color.fromRGBO(
-      (color.r ?? 0 * 255).round(),
-      (color.g ?? 0 * 255).round(),
-      (color.b ?? 0 * 255).round(),
+      ((color.r ?? 0) * 255).round(),
+      ((color.g ?? 0) * 255).round(),
+      ((color.b ?? 0) * 255).round(),
       stroke.opacity ?? 1,
     );
   }
@@ -274,9 +274,9 @@ class FigmaDecorationAdapter {
           effect.type == figma.EffectType.innerShadow) {
         shadows.add(BoxShadow(
           color: Color.fromRGBO(
-            (effect.color?.r ?? 0 * 255).round(),
-            (effect.color?.g ?? 0 * 255).round(),
-            (effect.color?.b ?? 0 * 255).round(),
+            ((effect.color?.r ?? 0) * 255).round(),
+            ((effect.color?.g ?? 0) * 255).round(),
+            ((effect.color?.b ?? 0) * 255).round(),
             effect.color?.a ?? 1,
           ),
           offset: Offset(
