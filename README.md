@@ -39,7 +39,12 @@ High-level widgets that combine renderers and adapters into reusable pieces:
 
 1. Activate the Morphr CLI:
 ```bash
-dart pub global activate morphr_cli
+dart pub global activate --source git https://github.com/intales/morphr.git
+# or
+dart pub global activate --source path .
+
+# Run
+morphr download
 ```
 
 2. Download a Figma file:

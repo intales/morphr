@@ -1,12 +1,16 @@
 name: morphr
 description: "A bridge between Figma and Flutter. Transform your Figma designs into pixel-perfect Flutter widgets with real-time updates and zero manual coding."
 version: 0.1.0
-homepage: "https://morphr.dev/"
+homepage: "https://morphr.dev"
+repository: "https://github.com/intales/morphr"
 license: MIT
 
 environment:
   sdk: ^3.5.4
   flutter: ">=1.17.0"
+
+executables:
+  morphr: morphr_cli
 
 dependencies:
   flutter:
