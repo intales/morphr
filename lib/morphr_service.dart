@@ -7,9 +7,9 @@ import 'dart:convert';
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/services.dart' show rootBundle;
 
-class FigmaService {
-  FigmaService._();
-  static final instance = FigmaService._();
+class MorphrService {
+  MorphrService._();
+  static final instance = MorphrService._();
 
   late final String _documentPath;
   late final figma.Document? _document;
@@ -23,7 +23,7 @@ class FigmaService {
 
   figma.Node? getComponent(final String componentId) {
     if (_document == null) {
-      throw StateError("FigmaService not initialized.");
+      throw StateError("MorphrService not initialized.");
     }
 
     return _findComponent(_document, componentId);

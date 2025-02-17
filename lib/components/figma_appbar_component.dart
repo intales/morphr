@@ -4,7 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:morphr/components/figma_component.dart';
-import 'package:morphr/figma_service.dart';
+import 'package:morphr/morphr_service.dart';
 import 'package:morphr/renderers/figma_appbar_renderer.dart';
 
 class FigmaAppbarComponent extends FigmaComponent
@@ -24,7 +24,7 @@ class FigmaAppbarComponent extends FigmaComponent
 
   @override
   Size get preferredSize {
-    final node = FigmaService.instance.getComponent(componentName);
+    final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return Size.zero;
 
     return _appbarRenderer.getPreferredSize(
@@ -35,7 +35,7 @@ class FigmaAppbarComponent extends FigmaComponent
 
   @override
   Widget build(BuildContext context) {
-    final node = FigmaService.instance.getComponent(componentName);
+    final node = MorphrService.instance.getComponent(componentName);
     if (node == null) {
       throw ArgumentError("$componentName does not exist in figma file.");
     }

@@ -4,7 +4,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:morphr/components/figma_component.dart';
-import 'package:morphr/figma_service.dart';
+import 'package:morphr/morphr_service.dart';
 import 'package:morphr/renderers/figma_bottombar_renderer.dart';
 
 class FigmaBottombarComponent extends FigmaComponent {
@@ -19,7 +19,7 @@ class FigmaBottombarComponent extends FigmaComponent {
 
   @override
   Widget build(BuildContext context) {
-    final node = FigmaService.instance.getComponent(componentName);
+    final node = MorphrService.instance.getComponent(componentName);
     if (node == null) {
       throw ArgumentError("$componentName does not exist in figma file.");
     }

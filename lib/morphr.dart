@@ -3,3 +3,4 @@
 // in the LICENSE file.
 
 export 'package:morphr/components/figma_component.dart';
+export 'package:morphr/morphr_service.dart';

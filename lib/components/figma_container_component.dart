@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:morphr/components/figma_component.dart';
-import 'package:morphr/figma_service.dart';
+import 'package:morphr/morphr_service.dart';
 import 'package:morphr/renderers/figma_shape_renderer.dart';
 
 class FigmaContainerComponent extends FigmaComponent {
@@ -21,7 +21,7 @@ class FigmaContainerComponent extends FigmaComponent {
 
   @override
   Widget build(BuildContext context) {
-    final node = FigmaService.instance.getComponent(componentName);
+    final node = MorphrService.instance.getComponent(componentName);
     if (node == null) {
       throw ArgumentError("$componentName does not exist in figma file.");
     }
