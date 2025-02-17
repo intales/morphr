@@ -1,9 +1,13 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
 
 /// An adapter that provides shape capabilities for Figma nodes.
-/// This adapter handles both basic shapes (Rectangle, Ellipse) and
-/// components that can behave as shapes.
+/// This adapter handles basic shapes (Rectangle, Ellipse), frames that can
+/// behave as shapes, and components that can behave as shapes.
 class FigmaShapeAdapter {
   final figma.Node node;
 
@@ -14,13 +18,16 @@ class FigmaShapeAdapter {
     return node is figma.Rectangle ||
         node is figma.Ellipse ||
         node is figma.Instance ||
+        node is figma.Frame ||
         (node is figma.Vector && _hasShapeProperties(node as figma.Vector));
   }
 
   /// The shape type of the node
   BoxShape get shape {
-    if (node is figma.Ellipse) return BoxShape.circle;
-    if (node is figma.Rectangle && _isSquare && cornerRadius == null) {
+    if (node is figma.Ellipse) {
+      return BoxShape.circle;
+    }
+    if (_isSquare && cornerRadius == null) {
       return BoxShape.circle;
     }
     return BoxShape.rectangle;
@@ -38,6 +45,11 @@ class FigmaShapeAdapter {
       if (radius <= 0) return null;
       return BorderRadius.circular(radius);
     }
+    if (node is figma.Frame) {
+      final radius = (node as figma.Frame).cornerRadius?.toDouble() ?? 0.0;
+      if (radius <= 0) return null;
+      return BorderRadius.circular(radius);
+    }
     return null;
   }
 
@@ -47,6 +59,7 @@ class FigmaShapeAdapter {
     if (node is figma.Ellipse) return (node as figma.Ellipse).fills;
     if (node is figma.Instance) return (node as figma.Instance).fills;
     if (node is figma.Vector) return (node as figma.Vector).fills;
+    if (node is figma.Frame) return (node as figma.Frame).fills;
     return null;
   }
 
@@ -56,6 +69,7 @@ class FigmaShapeAdapter {
     if (node is figma.Ellipse) return (node as figma.Ellipse).strokes;
     if (node is figma.Instance) return (node as figma.Instance).strokes;
     if (node is figma.Vector) return (node as figma.Vector).strokes;
+    if (node is figma.Frame) return (node as figma.Frame).strokes;
     return null;
   }
 
@@ -73,6 +87,9 @@ class FigmaShapeAdapter {
     if (node is figma.Vector) {
       return (node as figma.Vector).strokeWeight?.toDouble();
     }
+    if (node is figma.Frame) {
+      return (node as figma.Frame).strokeWeight?.toDouble();
+    }
     return null;
   }
 
@@ -82,6 +99,7 @@ class FigmaShapeAdapter {
     if (node is figma.Ellipse) return (node as figma.Ellipse).effects;
     if (node is figma.Instance) return (node as figma.Instance).effects;
     if (node is figma.Vector) return (node as figma.Vector).effects;
+    if (node is figma.Frame) return (node as figma.Frame).effects;
     return null;
   }
 
@@ -116,13 +134,14 @@ class FigmaShapeAdapter {
     if (node is figma.Vector) {
       return (node as figma.Vector).absoluteBoundingBox;
     }
+    if (node is figma.Frame) {
+      return (node as figma.Frame).absoluteBoundingBox;
+    }
     return null;
   }
 
   /// Checks if a Vector node has properties that make it behave like a shape
   bool _hasShapeProperties(figma.Vector vector) {
-    // Un vector può comportarsi come una shape se ha proprietà di riempimento
-    // e/o stroke e una geometria ben definita
     return (vector.fills.isNotEmpty == true ||
             vector.strokes.isNotEmpty == true) &&
         vector.fillGeometry.isNotEmpty == true;
@@ -134,7 +153,8 @@ class FigmaShapeAdapter {
     if (!supportsShape) {
       throw ArgumentError(
         'Node of type ${node.runtimeType} does not support shape capabilities. '
-        'The node must be a Rectangle, Ellipse, Component, Instance, or Vector with shape properties.',
+        'The node must be a Rectangle, Ellipse, Frame with shape properties, '
+        'Component, Instance, or Vector with shape properties.',
       );
     }
   }

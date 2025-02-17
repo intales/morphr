@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/widgets.dart';
 import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
@@ -14,7 +18,9 @@ class FigmaIconComponent extends FigmaComponent {
   @override
   Widget build(BuildContext context) {
     final node = FigmaService.instance.getComponent(componentName);
-    if (node == null) return SizedBox.shrink();
+    if (node == null) {
+      throw ArgumentError("$componentName does not exist in figma file.");
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {

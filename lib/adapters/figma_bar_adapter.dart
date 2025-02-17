@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
 
@@ -8,7 +12,6 @@ enum FigmaBarType {
 }
 
 /// An adapter that provides navigation bar capabilities for Figma nodes.
-/// This adapter handles both top (AppBar) and bottom (BottomBar) navigation bars.
 class FigmaBarAdapter {
   final figma.Node node;
   final FigmaBarType barType;
@@ -85,46 +88,17 @@ class FigmaBarAdapter {
     return null;
   }
 
-  /// The height of the bar
+  /// Gets the default height for this type of bar
+  double get defaultHeight =>
+      barType == FigmaBarType.top ? kToolbarHeight : kBottomNavigationBarHeight;
+
+  /// Gets the height from Figma design if available
+  double? get figmaHeight => _getBoundingBox()?.height?.toDouble();
+
+  /// Gets the actual height to use for the bar
   double get height {
-    final defaultHeight = barType == FigmaBarType.top
-        ? kToolbarHeight
-        : kBottomNavigationBarHeight;
-
-    return _getBoundingBox()?.height?.toDouble() ?? defaultHeight;
-  }
-
-  /// The total height including system padding
-  double getAdjustedHeight(EdgeInsets mediaQueryPadding) {
-    final systemPadding = barType == FigmaBarType.top
-        ? mediaQueryPadding.top
-        : mediaQueryPadding.bottom;
-
-    return height + systemPadding;
-  }
-
-  /// Gets the position of the content within the bar
-  Positioned getContentPosition({
-    required EdgeInsets mediaQueryPadding,
-    required Widget child,
-  }) {
-    if (barType == FigmaBarType.top) {
-      return Positioned(
-        top: mediaQueryPadding.top,
-        left: 0,
-        right: 0,
-        height: height,
-        child: child,
-      );
-    } else {
-      return Positioned(
-        bottom: mediaQueryPadding.bottom,
-        left: 0,
-        right: 0,
-        height: height,
-        child: child,
-      );
-    }
+    final designHeight = figmaHeight ?? defaultHeight;
+    return designHeight < defaultHeight ? defaultHeight : designHeight;
   }
 
   figma.SizeRectangle? _getBoundingBox() {
@@ -172,8 +146,7 @@ class FigmaBarAdapter {
     };
   }
 
-  /// Validates that the node supports bar capabilities and throws
-  /// a descriptive error if it doesn't.
+  /// Validates that the node supports bar capabilities
   void validateBar() {
     if (!supportsBar) {
       final barTypeName = barType == FigmaBarType.top ? 'AppBar' : 'BottomBar';

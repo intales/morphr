@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
 
@@ -37,6 +41,24 @@ class FigmaLayoutAdapter {
     if (node is figma.Frame) return (node as figma.Frame).counterAxisAlignItems;
     if (node is figma.Instance) {
       return (node as figma.Instance).counterAxisAlignItems;
+    }
+    return null;
+  }
+
+  /// Primary axis sizing mode
+  figma.PrimaryAxisSizingMode? get primaryAxisSizingMode {
+    if (node is figma.Frame) return (node as figma.Frame).primaryAxisSizingMode;
+    if (node is figma.Instance) {
+      return (node as figma.Instance).primaryAxisSizingMode;
+    }
+    return null;
+  }
+
+  /// Counter axis sizing mode
+  figma.CounterAxisSizingMode? get counterAxisSizingMode {
+    if (node is figma.Frame) return (node as figma.Frame).counterAxisSizingMode;
+    if (node is figma.Instance) {
+      return (node as figma.Instance).counterAxisSizingMode;
     }
     return null;
   }
@@ -92,6 +114,55 @@ class FigmaLayoutAdapter {
       box.width?.toDouble() ?? 0.0,
       box.height?.toDouble() ?? 0.0,
     );
+  }
+
+  /// Whether the container should hug its content in the primary axis
+  bool get shouldHugContentInPrimaryAxis {
+    return primaryAxisSizingMode == figma.PrimaryAxisSizingMode.auto;
+  }
+
+  /// Whether the container should hug its content in the counter axis
+  bool get shouldHugContentInCounterAxis {
+    return counterAxisSizingMode == figma.CounterAxisSizingMode.auto;
+  }
+
+  /// Whether the container should fill available space in the primary axis
+  bool get shouldFillInPrimaryAxis {
+    return primaryAxisSizingMode == figma.PrimaryAxisSizingMode.fixed;
+  }
+
+  /// Whether the container should fill available space in the counter axis
+  bool get shouldFillInCounterAxis {
+    return counterAxisSizingMode == figma.CounterAxisSizingMode.fixed;
+  }
+
+  /// Creates appropriate main axis size for the layout
+  MainAxisSize get mainAxisSize {
+    if (layoutMode == null) return MainAxisSize.max;
+    return shouldHugContentInPrimaryAxis ? MainAxisSize.min : MainAxisSize.max;
+  }
+
+  /// Creates appropriate cross axis alignment for the layout
+  CrossAxisAlignment getCrossAxisAlignment() {
+    return switch (counterAxisAlignItems) {
+      figma.CounterAxisAlignItems.min => CrossAxisAlignment.start,
+      figma.CounterAxisAlignItems.center => CrossAxisAlignment.center,
+      figma.CounterAxisAlignItems.max => CrossAxisAlignment.end,
+      figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
+      _ => CrossAxisAlignment.center,
+    };
+  }
+
+  /// Creates appropriate main axis alignment for the layout
+  MainAxisAlignment getMainAxisAlignment() {
+    return switch (primaryAxisAlignItems) {
+      figma.PrimaryAxisAlignItems.min => MainAxisAlignment.start,
+      figma.PrimaryAxisAlignItems.center => MainAxisAlignment.center,
+      figma.PrimaryAxisAlignItems.max => MainAxisAlignment.end,
+      figma.PrimaryAxisAlignItems.spaceBetween =>
+        MainAxisAlignment.spaceBetween,
+      _ => MainAxisAlignment.start,
+    };
   }
 
   figma.SizeRectangle? _getBoundingBox() {

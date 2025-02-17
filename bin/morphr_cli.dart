@@ -1,9 +1,13 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
+//ignore_for_file:avoid_print
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:interact/interact.dart';
 import 'package:args/command_runner.dart';
-import 'package:figma/figma.dart' as figma;
 
 void main(List<String> arguments) {
   final runner = CommandRunner('morphr', 'CLI tool for Morphr library')

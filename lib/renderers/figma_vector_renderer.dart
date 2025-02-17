@@ -1,8 +1,11 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
-import 'package:morphr/utils/figma_style_utils.dart';
 import 'package:path_parsing/path_parsing.dart';
 
 class FigmaVectorRenderer {
@@ -170,12 +173,7 @@ class _VectorPainter extends CustomPainter {
           canvas.saveLayer(Offset.zero & size, Paint());
 
           final shadowPaint = Paint()
-            ..color = Color.fromRGBO(
-              (effect.color?.r ?? 0 * 255).round(),
-              (effect.color?.g ?? 0 * 255).round(),
-              (effect.color?.b ?? 0 * 255).round(),
-              effect.color?.a ?? 1,
-            )
+            ..color = _createColorFromEffect(effect)
             ..maskFilter = MaskFilter.blur(
               BlurStyle.normal,
               effect.radius?.toDouble() ?? 0,
@@ -209,10 +207,10 @@ class _VectorPainter extends CustomPainter {
         final paint = Paint()..style = PaintingStyle.fill;
 
         if (fill.type == figma.PaintType.solid) {
-          paint.color = FigmaStyleUtils.getColor(fills) ?? Colors.black;
+          paint.color = _createColor([fill]);
         } else if (fill.type == figma.PaintType.gradientLinear ||
             fill.type == figma.PaintType.gradientRadial) {
-          final gradient = FigmaStyleUtils.getGradient(fill);
+          final gradient = _createGradient(fill);
           if (gradient != null) {
             for (final path in paths) {
               paint.shader = gradient.createShader(path.getBounds());
@@ -233,10 +231,10 @@ class _VectorPainter extends CustomPainter {
           ..strokeWidth = strokeWeight ?? 1.0;
 
         if (stroke.type == figma.PaintType.solid) {
-          paint.color = FigmaStyleUtils.getColor(strokes) ?? Colors.black;
+          paint.color = _createColor([stroke]);
         } else if (stroke.type == figma.PaintType.gradientLinear ||
             stroke.type == figma.PaintType.gradientRadial) {
-          final gradient = FigmaStyleUtils.getGradient(stroke);
+          final gradient = _createGradient(stroke);
           if (gradient != null) {
             for (final path in paths) {
               paint.shader = gradient.createShader(path.getBounds());
@@ -249,6 +247,119 @@ class _VectorPainter extends CustomPainter {
         }
       }
     }
+  }
+
+  Color _createColor(List<figma.Paint>? paints) {
+    if (paints == null || paints.isEmpty) return Colors.black;
+
+    final paint = paints.firstWhere(
+      (p) => p.type == figma.PaintType.solid,
+      orElse: () => paints.first,
+    );
+
+    if (paint.type != figma.PaintType.solid) return Colors.black;
+
+    final color = paint.color;
+    if (color == null) return Colors.black;
+
+    return Color.fromRGBO(
+      ((color.r ?? 0) * 255).round(),
+      ((color.g ?? 0) * 255).round(),
+      ((color.b ?? 0) * 255).round(),
+      paint.opacity ?? 1,
+    );
+  }
+
+  Color _createColorFromEffect(figma.Effect effect) {
+    final color = effect.color;
+    if (color == null) return Colors.black;
+
+    return Color.fromRGBO(
+      ((color.r ?? 0) * 255).round(),
+      ((color.g ?? 0) * 255).round(),
+      ((color.b ?? 0) * 255).round(),
+      color.a ?? 1,
+    );
+  }
+
+  Gradient? _createGradient(figma.Paint fill) {
+    if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
+
+    final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
+    final colors = fill.gradientStops!
+        .map((stop) => Color.fromRGBO(
+              ((stop.color?.r ?? 0) * 255).round(),
+              ((stop.color?.g ?? 0) * 255).round(),
+              ((stop.color?.b ?? 0) * 255).round(),
+              fill.opacity ?? 1,
+            ))
+        .toList();
+
+    if (fill.type == figma.PaintType.gradientLinear) {
+      return _createLinearGradient(fill, colors, stops);
+    } else if (fill.type == figma.PaintType.gradientRadial) {
+      return _createRadialGradient(fill, colors, stops);
+    }
+
+    return null;
+  }
+
+  LinearGradient? _createLinearGradient(
+    figma.Paint fill,
+    List<Color> colors,
+    List<double> stops,
+  ) {
+    if (fill.gradientHandlePositions == null ||
+        fill.gradientHandlePositions!.length < 2) {
+      return null;
+    }
+
+    final handles = fill.gradientHandlePositions!;
+    final start = handles[0];
+    final end = handles[1];
+
+    return LinearGradient(
+      begin: Alignment(start.x * 2 - 1, start.y * 2 - 1),
+      end: Alignment(end.x * 2 - 1, end.y * 2 - 1),
+      colors: colors,
+      stops: stops,
+    );
+  }
+
+  RadialGradient? _createRadialGradient(
+    figma.Paint fill,
+    List<Color> colors,
+    List<double> stops,
+  ) {
+    final transforms = fill.imageTransform;
+    Alignment center = Alignment.center;
+    double radius = 0.75;
+
+    if (transforms != null && transforms.isNotEmpty) {
+      try {
+        final translateX = transforms[4][0].toDouble();
+        final translateY = transforms[5][0].toDouble();
+        final scaleX = transforms[0][0].toDouble();
+        final scaleY = transforms[3][0].toDouble();
+
+        center = Alignment(
+          (translateX * 2.0) - 1.0,
+          (translateY * 2.0) - 1.0,
+        );
+        radius = (scaleX.abs() + scaleY.abs()) / 2 * 0.7;
+      } catch (e) {
+        debugPrint('Error processing gradient transform: $e');
+      }
+    }
+
+    return RadialGradient(
+      center: center,
+      radius: radius,
+      colors: colors,
+      stops: stops,
+      focal: center,
+      focalRadius: 0.0,
+    );
   }
 
   Path _parseSvgPath(String pathData) {

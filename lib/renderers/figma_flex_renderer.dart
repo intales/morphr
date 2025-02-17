@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
@@ -20,22 +24,26 @@ class FigmaFlexRenderer {
 
     final isRow = layoutAdapter.layoutMode == figma.LayoutMode.horizontal;
 
+    // Create the flex content
     Widget flex = Flex(
       direction: isRow ? Axis.horizontal : Axis.vertical,
-      mainAxisAlignment:
-          _getMainAxisAlignment(layoutAdapter.primaryAxisAlignItems),
-      crossAxisAlignment:
-          _getCrossAxisAlignment(layoutAdapter.counterAxisAlignItems),
-      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: layoutAdapter.getMainAxisAlignment(),
+      crossAxisAlignment: layoutAdapter.getCrossAxisAlignment(),
+      mainAxisSize: layoutAdapter.mainAxisSize,
       children: _addSpacing(children, layoutAdapter),
     );
 
-    flex = Container(
-      decoration: decorationAdapter.createBoxDecoration(),
-      padding: layoutAdapter.padding,
-      child: decorationAdapter.wrapWithBlurEffects(flex),
-    );
+    // Apply padding and decoration
+    if (layoutAdapter.padding != EdgeInsets.zero ||
+        decorationAdapter.supportsDecoration) {
+      flex = Container(
+        decoration: decorationAdapter.createBoxDecoration(),
+        padding: layoutAdapter.padding,
+        child: decorationAdapter.wrapWithBlurEffects(flex),
+      );
+    }
 
+    // Finally apply any additional constraints
     return constraintsAdapter.applyConstraints(flex);
   }
 
@@ -59,27 +67,5 @@ class FigmaFlexRenderer {
     }
 
     return spacedChildren;
-  }
-
-  MainAxisAlignment _getMainAxisAlignment(figma.PrimaryAxisAlignItems? align) {
-    return switch (align) {
-      figma.PrimaryAxisAlignItems.min => MainAxisAlignment.start,
-      figma.PrimaryAxisAlignItems.center => MainAxisAlignment.center,
-      figma.PrimaryAxisAlignItems.max => MainAxisAlignment.end,
-      figma.PrimaryAxisAlignItems.spaceBetween =>
-        MainAxisAlignment.spaceBetween,
-      _ => MainAxisAlignment.start,
-    };
-  }
-
-  CrossAxisAlignment _getCrossAxisAlignment(
-      figma.CounterAxisAlignItems? align) {
-    return switch (align) {
-      figma.CounterAxisAlignItems.min => CrossAxisAlignment.start,
-      figma.CounterAxisAlignItems.center => CrossAxisAlignment.center,
-      figma.CounterAxisAlignItems.max => CrossAxisAlignment.end,
-      figma.CounterAxisAlignItems.baseline => CrossAxisAlignment.baseline,
-      _ => CrossAxisAlignment.center,
-    };
   }
 }

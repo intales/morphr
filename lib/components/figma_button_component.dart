@@ -1,7 +1,13 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/widgets.dart';
+import 'package:figma/figma.dart' as figma;
 import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/figma_service.dart';
 import 'package:morphr/renderers/figma_shape_renderer.dart';
+import 'package:morphr/renderers/figma_text_renderer.dart';
 
 class FigmaButtonComponent extends FigmaComponent {
   final String componentName;
@@ -29,13 +35,25 @@ class FigmaButtonComponent extends FigmaComponent {
 
         return GestureDetector(
           onTap: onPressed,
-          child: const FigmaShapeRenderer().render(
-            node: node,
-            parentSize: size,
-            child: child,
-          ),
+          child: _buildButtonContent(node, size),
         );
       },
+    );
+  }
+
+  Widget _buildButtonContent(figma.Node node, Size parentSize) {
+    if (node is figma.Text) {
+      return const FigmaTextRenderer().render(
+        node: node,
+        parentSize: parentSize,
+        content: node.characters ?? '',
+      );
+    }
+
+    return const FigmaShapeRenderer().render(
+      node: node,
+      parentSize: parentSize,
+      child: child,
     );
   }
 }

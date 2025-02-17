@@ -1,6 +1,9 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
-import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/renderers/figma_flex_renderer.dart';
 import 'package:morphr/adapters/figma_bar_adapter.dart';
 import 'package:morphr/adapters/figma_decoration_adapter.dart';
@@ -16,30 +19,33 @@ class FigmaAppbarRenderer {
   }) {
     final barAdapter = FigmaBarAdapter(node, FigmaBarType.top);
     final decorationAdapter = FigmaDecorationAdapter(node);
-    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
 
     barAdapter.validateBar();
 
-    final totalHeight = barAdapter.getAdjustedHeight(mediaQueryPadding);
+    final totalHeight = barAdapter.height + mediaQueryPadding.top;
+    final contentHeight = barAdapter.height;
 
-    Widget content = Stack(
+    return Stack(
       children: [
+        // Background che si estende sotto la status bar
         Container(
           height: totalHeight,
           decoration: decorationAdapter.createBoxDecoration(),
         ),
-        barAdapter.getContentPosition(
-          mediaQueryPadding: mediaQueryPadding,
+        // Contenuto posizionato con padding per la status bar
+        Positioned(
+          top: mediaQueryPadding.top,
+          left: 0,
+          right: 0,
+          height: contentHeight,
           child: const FigmaFlexRenderer().render(
             node: node,
-            parentSize: Size(parentSize.width, barAdapter.height),
+            parentSize: Size(parentSize.width, contentHeight),
             children: children,
           ),
         ),
       ],
     );
-
-    return constraintsAdapter.applyConstraints(content);
   }
 
   Size getPreferredSize({
@@ -49,6 +55,6 @@ class FigmaAppbarRenderer {
     final barAdapter = FigmaBarAdapter(node, FigmaBarType.top);
     barAdapter.validateBar();
 
-    return Size.fromHeight(barAdapter.getAdjustedHeight(mediaQueryPadding));
+    return Size.fromHeight(barAdapter.height);
   }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'dart:ui' as ui;
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
@@ -25,7 +29,16 @@ class FigmaDecorationAdapter {
       border: _createBorder(),
       borderRadius: _getBorderRadius(),
       boxShadow: _createBoxShadows(),
+      shape: _shape,
     );
+  }
+
+  /// The shape type of the node
+  BoxShape get _shape {
+    if (node is figma.Ellipse) {
+      return BoxShape.circle;
+    }
+    return BoxShape.rectangle;
   }
 
   /// The fill properties of the node
@@ -92,6 +105,8 @@ class FigmaDecorationAdapter {
       radius = (node as figma.Rectangle).cornerRadius?.toDouble();
     } else if (node is figma.Instance) {
       radius = (node as figma.Instance).cornerRadius?.toDouble();
+    } else if (node is figma.Frame) {
+      radius = (node as figma.Frame).cornerRadius?.toDouble();
     }
 
     if (radius != null && radius > 0) {

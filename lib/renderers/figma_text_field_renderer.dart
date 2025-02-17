@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Intales Srl. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/material.dart';
 import 'package:figma/figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
