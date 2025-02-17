@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FigmaService.instance.initialize(
+  await MorphrService.instance.initialize(
     documentPath: 'assets/figma_document.json',
   );
 
