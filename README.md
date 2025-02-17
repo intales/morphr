@@ -133,6 +133,6 @@ final bottomBar = FigmaComponent.bottomBar(
 
 ## License
 
-MIT License - see (LICENSE)[LICENSE] file for details
+MIT License - see [LICENSE](LICENSE) file for details
 
 The synchronization service is a separate commercial product.
