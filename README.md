@@ -67,7 +67,8 @@ The CLI will guide you through:
 1. Add Morphr to your pubspec.yaml:
 ```yaml
 dependencies:
-  morphr: ^0.1.0
+  morphr:
+    git: https://github.com/intales/morphr
 ```
 
 2. Basic usage example:
