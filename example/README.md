@@ -1,6 +1,7 @@
 # Morphr Todo Example
 
 A Flutter application showcasing how to use the Morphr library to render a Figma-designed todo app.
+The figma design reference can be found [https://www.figma.com/design/jRMUbM17IAouabI52imJlg/My-awesome-app?node-id=0-1&t=DGiFfeMAPJtWxLAW-1](here).
 
 ## Overview
 
@@ -111,7 +112,7 @@ The following components must be defined in your Figma file:
 
 ## Running the Example
 
-1. Download your Figma design:
+1. Download the Figma design from this [https://www.figma.com/design/jRMUbM17IAouabI52imJlg/My-awesome-app?node-id=0-1&t=DGiFfeMAPJtWxLAW-1](link):
 ```bash
 morphr download
 ```
