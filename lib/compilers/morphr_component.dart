@@ -4,7 +4,7 @@ import 'package:dart_mappable/dart_mappable.dart';
 class MorphrComponent {
   final String componentName;
   final String type;
-  final String properties;
+  final Map<String, dynamic> properties;
 
   const MorphrComponent({
     required this.componentName,
