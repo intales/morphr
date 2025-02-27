@@ -21,11 +21,13 @@ dependencies:
   args: ^2.6.0
   interact: ^2.2.0
   http: ^1.3.0
+  dart_mappable: ^4.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
