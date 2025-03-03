@@ -37,6 +37,11 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  minimal_mvn: ^1.0.4
+  dart_mappable: ^4.4.0
+  http: ^1.3.0
+  go_router: ^14.8.1
+  figma: ^7.3.1
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +53,26 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  dart_mappable_builder: ^4.4.0
+  package_rename: ^1.8.0
+  go_router_builder: ^2.8.1
+  build_verify: ^3.1.0
+
+package_rename_config:
+  linux:
+    app_name: "Morphr" # (String) The window title of the linux app
+    package_name: "com.intales.morphr" # (String) The application id of the linux app
+    exe_name: "morphr" # (String) The executable name (binary name) of the linux app
+
+  macos:
+    app_name: "Morphr" # (String) The product name of the macos app
+    package_name: "com.intales.morphr" # (String) The product bundle identifier of the macos app
+
+  windows:
+    app_name: "Morphr" # (String) The window title & software name of the windows app
+    organization: "Intales" # (String) The organization name (company name) of the windows app
+    exe_name: "morphr" # (String) The executable name (binary name) of the windows app
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

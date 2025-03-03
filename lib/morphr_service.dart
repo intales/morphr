@@ -11,7 +11,7 @@ class MorphrService {
   MorphrService._();
   static final instance = MorphrService._();
 
-  late final String _documentPath;
+  late final String? _documentPath;
   late final figma.Document? _document;
 
   Future<void> initialize({
@@ -19,6 +19,11 @@ class MorphrService {
   }) async {
     _documentPath = documentPath;
     await _loadDocument();
+  }
+
+  void initializeFromString(String document) {
+    _document = figma.FileResponse.fromJson(jsonDecode(document)).document
+        as figma.Document?;
   }
 
   figma.Node? getComponent(final String componentId) {
@@ -30,9 +35,10 @@ class MorphrService {
   }
 
   Future<void> _loadDocument() async {
-    final file = await rootBundle.loadString(_documentPath);
+    final file = await rootBundle.loadString(_documentPath!);
 
-    _document = figma.FileResponse.fromJson(jsonDecode(file)).document;
+    _document = figma.FileResponse.fromJson(jsonDecode(file)).document
+        as figma.Document?;
   }
 
   figma.Node? _findComponent(figma.Node node, String componentId) {
