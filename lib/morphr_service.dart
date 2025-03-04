@@ -32,7 +32,8 @@ class MorphrService {
   Future<void> _loadDocument() async {
     final file = await rootBundle.loadString(_documentPath);
 
-    _document = figma.FileResponse.fromJson(jsonDecode(file)).document;
+    _document = figma.FileResponse.fromJson(jsonDecode(file)).document
+        as figma.Document?;
   }
 
   figma.Node? _findComponent(figma.Node node, String componentId) {
