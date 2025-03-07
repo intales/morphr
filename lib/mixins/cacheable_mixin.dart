@@ -3,7 +3,19 @@
 // in the LICENSE file.
 
 mixin CacheableMixin {
-  final Map<String, dynamic> _cache = {};
+  static final Map<Type, Map<String, Map<String, dynamic>>> _globalCaches = {};
+
+  String getCacheId();
+
+  Map<String, dynamic> get _cache {
+    final type = runtimeType;
+    _globalCaches[type] ??= {};
+
+    final String id = getCacheId();
+    _globalCaches[type]![id] ??= {};
+
+    return _globalCaches[type]![id]!;
+  }
 
   T getCached<T>(String key, T Function() compute) {
     if (!_cache.containsKey(key)) {
@@ -16,20 +28,11 @@ mixin CacheableMixin {
     _cache.clear();
   }
 
-  void invalidateCache([String? keyPattern]) {
-    if (keyPattern == null) {
-      clearCache();
-      return;
-    }
-
-    _cache.removeWhere((key, _) => key.contains(keyPattern));
+  static void clearAllCaches<T>() {
+    _globalCaches[T]?.clear();
   }
 
-  bool hasCached(String key) {
-    return _cache.containsKey(key);
-  }
-
-  void setCached<T>(String key, T value) {
-    _cache[key] = value;
+  static void invalidateObjectCache<T>(String objectId) {
+    _globalCaches[T]?.remove(objectId);
   }
 }

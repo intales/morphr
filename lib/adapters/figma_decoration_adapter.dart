@@ -15,6 +15,9 @@ class FigmaDecorationAdapter with CacheableMixin {
 
   FigmaDecorationAdapter(this.node);
 
+  @override
+  String getCacheId() => node.id;
+
   /// Whether the node supports decoration capabilities
   bool get supportsDecoration {
     return getCached(

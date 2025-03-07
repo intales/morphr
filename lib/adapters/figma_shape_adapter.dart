@@ -14,6 +14,9 @@ class FigmaShapeAdapter with CacheableMixin {
 
   FigmaShapeAdapter(this.node);
 
+  @override
+  String getCacheId() => node.id;
+
   /// Whether the node supports shape capabilities
   bool get supportsShape {
     return getCached("supportsShape", () {
