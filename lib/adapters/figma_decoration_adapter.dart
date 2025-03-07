@@ -5,31 +5,35 @@
 import 'dart:ui' as ui;
 import 'package:figma/figma.dart' as figma;
 import 'package:flutter/material.dart';
+import 'package:morphr/mixins/cacheable_mixin.dart';
 
 /// An adapter that provides decoration capabilities for Figma nodes.
 /// This adapter centralizes all decorative properties that are common
 /// across different types of Figma nodes.
-class FigmaDecorationAdapter {
+class FigmaDecorationAdapter with CacheableMixin {
   final figma.Node node;
 
-  const FigmaDecorationAdapter(this.node);
+  FigmaDecorationAdapter(this.node);
 
   /// Whether the node supports decoration capabilities
   bool get supportsDecoration {
-    return _getFills() != null ||
-        _getStrokes() != null ||
-        _getEffects() != null;
+    return getCached(
+        "supportsDecoration",
+        () =>
+            _getFills() != null ||
+            _getStrokes() != null ||
+            _getEffects() != null);
   }
 
   /// Creates a BoxDecoration from the node's properties
   BoxDecoration createBoxDecoration() {
     return BoxDecoration(
-      color: _getSolidColor(),
-      gradient: _getGradient(),
-      border: _createBorder(),
-      borderRadius: _getBorderRadius(),
-      boxShadow: _createBoxShadows(),
-      shape: _shape,
+      color: getCached("_getSolidColor", _getSolidColor),
+      gradient: getCached("_getGradient", _getGradient),
+      border: getCached("_createBorder", _createBorder),
+      borderRadius: getCached("_getBorderRadius", _getBorderRadius),
+      boxShadow: getCached("_createBoxShadows", _createBoxShadows),
+      shape: getCached("_shape", () => _shape),
     );
   }
 
