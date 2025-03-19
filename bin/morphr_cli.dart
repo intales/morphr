@@ -8,9 +8,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:interact/interact.dart';
 import 'package:args/command_runner.dart';
+import 'commands/regsiter.dart';
+import 'commands/verify.dart';
+import 'commands/login.dart';
+import 'commands/figma_connect.dart';
 
 void main(List<String> arguments) {
   final runner = CommandRunner('morphr', 'CLI tool for Morphr library')
+    ..addCommand(RegisterCommand())
+    ..addCommand(VerifyCommand())
+    ..addCommand(LoginCommand())
+    ..addCommand(FigmaConnectCommand())
     ..addCommand(DownloadCommand());
 
   runner.run(arguments).catchError((error) {
