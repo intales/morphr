@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:http/http.dart' as http;
+import 'package:interact/interact.dart';
 import '../helpers/config_helper.dart';
+import 'init.dart';
 
 class FigmaConnectCommand extends Command {
   @override
@@ -74,11 +76,18 @@ class FigmaConnectCommand extends Command {
           '💡 You can CMD+click (Mac) or CTRL+click (Windows/Linux) to open the URL');
 
       print(
-          '\n⚠️ Important: After authorizing in Figma, you will be redirected to a confirmation page.');
-      print(
           '📝 The authorization process will complete automatically in the background.');
-      print(
-          '👍 You can close this terminal once you see the confirmation page in your browser.');
+
+      final createProject = Confirm(
+        prompt: 'Do you want to create a new project now?',
+        defaultValue: true,
+      ).interact();
+
+      if (createProject) {
+        final runner = CommandRunner('morphr', 'Morphr CLI')
+          ..addCommand(InitCommand());
+        await runner.run(['init', '-s', server]);
+      }
     } catch (e) {
       print('\n❌ Error during Figma authorization: $e');
       exit(1);

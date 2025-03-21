@@ -85,12 +85,12 @@ class VerifyCommand extends Command {
         });
         print('\n✅ Your account is now active!');
 
-        final verify = Confirm(
+        final figmaConnect = Confirm(
           prompt: 'Do you want to connect Figma to your account now?',
           defaultValue: true,
         ).interact();
 
-        if (verify) {
+        if (figmaConnect) {
           final runner = CommandRunner('morphr', 'Morphr CLI')
             ..addCommand(FigmaConnectCommand());
           await runner.run(['figma-connect', '-s', server]);

@@ -64,4 +64,20 @@ class ConfigHelper {
     config.addAll(updates);
     saveConfig(config);
   }
+
+  static String? getToken() {
+    final configFile = File(getConfigFilePath());
+
+    if (!configFile.existsSync()) {
+      return null;
+    }
+    try {
+      final content = configFile.readAsStringSync();
+      final json = jsonDecode(content) as Map<String, dynamic>;
+      return json['access_token'];
+    } catch (e) {
+      print('Error while reading config: $e');
+      return null;
+    }
+  }
 }

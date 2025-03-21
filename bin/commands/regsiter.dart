@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:interact/interact.dart';
 import 'package:args/command_runner.dart';
 import '../helpers/config_helper.dart';
+import 'verify.dart';
 
 class RegisterCommand extends Command {
   @override
@@ -106,9 +107,21 @@ class RegisterCommand extends Command {
         'userId': userId,
       });
 
-      print('\n✅ Registration completed successfully!');
-      print('📧 We have sent you an email with a verification code.');
-      print('📝 Use the "morphr verify" command to verify your new account.\n');
+      final verify = Confirm(
+        prompt: 'Do you want to verify your account now?',
+        defaultValue: true,
+      ).interact();
+
+      if (verify) {
+        final runner = CommandRunner('morphr', 'Morphr CLI')
+          ..addCommand(VerifyCommand());
+        await runner.run(['verify', '-s', server]);
+      } else {
+        print('\n✅ Registration completed successfully!');
+        print('📧 We have sent you an email with a verification code.');
+        print(
+            '📝 Use the "morphr verify" command to verify your new account.\n');
+      }
     } catch (e) {
       print('\n❌ Error during registration process: $e');
       exit(1);
