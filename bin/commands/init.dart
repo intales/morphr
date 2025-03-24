@@ -61,8 +61,6 @@ class InitCommand extends Command {
       exit(1);
     }
 
-    print('\n💡 Found Figma file ID: $figmaFileId');
-
     print('\n🔍 Verifying access to Figma file...');
     final isAccessible = await _verifyFileAccess(server, token, figmaFileId);
     if (!isAccessible) {
@@ -102,27 +100,19 @@ class MorphrOptions {
   /// Project ID in Morphr Cloud
   final String projectId;
   
-  /// Figma File ID linked to this project
-  final String figmaFileId;
-  
   /// Creates a new MorphrOptions instance
   const MorphrOptions({
     required this.projectId,
-    required this.figmaFileId,
   });
 }
 
 /// Default Morphr configuration for this project
 const morphrOptions = MorphrOptions(
   projectId: "$projectId",
-  figmaFileId: "$figmaFileId",
 );
 ''');
 
     print('\n✅ Morphr project initialized successfully!');
-    print('Project ID: $projectId');
-    print('Figma File: $figmaFileId');
-
     print('\n📂 Configuration file generated at lib/morphr_options.dart');
     print('\n📝 Now add Morphr to your Flutter app:');
     print('''
