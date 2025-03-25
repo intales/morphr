@@ -4,3 +4,4 @@
 
 export 'package:morphr/components/figma_component.dart';
 export 'package:morphr/morphr_service.dart';
+export 'package:morphr/cloud/morphr_cloud_options.dart';

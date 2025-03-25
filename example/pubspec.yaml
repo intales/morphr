@@ -67,7 +67,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
 
   assets:
-    - assets/figma_document.json
+    - assets/morphr/design.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

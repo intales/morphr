@@ -1,12 +1,11 @@
+import 'package:example/morphr_options.dart';
 import 'package:morphr/morphr.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MorphrService.instance.initialize(
-    documentPath: 'assets/figma_document.json',
-  );
+  await MorphrService.instance.initializeCloud(options: morphrOptions);
 
   runApp(const FigmaTestApp());
 }

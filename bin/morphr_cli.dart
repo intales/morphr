@@ -47,11 +47,6 @@ class DownloadCommand extends Command {
         'file',
         abbr: 'f',
         help: 'Figma file ID',
-      )
-      ..addOption(
-        'output',
-        abbr: 'o',
-        help: 'Output file path',
       );
   }
 
@@ -59,7 +54,8 @@ class DownloadCommand extends Command {
   Future<void> run() async {
     var token = argResults?['token'] as String?;
     var fileId = argResults?['file'] as String?;
-    var output = argResults?['output'] as String?;
+    const outputDir = "assets/morphr";
+    const output = "$outputDir/design.json";
 
     print('\n🎨 Welcome to Morphr CLI! Let\'s download your Figma file!\n');
 
@@ -86,17 +82,6 @@ class DownloadCommand extends Command {
       },
     ).interact();
 
-    output ??= Input(
-      prompt: '💾 Where should I save the JSON file?',
-      defaultValue: 'figma_file.json',
-      validator: (value) {
-        if (value.isEmpty) {
-          throw ValidationError('❌ Output path cannot be empty');
-        }
-        return true;
-      },
-    ).interact();
-
     print('\n📥 Downloading Figma file $fileId...');
 
     try {
@@ -109,9 +94,13 @@ class DownloadCommand extends Command {
       );
 
       final json = response.body;
+      if (!Directory(outputDir).existsSync()) {
+        Directory(outputDir).createSync(recursive: true);
+      }
       await File(output).writeAsString(json, encoding: utf8);
 
-      print('\n✨ File successfully downloaded and saved to $output');
+      print(
+          '\n✨ File successfully downloaded and saved to $output\nAdd it to your pubspec.yaml!');
       print('🎉 Happy coding with Morphr!\n');
     } catch (e) {
       print('\n❌ Error downloading file: $e');
