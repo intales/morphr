@@ -55,6 +55,26 @@ class MorphrCloudClient {
   /// Flag to track if the client is authenticated
   bool get isAuthenticated => accessToken != null && refreshToken != null;
 
+  /// Makes a GET request to the specified [endpoint].
+  ///
+  /// If [requiresAuth] is true, the access token will be included in the request.
+  /// Additional [headers] and [queryParams] can be provided.
+  /// If a response is received, the body is parsed as JSON and returned.
+  Future<Map<String, dynamic>> get(
+    String endpoint, {
+    bool requiresAuth = true,
+    Map<String, String>? headers,
+    Map<String, String>? queryParams,
+  }) async {
+    return _makeRequest(
+      method: 'GET',
+      endpoint: endpoint,
+      requiresAuth: requiresAuth,
+      headers: headers,
+      queryParams: queryParams,
+    );
+  }
+
   /// Makes a POST request to the specified [endpoint] with the given [body].
   ///
   /// If [requiresAuth] is true, the access token will be included in the request.
@@ -82,6 +102,7 @@ class MorphrCloudClient {
     dynamic body,
     bool requiresAuth = true,
     Map<String, String>? headers,
+    Map<String, String>? queryParams,
   }) async {
     try {
       // First attempt
@@ -91,6 +112,7 @@ class MorphrCloudClient {
         body: body,
         requiresAuth: requiresAuth,
         headers: headers,
+        queryParams: queryParams,
       );
 
       if (response.statusCode == 401 && refreshToken != null) {
@@ -102,6 +124,7 @@ class MorphrCloudClient {
             body: body,
             requiresAuth: requiresAuth,
             headers: headers,
+            queryParams: queryParams,
           ));
         }
       }
@@ -124,8 +147,11 @@ class MorphrCloudClient {
     dynamic body,
     bool requiresAuth = true,
     Map<String, String>? headers,
+    Map<String, String>? queryParams,
   }) async {
-    final uri = Uri.parse('$baseUrl/$endpoint');
+    final uri = Uri.parse('$baseUrl/$endpoint').replace(
+      queryParameters: queryParams,
+    );
 
     final requestHeaders = <String, String>{
       'Content-Type': 'application/json',
@@ -241,9 +267,10 @@ class MorphrCloudClient {
     required int projectId,
     String? figmaFileHash,
   }) async {
-    return post(
+    return get(
       'projects/$projectId/sync/dev',
-      body: figmaFileHash != null ? {'figmaFileHash': figmaFileHash} : {},
+      queryParams:
+          figmaFileHash != null ? {'figmaFileHash': figmaFileHash} : {},
     );
   }
 }

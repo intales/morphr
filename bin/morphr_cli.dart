@@ -13,6 +13,7 @@ import 'commands/verify.dart';
 import 'commands/login.dart';
 import 'commands/figma_connect.dart';
 import 'commands/init.dart';
+import 'commands/sync.dart';
 
 void main(List<String> arguments) {
   final runner = CommandRunner('morphr', 'CLI tool for Morphr library')
@@ -21,6 +22,7 @@ void main(List<String> arguments) {
     ..addCommand(LoginCommand())
     ..addCommand(FigmaConnectCommand())
     ..addCommand(InitCommand())
+    ..addCommand(SyncCommand())
     ..addCommand(DownloadCommand());
 
   runner.run(arguments).catchError((error) {
