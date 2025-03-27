@@ -1,10 +1,8 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:interact/interact.dart';
 import 'package:args/command_runner.dart';
 import '../helpers/config_helper.dart';
-import 'verify.dart';
+import '../client.dart';
 
 class RegisterCommand extends Command {
   @override
@@ -34,12 +32,12 @@ class RegisterCommand extends Command {
 
   @override
   Future<void> run() async {
-    print('\n👤 Welcome on Morphr Cloud! Let\'s create your new account!\n');
-
-    var email = argResults?['email'] as String?;
-    var name = argResults?['name'] as String?;
-    var password = null as String?;
-    var server = argResults?['server'] as String;
+    String? email = argResults?['email'] as String?;
+    String? name = argResults?['name'] as String?;
+    String? server = argResults?['server'] as String;
+    String? password;
+    String? confirmPassword;
+    final client = getClient(server: server);
 
     email ??= Input(
       prompt: '📧 Enter your email address',
@@ -64,64 +62,50 @@ class RegisterCommand extends Command {
       },
     ).interact();
 
-    password ??= Password(
+    password = Password(
       prompt: '🔑 Create a password',
     ).interact();
 
-    final confirmPassword = Password(
+    while (password?.isEmpty ?? true) {
+      print("❌ Password cannot be empty");
+      password = Password(
+        prompt: '🔑 Create a password',
+      ).interact();
+    }
+
+    confirmPassword = Password(
       prompt: '🔑 Confirm your new password',
     ).interact();
 
-    print('\n📤 Account registration in progress...');
+    while (password != confirmPassword) {
+      print("❌ Password don't match");
+      confirmPassword = Password(
+        prompt: '🔑 Confirm your new password',
+      ).interact();
+    }
+
+    print('📤 Account registration in progress...');
 
     try {
-      final response = await http.post(
-        Uri.parse("$server/register"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({
+      final response = await client.post(
+        "register",
+        requiresAuth: false,
+        body: {
           "email": email,
           "name": name,
           "password": password,
           "confirmPassword": confirmPassword,
-        }),
+        },
       );
-
-      final responseBody = jsonDecode(response.body);
-
-      if (response.statusCode != 200) {
-        final errorMessage = responseBody is String
-            ? responseBody
-            : (responseBody is Map && responseBody.containsKey('message')
-                ? responseBody['message']
-                : 'Error during registration process.');
-
-        print('\n❌ Registration failed: $errorMessage');
-        exit(1);
-      }
-
-      final userId = responseBody['userId'];
+      final userId = response['userId'];
 
       ConfigHelper.updateConfig({
         'userId': userId,
       });
 
-      final verify = Confirm(
-        prompt: 'Do you want to verify your account now?',
-        defaultValue: true,
-      ).interact();
-
-      if (verify) {
-        final runner = CommandRunner('morphr', 'Morphr CLI')
-          ..addCommand(VerifyCommand());
-        await runner.run(['verify', '-s', server]);
-      } else {
-        print('\n✅ Registration completed successfully!');
-        print('📧 We have sent you an email with a verification code.');
-        print(
-            '📝 Use the "morphr verify" command to verify your new account.\n');
-      }
+      print('✅ Registration completed successfully!');
+      print('📧 We have sent you an email with a verification code.');
+      print('📝 Use the "morphr verify" command to verify your new account.');
     } catch (e) {
       print('\n❌ Error during registration process: $e');
       exit(1);

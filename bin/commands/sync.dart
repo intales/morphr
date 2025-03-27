@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:morphr/cloud/morphr_cloud_client.dart';
-import '../helpers/config_helper.dart';
+import '../client.dart';
 
 class SyncCommand extends Command {
   @override
@@ -65,12 +64,7 @@ class SyncCommand extends Command {
     String server,
     String projectId,
   ) async {
-    final config = ConfigHelper.loadConfig();
-    final client = MorphrCloudClient(
-      baseUrl: server,
-      accessToken: config["access_token"]!,
-      refreshToken: config["refresh_token"],
-    );
+    final client = getClient(server: server);
     try {
       final response = await client.post(
         "projects/$projectId/sync",

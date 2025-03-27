@@ -1,10 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:interact/interact.dart';
-import 'package:http/http.dart' as http;
+import 'package:morphr/cloud/morphr_cloud_client.dart';
 import '../helpers/config_helper.dart';
+import '../client.dart';
 
 class InitCommand extends Command {
   @override
@@ -31,13 +31,12 @@ class InitCommand extends Command {
   Future<void> run() async {
     var figmaUrl = argResults?['figma-url'] as String?;
     final server = argResults?['server'] as String;
-
-    print('\n🎨 Welcome to Morphr! Let\'s set up your project.\n');
+    final client = getClient(server: server);
 
     final token = ConfigHelper.getToken();
     if (token == null) {
       print(
-          '❌ No authentication token found. Please login first with: morphr login');
+          '❌ No authentication token found. Please login first with: "morphr login" or "morphr register"');
       exit(1);
     }
 
@@ -57,20 +56,26 @@ class InitCommand extends Command {
     final figmaFileId = _extractFigmaFileId(figmaUrl);
     if (figmaFileId == null) {
       print(
-          '\n❌ Could not extract file ID from URL. Please check the URL and try again.');
+          '❌ Could not extract file ID from URL. Please check the URL and try again.');
       exit(1);
     }
 
-    print('\n🔍 Verifying access to Figma file...');
-    final isAccessible = await _verifyFileAccess(server, token, figmaFileId);
+    print('🔍 Verifying access to Figma file...');
+    final isAccessible = await _verifyFileAccess(
+      client: client,
+      fileId: figmaFileId,
+    );
     if (!isAccessible) {
-      print('\n❌ Could not access this Figma file.');
+      print('❌ Could not access this Figma file.');
       print(
           'Make sure you have linked your Figma account and have access to the file.');
       exit(1);
     }
 
-    final fileDetails = await _getFileDetails(server, token, figmaFileId);
+    final fileDetails = await _getFileDetails(
+      client: client,
+      fileId: figmaFileId,
+    );
     final fileName = fileDetails?['name'] ?? 'Flutter Project';
 
     final projectName = Input(
@@ -78,11 +83,14 @@ class InitCommand extends Command {
       defaultValue: fileName,
     ).interact();
 
-    print('\n🚀 Creating project on Morphr Cloud...');
-    final projectId =
-        await _createProject(server, token, projectName, figmaFileId);
+    print('🚀 Creating project on Morphr Cloud...');
+    final projectId = await _createProject(
+      client: client,
+      name: projectName,
+      figmaFileId: figmaFileId,
+    );
     if (projectId == null) {
-      print('\n❌ Failed to create project on Morphr Cloud.');
+      print('❌ Failed to create project on Morphr Cloud.');
       exit(1);
     }
 
@@ -107,9 +115,9 @@ const morphrOptions = MorphrCloudOptions(
 );
 ''');
 
-    print('\n✅ Morphr project initialized successfully!');
-    print('\n📂 Configuration file generated at lib/morphr_options.dart');
-    print('\n📝 Now add Morphr to your Flutter app:');
+    print('✅ Morphr project initialized successfully!');
+    print('📂 Configuration file generated at lib/morphr_options.dart');
+    print('📝 Now add Morphr to your Flutter app:');
     print('''
 1. Update your main.dart:
 
@@ -120,12 +128,12 @@ const morphrOptions = MorphrCloudOptions(
     WidgetsFlutterBinding.ensureInitialized();
     
     // Initialize Morphr with your configuration
-    await MorphrService.instance.initialize(options: morphrOptions);
+    await MorphrService.instance.initializeCloud(options: morphrOptions);
     
     runApp(MyApp());
   }
 
-2. Run your app and start creating great UI with Morphr!
+2. Run your app and start creating great UIs with Morphr!
 ''');
   }
 
@@ -139,59 +147,47 @@ const morphrOptions = MorphrCloudOptions(
     return null;
   }
 
-  Future<bool> _verifyFileAccess(
-      String server, String token, String fileId) async {
+  Future<bool> _verifyFileAccess({
+    required final MorphrCloudClient client,
+    required final String fileId,
+  }) async {
     try {
-      final response = await http.get(
-        Uri.parse('$server/figma/$fileId/verify'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      return response.statusCode == 200;
+      await client.get("figma/$fileId/verify");
+      return true;
     } catch (e) {
       print('Error verifying file access: $e');
       return false;
     }
   }
 
-  Future<Map<String, dynamic>?> _getFileDetails(
-      String server, String token, String fileId) async {
+  Future<Map<String, dynamic>?> _getFileDetails({
+    required final MorphrCloudClient client,
+    required final String fileId,
+  }) async {
     try {
-      final response = await http.get(
-        Uri.parse('$server/figma/$fileId/details'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      return null;
+      final response = await client.get("figma/$fileId/details");
+      return response;
     } catch (e) {
       print('Error getting file details: $e');
       return null;
     }
   }
 
-  Future<String?> _createProject(
-      String server, String token, String name, String figmaFileId) async {
+  Future<String?> _createProject({
+    required final MorphrCloudClient client,
+    required final String name,
+    required final String figmaFileId,
+  }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$server/projects/create'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+      final response = await client.post(
+        "projects/create",
+        body: {
+          "name": name,
+          "figmaFileId": figmaFileId,
         },
-        body: jsonEncode({
-          'name': name,
-          'figmaFileId': figmaFileId,
-        }),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['projectId'].toString();
-      }
-      return null;
+      return response['projectId'].toString();
     } catch (e) {
       print('Error creating project: $e');
       return null;

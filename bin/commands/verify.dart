@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:interact/interact.dart';
-import 'package:http/http.dart' as http;
 import '../helpers/config_helper.dart';
-import 'figma_connect.dart';
+import '../client.dart';
 
 class VerifyCommand extends Command {
   @override
@@ -30,13 +28,11 @@ class VerifyCommand extends Command {
 
   @override
   Future<void> run() async {
-    print('\n🔐 Verify your Morphr account!\n');
-
-    final config = ConfigHelper.loadConfig();
-
-    final userId = config['userId'] as int;
     var code = argResults?['code'] as String?;
     var server = argResults?['server'] as String;
+    final config = ConfigHelper.loadConfig();
+    final userId = config['userId'] as int;
+    final client = getClient(server: server);
 
     code ??= Input(
       prompt: '🔑 Enter the verification code that you have received by email',
@@ -51,58 +47,32 @@ class VerifyCommand extends Command {
       },
     ).interact();
 
-    print('\n🔄 Verifying your account...');
+    print('🔄 Verifying your account...');
 
     try {
-      final response = await http.post(
-        Uri.parse("$server/verify"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({
+      final response = await client.post(
+        "verify",
+        requiresAuth: false,
+        body: {
           "userId": userId,
           "code": code,
-        }),
+        },
       );
 
-      final responseBody = jsonDecode(response.body);
-
-      if (response.statusCode != 200) {
-        final errorMessage = responseBody is String
-            ? responseBody
-            : (responseBody is Map && responseBody.containsKey('message')
-                ? responseBody['message']
-                : 'Errore durante la verifica');
-
-        print('\n❌ Verifica fallita: $errorMessage');
-        exit(1);
-      }
-
-      if (responseBody['success'] == true) {
+      if (response['success'] == true) {
         ConfigHelper.updateConfig({
-          'access_token': responseBody['accessToken'],
-          'refresh_token': responseBody['refreshToken'],
+          'access_token': response['accessToken'],
+          'refresh_token': response['refreshToken'],
         });
-        print('\n✅ Your account is now active!');
 
-        final figmaConnect = Confirm(
-          prompt: 'Do you want to connect Figma to your account now?',
-          defaultValue: true,
-        ).interact();
-
-        if (figmaConnect) {
-          final runner = CommandRunner('morphr', 'Morphr CLI')
-            ..addCommand(FigmaConnectCommand());
-          await runner.run(['figma-connect', '-s', server]);
-        } else {
-          print(
-              '🔗 To connect Figma to your account use "morphr figma-connect."');
-        }
+        print('✅ Your account is now active!');
+        print(
+            '🔗 To connect Figma to your account use "morphr figma-connect."');
       } else {
-        print('\n❌ Verify process failed: ${responseBody['message']}');
+        print('❌ Error while verifying user: ${response['message']}');
       }
     } catch (e) {
-      print('\n❌ Error while verifying user: $e');
+      print('❌ Error while verifying user: $e');
       exit(1);
     }
   }
