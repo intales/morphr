@@ -19,9 +19,18 @@ class MorphrCloudException implements Exception {
       'MorphrCloudException: $message${statusCode != null ? ' (Status code: $statusCode)' : ''}';
 }
 
+/// Authentication method used with Morphr Cloud
+enum MorphrAuthMethod {
+  /// JWT token-based authentication (for CLI and developer tools)
+  jwt,
+
+  /// API client credentials (for application integration)
+  apiKey
+}
+
 /// Client for interacting with the Morphr Cloud API.
 class MorphrCloudClient {
-  /// Creates a new [MorphrCloudClient] instance.
+  /// Creates a new [MorphrCloudClient] instance with JWT authentication.
   ///
   /// The [baseUrl] parameter is the base URL of the Morphr Cloud API.
   /// The [onTokenRefreshed] callback is called when the access token is refreshed.
@@ -31,16 +40,58 @@ class MorphrCloudClient {
     this.refreshToken,
     this.onTokenRefreshed,
     this.timeout = const Duration(seconds: 30),
-  });
+  })  : authMethod = MorphrAuthMethod.jwt,
+        _clientId = null,
+        _clientSecret = null;
+
+  /// Creates a new [MorphrCloudClient] instance with API key authentication.
+  ///
+  /// The [baseUrl] parameter is the base URL of the Morphr Cloud API.
+  /// The [clientId] and [clientSecret] are the API credentials for the app.
+  factory MorphrCloudClient.withApiKey({
+    required String baseUrl,
+    required String clientId,
+    required String clientSecret,
+    Duration timeout = const Duration(seconds: 30),
+  }) {
+    return MorphrCloudClient._apiKey(
+      baseUrl: baseUrl,
+      clientId: clientId,
+      clientSecret: clientSecret,
+      timeout: timeout,
+    );
+  }
+
+  /// Private constructor for API key authentication
+  MorphrCloudClient._apiKey({
+    required this.baseUrl,
+    required String clientId,
+    required String clientSecret,
+    this.timeout = const Duration(seconds: 30),
+  })  : authMethod = MorphrAuthMethod.apiKey,
+        accessToken = null,
+        refreshToken = null,
+        onTokenRefreshed = null,
+        _clientId = clientId,
+        _clientSecret = clientSecret;
 
   /// Base URL of the Morphr Cloud API.
   final String baseUrl;
 
-  /// Current access token for authentication.
+  /// Authentication method being used
+  final MorphrAuthMethod authMethod;
+
+  /// Current access token for JWT authentication.
   String? accessToken;
 
-  /// Current refresh token for obtaining a new access token.
+  /// Current refresh token for obtaining a new access token with JWT auth.
   String? refreshToken;
+
+  /// Client ID for API key authentication
+  final String? _clientId;
+
+  /// Client Secret for API key authentication
+  final String? _clientSecret;
 
   /// Callback that is called when the access token is refreshed.
   final void Function(String accessToken, String refreshToken)?
@@ -53,11 +104,17 @@ class MorphrCloudClient {
   bool _isRefreshing = false;
 
   /// Flag to track if the client is authenticated
-  bool get isAuthenticated => accessToken != null && refreshToken != null;
+  bool get isAuthenticated {
+    if (authMethod == MorphrAuthMethod.jwt) {
+      return accessToken != null && refreshToken != null;
+    } else {
+      return _clientId != null && _clientSecret != null;
+    }
+  }
 
   /// Makes a GET request to the specified [endpoint].
   ///
-  /// If [requiresAuth] is true, the access token will be included in the request.
+  /// If [requiresAuth] is true, authentication will be included in the request.
   /// Additional [headers] and [queryParams] can be provided.
   /// If a response is received, the body is parsed as JSON and returned.
   Future<Map<String, dynamic>> get(
@@ -77,7 +134,7 @@ class MorphrCloudClient {
 
   /// Makes a POST request to the specified [endpoint] with the given [body].
   ///
-  /// If [requiresAuth] is true, the access token will be included in the request.
+  /// If [requiresAuth] is true, authentication will be included in the request.
   /// Additional [headers] can be provided.
   /// If a response is received, the body is parsed as JSON and returned.
   Future<Map<String, dynamic>> post(
@@ -115,7 +172,10 @@ class MorphrCloudClient {
         queryParams: queryParams,
       );
 
-      if (response.statusCode == 401 && refreshToken != null) {
+      // Only try token refresh for JWT auth method
+      if (response.statusCode == 401 &&
+          authMethod == MorphrAuthMethod.jwt &&
+          refreshToken != null) {
         final refreshed = await _refreshAccessToken();
         if (refreshed) {
           return _parseResponseBody(await _executeRequest(
@@ -158,8 +218,18 @@ class MorphrCloudClient {
       ...headers ?? {},
     };
 
-    if (requiresAuth && accessToken != null) {
-      requestHeaders['Authorization'] = 'Bearer $accessToken';
+    if (requiresAuth) {
+      if (authMethod == MorphrAuthMethod.jwt && accessToken != null) {
+        // JWT authentication with Bearer token
+        requestHeaders['Authorization'] = 'Bearer $accessToken';
+      } else if (authMethod == MorphrAuthMethod.apiKey &&
+          _clientId != null &&
+          _clientSecret != null) {
+        // API key authentication with Basic auth
+        final credentials =
+            base64Encode(utf8.encode('$_clientId:$_clientSecret'));
+        requestHeaders['Authorization'] = 'Basic $credentials';
+      }
     }
 
     final bodyJson = body != null ? jsonEncode(body) : null;

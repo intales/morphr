@@ -5,6 +5,7 @@ import 'package:interact/interact.dart';
 import 'package:morphr/cloud/morphr_cloud_client.dart';
 import '../helpers/config_helper.dart';
 import '../client.dart';
+import 'sync.dart';
 
 class InitCommand extends Command {
   @override
@@ -84,22 +85,27 @@ class InitCommand extends Command {
     ).interact();
 
     print('🚀 Creating project on Morphr Cloud...');
-    final projectId = await _createProject(
+    final project = await _createProject(
       client: client,
       name: projectName,
       figmaFileId: figmaFileId,
     );
-    if (projectId == null) {
-      print('❌ Failed to create project on Morphr Cloud.');
+    if (project == null) {
       exit(1);
     }
+
+    final projectId = project["projectId"] as int;
+
+    print('🔄 Syncing project...');
+    await _syncProject(
+      server: server,
+      projectId: projectId,
+    );
 
     final directory = Directory('lib');
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
-
-    final config = ConfigHelper.loadConfig();
 
     final configFile = File('lib/morphr_options.dart');
     await configFile.writeAsString('''
@@ -110,8 +116,8 @@ import 'package:morphr/morphr.dart';
 const morphrOptions = MorphrCloudOptions(
   projectId: "$projectId",
   endpoint: "$server",
-  accessToken:"${config["access_token"]}",
-  refreshToken:"${config["refresh_token"]}",
+  clientId:"${project["credentials"]["clientId"]}",
+  clientSecret:"${project["credentials"]["clientSecret"]}",
 );
 ''');
 
@@ -173,7 +179,7 @@ const morphrOptions = MorphrCloudOptions(
     }
   }
 
-  Future<String?> _createProject({
+  Future<Map<String, dynamic>?> _createProject({
     required final MorphrCloudClient client,
     required final String name,
     required final String figmaFileId,
@@ -187,10 +193,23 @@ const morphrOptions = MorphrCloudOptions(
         },
       );
 
-      return response['projectId'].toString();
+      return response;
     } catch (e) {
       print('Error creating project: $e');
       return null;
+    }
+  }
+
+  Future<void> _syncProject({
+    required final String server,
+    required final int projectId,
+  }) async {
+    try {
+      final runner = CommandRunner('morphr', 'CLI tool for Morphr library')
+        ..addCommand(SyncCommand());
+      runner.run(['sync', '-s', server, '-p', projectId.toString()]);
+    } catch (e) {
+      print('Error syncing project: $e');
     }
   }
 }

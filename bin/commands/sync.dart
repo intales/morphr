@@ -11,21 +11,29 @@ class SyncCommand extends Command {
   final description = 'Synchronize with the latest Figma design';
 
   SyncCommand() {
-    argParser.addOption(
-      'server',
-      abbr: 's',
-      help: 'Morphr Cloud server (only for testing)',
-      defaultsTo: 'https://cloud.morphr.dev',
-    );
+    argParser
+      ..addOption(
+        "project-id",
+        abbr: "p",
+        help: "Morphr Cloud project identifier",
+        mandatory: false,
+      )
+      ..addOption(
+        'server',
+        abbr: 's',
+        help: 'Morphr Cloud server (only for testing)',
+        defaultsTo: 'https://cloud.morphr.dev',
+      );
   }
 
   @override
   Future<void>? run() async {
     final server = argResults?['server'] as String;
+    var projectId = argResults?["project-id"] as String?;
 
     print("🔄 Syncing Morphr with Figma...");
 
-    final projectId = await _getProjectIdFromOptions();
+    projectId ??= await _getProjectIdFromOptions();
     if (projectId?.isEmpty ?? true) {
       exit(1);
     }

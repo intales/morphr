@@ -18,10 +18,10 @@ class MorphrCloud {
   MorphrCloud({
     required MorphrCloudOptions options,
     required MorphrFileStorage fileStorage,
-  })  : _client = MorphrCloudClient(
+  })  : _client = MorphrCloudClient.withApiKey(
           baseUrl: options.endpoint,
-          accessToken: options.accessToken,
-          refreshToken: options.refreshToken,
+          clientId: options.clientId,
+          clientSecret: options.clientSecret,
         ),
         _options = options,
         _fileStorage = fileStorage;
