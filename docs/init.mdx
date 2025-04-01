@@ -1,0 +1,89 @@
+# The `morphr init` Command
+
+After connecting your Figma account, you need to initialize a Morphr project and link it to your Figma file. The `init` command must be run inside an existing Flutter project directory.
+
+## Basic Usage
+
+```bash
+cd your_flutter_project
+morphr init
+```
+
+When you run this command, the CLI will:
+
+1. Verify you're logged in to your Morphr account
+2. Ask for your Figma file URL
+3. Verify access to that Figma file
+4. Create a new Morphr project on the cloud
+5. Sync the Figma file with your project
+6. Generate configuration files in your Flutter project
+
+## Prerequisites
+
+- You must run this command inside a Flutter project directory
+- You must be logged in to your Morphr account
+- You must have already connected your Figma account (using `morphr figma-connect`)
+- You must have access to the Figma file you want to link
+
+## Example
+
+```
+$ cd my_flutter_app
+$ morphr init
+🔗 Paste your Figma file URL: https://www.figma.com/design/abcdefghijklm
+🔍 Verifying access to Figma file...
+📝 Enter a name for your Morphr project [Flutter Project]: My Awesome App
+🚀 Creating project on Morphr Cloud...
+🔄 Syncing project...
+✅ Morphr project initialized successfully!
+📂 Configuration file generated at lib/morphr_options.dart
+📝 Now add Morphr to your Flutter app:
+
+1. Update your main.dart:
+
+  import 'package:morphr/morphr.dart';
+  import 'package:your_app/morphr_options.dart';
+  
+  void main() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    
+    // Initialize Morphr with your configuration
+    await MorphrService.instance.initializeCloud(options: morphrOptions);
+    
+    runApp(MyApp());
+  }
+
+2. Run your app and start creating great UIs with Morphr!
+```
+
+## Command Options
+
+You can specify the Figma file URL directly as a command option:
+
+```bash
+morphr init --figma-url="https://www.figma.com/design/abcdefghijklm"
+```
+
+Or using the short form:
+
+```bash
+morphr init -f "https://www.figma.com/design/abcdefghijklm"
+```
+
+## What Happens Behind the Scenes
+
+1. The CLI extracts the Figma file ID from the URL
+2. It verifies that you have access to the file
+3. It retrieves the file details to suggest a project name
+4. It creates a new project on Morphr Cloud
+5. It syncs the Figma file with your project (equivalent to running `morphr sync`)
+6. It generates a `morphr_options.dart` file in your project's `lib` directory
+
+## Next Steps
+
+After initializing your project, you need to:
+
+1. Update your `main.dart` file to initialize Morphr with your configuration
+2. Start using Morphr components in your Flutter app
+
+Now you're ready to start building your UI with Morphr components that perfectly match your Figma designs!

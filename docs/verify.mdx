@@ -1,0 +1,48 @@
+# The `morphr verify` Command
+
+After registering your account, you need to verify it using the verification code sent to your email address. The `verify` command handles this process.
+
+## Basic Usage
+
+```bash
+morphr verify
+```
+
+When you run this command, the CLI will:
+
+1. Use the User ID stored during registration
+2. Prompt you for the verification code from your email
+3. Verify your account with Morphr Cloud
+
+## Example
+
+```
+$ morphr verify
+🔑 Enter the verification code that you have received by email: 123456
+🔄 Verifying your account...
+✅ Your account is now active!
+🔗 To connect Figma to your account use "morphr figma-connect."
+```
+
+## Notes
+
+- The verification code is a 6-character code sent to your email
+- Your User ID is automatically retrieved from the local configuration
+- Upon successful verification, your access and refresh tokens are saved locally
+- If you don't receive the verification email, check your spam folder
+
+## Command Options
+
+You can provide the verification code directly as a command option:
+
+```bash
+morphr verify --code=123456
+```
+
+Or using the short form:
+
+```bash
+morphr verify -c 123456
+```
+
+After verifying your account, you're ready to connect your Figma account and start using Morphr's features.

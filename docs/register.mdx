@@ -1,0 +1,53 @@
+# The `morphr register` Command
+
+The first step to using Morphr is to create an account. The `register` command walks you through the account creation process.
+
+## Basic Usage
+
+```bash
+morphr register
+```
+
+When you run this command, the CLI will guide you through an interactive registration process:
+
+1. You'll be prompted to enter your email address
+2. You'll be asked to provide your name
+3. You'll need to create a password (and confirm it)
+
+After submitting this information, Morphr will send a verification code to your email address. You'll need this code for the next step.
+
+## Example
+
+```
+$ morphr register
+📧 Enter your email address: your.email@example.com
+📝 Enter your name: John Doe
+🔑 Create a password: ********
+🔑 Confirm your new password: ********
+📤 Account registration in progress...
+✅ Registration completed successfully!
+📧 We have sent you an email with a verification code.
+📝 Use the "morphr verify" command to verify your new account.
+```
+
+## Notes
+
+- Choose a strong password for your account
+- The CLI will save your User ID automatically in your local configuration
+- Check your spam folder if you don't receive the verification email
+
+## Command Options
+
+You can also provide information directly as command options:
+
+```bash
+morphr register --email=your.email@example.com --name="Your Name"
+```
+
+Or using the short form:
+
+```bash
+morphr register -e your.email@example.com -n "Your Name"
+```
+
+Once you've completed registration, proceed to the verification step using the `morphr verify` command.

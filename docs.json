@@ -1,0 +1,61 @@
+{
+	"name": "Morphr",
+	"description": "",
+	"favicon": "/assets/logo.png",
+	"theme": {
+		"defaultTheme": "dark",
+		"primary": "#E879F9",
+		"primaryLight": "#F0ABFC",
+		"primaryDark": "#D946EF",
+		"backgroundColor": "#000000",
+		"backgroundLight": "#FFFFFF",
+		"backgroundDark": "#000000"
+	},
+	"sidebar": [
+		{
+			"group": "Getting Started",
+			"pages": [
+				{
+					"title": "Introduction",
+					"href": "/",
+					"icon": "rocket"
+				},
+				{
+					"title": "Installation",
+					"href": "/installation",
+					"icon": "download"
+				},
+				{
+					"title": "Register your account",
+					"href": "/register",
+					"icon": "id-card"
+				},
+				{
+					"title": "Verify your account",
+					"href": "/verify",
+					"icon": "check"
+				},
+				{
+					"title": "Connect with Figma",
+					"href": "/figma-connect",
+					"icon": "link"
+				},
+				{
+					"title": "Initialize a project",
+					"href": "/init",
+					"icon": "play"
+				},
+				{
+					"title": "Sync your project",
+					"href": "/sync",
+					"icon": "rotate"
+				},
+				{
+					"title": "Using Morphr components",
+					"href": "/using-morphr",
+					"icon": "pen"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,98 @@
+# Installing Morphr
+
+Before you can start using Morphr, you need to install both the CLI tool and the Flutter library. This guide walks you through the installation process.
+
+## Prerequisites
+
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- A Figma account
+
+## Installing the Morphr CLI
+
+The Morphr CLI is a command-line tool that helps you manage your Figma-to-Flutter workflow. You can install it globally using `pub.dev`:
+
+```bash
+dart pub global activate morphr
+```
+
+After installation, verify that the CLI is working correctly:
+
+```bash
+morphr --help
+```
+
+You should see the version number of the Morphr CLI tool.
+
+### Troubleshooting PATH Issues
+
+If you see a "command not found" error, you may need to add the Dart pub cache bin directory to your PATH:
+
+**For macOS/Linux:**
+
+Add the following line to your `~/.bashrc`, `~/.zshrc`, or equivalent:
+
+```bash
+export PATH="$PATH":"$HOME/.pub-cache/bin"
+```
+
+Then restart your terminal or run `source ~/.bashrc` (or equivalent) to apply the changes.
+
+**For Windows:**
+
+Add `%USERPROFILE%\AppData\Local\Pub\Cache\bin` to your PATH environment variable.
+
+## Installing the Morphr Flutter Library
+
+To add Morphr to your Flutter project, edit your `pubspec.yaml` file and add the dependency:
+
+```yaml
+dependencies:
+  morphr: <latest-version> 
+```
+
+Then run:
+
+```bash
+flutter pub get
+```
+
+### Using Git Repository (Alternative)
+
+If you prefer to use the latest development version, you can install directly from the Git repository:
+
+```yaml
+dependencies:
+  morphr:
+    git: https://github.com/intales/morphr
+```
+
+## Verifying Installation
+
+To verify that both the CLI and library are correctly installed:
+
+1. Check the CLI:
+
+```bash
+morphr --help
+```
+
+You should see a list of available commands.
+
+2. Check the library in your Flutter project:
+
+```dart
+import 'package:morphr/morphr.dart';
+
+// If this imports without errors, the library is correctly installed
+```
+
+## Next Steps
+
+With Morphr installed, you're ready to:
+
+1. Register an account using `morphr register`
+2. Connect your Figma account
+3. Initialize your project
+4. Start building your UI with Figma designs
+
+The following sections will guide you through each of these steps.

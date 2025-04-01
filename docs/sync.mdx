@@ -1,0 +1,68 @@
+# The `morphr sync` Command
+
+The `sync` command is essential for keeping your Flutter app in sync with your latest Figma designs. It fetches the most recent version of your Figma file and makes it available to your app.
+
+## Basic Usage
+
+```bash
+morphr sync
+```
+
+When run inside a Flutter project initialized with Morphr, this command will:
+
+1. Look for your project configuration in `lib/morphr_options.dart`
+2. Connect to Morphr Cloud using your credentials
+3. Fetch the latest version of your linked Figma file
+4. Make it available for your app to use
+
+## Example
+
+```
+$ morphr sync
+🔄 Syncing Morphr with Figma...
+✅ Synced!
+```
+
+## When to Use
+
+You should run `morphr sync`:
+- After making changes to your Figma design
+- When you want to test the latest design changes in your app
+- Before building a new version of your app
+- Any time you need to ensure your app has the most current design
+
+## Command Options
+
+If you have multiple Morphr projects, you can specify which project to sync:
+
+```bash
+morphr sync --project-id="123456"
+```
+
+Or using the short form:
+
+```bash
+morphr sync -p 123456
+```
+
+## How It Works
+
+1. The command reads your project configuration from `lib/morphr_options.dart`
+2. It authenticates with Morphr Cloud using your stored credentials
+3. It requests a sync operation for your specific project
+4. Morphr Cloud connects to Figma's API and fetches the latest version of your file
+5. The Figma file is processed and prepared for use in your Flutter app
+6. Your app can now use the updated designs when it runs
+
+## Automatic Project ID Discovery
+
+If you don't specify a project ID, the `sync` command will automatically:
+1. Look for the `lib/morphr_options.dart` file
+2. Extract the project ID from your configuration
+3. Use that project ID for synchronization
+
+This means you typically don't need to remember or specify your project ID when working in a project initialized with Morphr.
+
+## Next Steps
+
+After syncing your Figma designs, run your Flutter app to see the updated designs in action. The changes will be automatically picked up when your app initializes Morphr.

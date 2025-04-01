@@ -1,0 +1,46 @@
+# The `morphr figma-connect` Command
+
+To synchronize Figma designs with your app, you need to connect your Morphr account with Figma. The `figma-connect` command initiates this authorization process.
+
+## Basic Usage
+
+```bash
+morphr figma-connect
+```
+
+When you run this command, the CLI will:
+
+1. Check if you're logged in to your Morphr account
+2. Initiate the Figma OAuth authorization flow
+3. Provide a URL that you need to open in your browser
+4. Guide you through authorizing Morphr to access your Figma files
+
+## Example
+
+```
+$ morphr figma-connect
+🔄 Initiating Figma authorization flow...
+✅ Authorization initiated successfully!
+📋 Please open the following URL in your browser:
+https://www.figma.com/oauth?client_id=xxxxx&redirect_uri=xxxxx&scope=files:read&state=xxxxx&response_type=code
+
+💡 You can CMD+click (Mac) or CTRL+click (Windows/Linux) to open the URL
+```
+
+## Authorization Process
+
+1. The CLI generates a URL for Figma's OAuth authorization
+2. You open this URL in your browser
+3. Figma will ask you to log in (if you're not already logged in)
+4. Figma will request your permission to allow Morphr to access your files
+5. After approving, you'll be redirected to a confirmation page
+6. Your Morphr and Figma accounts are now connected
+
+## Notes
+
+- You must be logged in to Morphr before connecting with Figma
+- The CLI doesn't automatically open your browser; you need to click the URL or copy and paste it
+- The authorization grants Morphr read-only access to your Figma files
+- This connection is necessary for syncing your Figma designs to your Flutter app
+
+After connecting your Figma account, you're ready to create a project and start syncing your designs.
