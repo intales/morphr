@@ -1,144 +1,150 @@
 # Morphr
 
-A Flutter library for rendering Figma designs at runtime with high fidelity. This is the rendering engine that powers the Morphr synchronization service.
+A bridge between Figma and Flutter that transforms your Figma designs into pixel-perfect Flutter widgets with real-time updates.
 
-## Architecture
+## Overview
 
-Morphr uses a three-layer architecture to convert Figma nodes into Flutter widgets:
+Morphr eliminates the gap between design and development, allowing designers and developers to work in parallel while keeping your app's UI perfectly aligned with your design system.
 
-### 1. Adapters
-Adapters abstract Figma node properties and convert them into Flutter-friendly formats. Each adapter handles a specific aspect:
+## Features
 
-- `FigmaShapeAdapter`: Handles shape properties (fills, strokes, corners)
-- `FigmaTextAdapter`: Manages text properties and styles
-- `FigmaLayoutAdapter`: Converts Figma auto-layout to Flutter layout
-- `FigmaBarAdapter`: Specializes in navigation bars adaptation
-- `FigmaVectorAdapter`: Handles vector nodes and paths
-- `FigmaDecorationAdapter`: Manages visual properties and effects
+- **High-Fidelity Rendering**: Preserves all visual details from your Figma designs
+- **Zero-Config Setup**: Transform designs to code without complex configuration
+- **Full Control**: Maintain complete control over layout and logic in your Flutter code
+- **Type-Safe Overrides**: Override component properties with type-checking
+- **Over-the-Air Updates**: Sync your app's UI without redeploying your app
+- **Native Performance**: Uses Flutter's layout system for optimal performance
 
-### 2. Renderers
-Renderers use adapters to create actual Flutter widgets:
+## Installation
 
-- `FigmaShapeRenderer`: Renders rectangles, ellipses, and frames
-- `FigmaTextRenderer`: Renders text nodes with proper styling
-- `FigmaFlexRenderer`: Handles auto-layout containers
-- `FigmaVectorRenderer`: Renders vector graphics
-- `FigmaAppbarRenderer` & `FigmaBottomBarRenderer`: Specialized navigation bar renderers
+### CLI
 
-### 3. Components
-High-level widgets that combine renderers and adapters into reusable pieces:
+Install the Morphr CLI:
 
-- `FigmaComponent`: Base class for all components
-- `FigmaContainerComponent`: Renders frames and shapes
-- `FigmaTextComponent`: Text rendering
-- `FigmaButtonComponent`: Interactive buttons
-- `FigmaListComponent`: Scrollable lists
-- And more...
-
-## CLI Installation
-
-1. Activate the Morphr CLI:
 ```bash
-dart pub global activate --source git https://github.com/intales/morphr.git
-# or
-dart pub global activate --source path .
-
-# Run
-morphr download
+dart pub global activate morphr
 ```
 
-2. Download a Figma file:
-```bash
-morphr download --token YOUR_FIGMA_TOKEN --file YOUR_FILE_ID --output design.json
+### Flutter Library
+
+Add Morphr to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  morphr: ^0.1.0
 ```
 
-Or use the interactive mode:
-```bash
-morphr download
-```
+Then run:
 
-The CLI will guide you through:
-- Entering your Figma access token
-- Specifying the file ID
-- Choosing the output location
+```bash
+flutter pub get
+```
 
 ## Quick Start
 
-1. Add Morphr to your pubspec.yaml:
-```yaml
-dependencies:
-  morphr:
-    git: https://github.com/intales/morphr
+### 1. Register and Connect
+
+Register a Morphr account and connect it to Figma:
+
+```bash
+morphr register
+morphr verify
+morphr figma-connect
 ```
 
-2. Basic usage example:
+### 2. Initialize Your Project
+
+Initialize Morphr in your Flutter project:
+
+```bash
+cd your_flutter_project
+morphr init
+```
+
+### 3. Sync Your Design
+
+Whenever your Figma design changes:
+
+```bash
+morphr sync
+```
+
+### 4. Use Components in Flutter
+
+Update your `main.dart`:
+
 ```dart
-// Create a text component
-final text = FigmaComponent.text(
-  'my_text_component',
-  text: 'Hello World',
-);
+import 'package:flutter/material.dart';
+import 'package:morphr/morphr.dart';
+import 'package:your_app/morphr_options.dart';
 
-// Create a button
-final button = FigmaComponent.button(
-  'my_button_component',
-  onPressed: () => print('Button pressed'),
-);
-
-// Create an auto-layout container
-final container = FigmaComponent.column(
-  'my_container',
-  children: [text, button],
-);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Morphr with your configuration
+  await MorphrService.instance.initializeCloud(options: morphrOptions);
+  
+  runApp(MyApp());
+}
 ```
 
-3. Using navigation bars:
+Use Figma components in your widgets:
+
 ```dart
-// AppBar with safe area handling
-final appBar = FigmaComponent.appBar(
-  'app_bar_component',
-  context: context,
-  children: [/* your items */],
-);
-
-// Bottom bar
-final bottomBar = FigmaComponent.bottomBar(
-  'bottom_bar_component',
-  children: [/* your items */],
-);
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: FigmaComponent.appBar(
+        "my_app_bar",
+        context: context,
+        children: [
+          FigmaComponent.text("app_title", text: "My App"),
+        ],
+      ),
+      body: FigmaComponent.container(
+        "home_screen",
+        child: FigmaComponent.column(
+          "content_column",
+          children: [
+            FigmaComponent.text("welcome_text", text: "Welcome!"),
+            FigmaComponent.button(
+              "action_button",
+              onPressed: () => print("Button pressed"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 ```
 
-## Key Features
+## Available Components
 
-- **High-fidelity rendering**: Preserves Figma design details including gradients, shadows, and effects
-- **Native Flutter layout**: Uses Flutter's layout system for optimal performance
-- **Safe area handling**: Proper handling of notches, status bars, and system UI
-- **Vector support**: Renders Figma vectors as Flutter paths
-- **Responsive**: Adapts to different screen sizes while maintaining design fidelity
+- `FigmaComponent.container`: For frames and shapes
+- `FigmaComponent.text`: For text elements
+- `FigmaComponent.button`: For interactive buttons
+- `FigmaComponent.column`: For vertical auto-layout
+- `FigmaComponent.row`: For horizontal auto-layout
+- `FigmaComponent.appBar`: For top navigation bars
+- `FigmaComponent.bottomBar`: For bottom navigation bars
+- `FigmaComponent.list`: For scrollable lists
+- `FigmaComponent.textField`: For input fields
+- `FigmaComponent.icon`: For vector graphics
 
-## Known Limitations
+## Documentation
 
-1. Auto-layout:
-   - Complex nested auto-layouts might need manual adjustment
-   - Some Figma constraints behaviors might differ slightly
+For complete documentation, visit [docs.morphr.dev](https://docs.morphr.dev).
 
-2. Text:
-   - Custom fonts must be included in your Flutter project
-   - Some advanced text decorations might not render exactly as in Figma
+## Examples
 
-3. Effects:
-   - Complex blend modes might have slight visual differences
-   - Some advanced Figma effects might need simplification
+Check out our [example app](https://github.com/intales/morphr/tree/main/example) to see Morphr in action.
 
-## Looking for Feedback On
+## Contributing
 
-1. Layout behavior and constraints handling
-2. Navigation bars integration with system UI
-3. Vector rendering performance
-4. Component API ergonomics
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details
-
-The synchronization service is a separate commercial product.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
