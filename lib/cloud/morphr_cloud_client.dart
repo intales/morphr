@@ -282,6 +282,7 @@ class MorphrCloudClient {
       }
       return 'Server error: ${response.statusCode}';
     } catch (_) {
+      if (response.statusCode >= 400) return response.body;
       return 'Server error: ${response.statusCode}';
     }
   }
