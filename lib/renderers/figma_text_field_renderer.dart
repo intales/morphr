@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/adapters/figma_text_adapter.dart';
 
@@ -32,9 +32,8 @@ class FigmaTextFieldRenderer {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: textAdapter.createTextStyle()?.copyWith(
-              color:
-                  textAdapter.createTextStyle()?.color?.withValues(alpha: 0.5),
-            ),
+          color: textAdapter.createTextStyle()?.color?.withValues(alpha: 0.5),
+        ),
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,

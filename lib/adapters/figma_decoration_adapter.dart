@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'dart:ui' as ui;
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 import 'package:morphr/mixins/cacheable_mixin.dart';
 
@@ -21,11 +21,10 @@ class FigmaDecorationAdapter with CacheableMixin {
   /// Whether the node supports decoration capabilities
   bool get supportsDecoration {
     return getCached(
-        "supportsDecoration",
-        () =>
-            _getFills() != null ||
-            _getStrokes() != null ||
-            _getEffects() != null);
+      "supportsDecoration",
+      () =>
+          _getFills() != null || _getStrokes() != null || _getEffects() != null,
+    );
   }
 
   /// Creates a BoxDecoration from the node's properties
@@ -165,9 +164,11 @@ class FigmaDecorationAdapter with CacheableMixin {
 
   bool _hasGradient() {
     final fills = _getFills();
-    return fills?.any((f) =>
-            f.type == figma.PaintType.gradientLinear ||
-            f.type == figma.PaintType.gradientRadial) ??
+    return fills?.any(
+          (f) =>
+              f.type == figma.PaintType.gradientLinear ||
+              f.type == figma.PaintType.gradientRadial,
+        ) ??
         false;
   }
 
@@ -176,14 +177,17 @@ class FigmaDecorationAdapter with CacheableMixin {
     if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
 
     final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
-    final colors = fill.gradientStops!
-        .map((stop) => Color.fromRGBO(
-              ((stop.color?.r ?? 0) * 255).round(),
-              ((stop.color?.g ?? 0) * 255).round(),
-              ((stop.color?.b ?? 0) * 255).round(),
-              fill.opacity ?? 1,
-            ))
-        .toList();
+    final colors =
+        fill.gradientStops!
+            .map(
+              (stop) => Color.fromRGBO(
+                ((stop.color?.r ?? 0) * 255).round(),
+                ((stop.color?.g ?? 0) * 255).round(),
+                ((stop.color?.b ?? 0) * 255).round(),
+                fill.opacity ?? 1,
+              ),
+            )
+            .toList();
 
     if (fill.type == figma.PaintType.gradientLinear) {
       return _createLinearGradient(fill, colors, stops);
@@ -232,10 +236,7 @@ class FigmaDecorationAdapter with CacheableMixin {
         final scaleX = transforms[0][0].toDouble();
         final scaleY = transforms[3][0].toDouble();
 
-        center = Alignment(
-          (translateX * 2.0) - 1.0,
-          (translateY * 2.0) - 1.0,
-        );
+        center = Alignment((translateX * 2.0) - 1.0, (translateY * 2.0) - 1.0);
         radius = (scaleX.abs() + scaleY.abs()) / 2 * 0.7;
       } catch (e) {
         debugPrint('Error processing gradient transform: $e');
@@ -294,23 +295,26 @@ class FigmaDecorationAdapter with CacheableMixin {
     for (final effect in effects) {
       if (effect.type == figma.EffectType.dropShadow ||
           effect.type == figma.EffectType.innerShadow) {
-        shadows.add(BoxShadow(
-          color: Color.fromRGBO(
-            ((effect.color?.r ?? 0) * 255).round(),
-            ((effect.color?.g ?? 0) * 255).round(),
-            ((effect.color?.b ?? 0) * 255).round(),
-            effect.color?.a ?? 1,
+        shadows.add(
+          BoxShadow(
+            color: Color.fromRGBO(
+              ((effect.color?.r ?? 0) * 255).round(),
+              ((effect.color?.g ?? 0) * 255).round(),
+              ((effect.color?.b ?? 0) * 255).round(),
+              effect.color?.a ?? 1,
+            ),
+            offset: Offset(
+              effect.offset?.x.toDouble() ?? 0,
+              effect.offset?.y.toDouble() ?? 0,
+            ),
+            blurRadius: effect.radius?.toDouble() ?? 0,
+            spreadRadius: effect.spread?.toDouble() ?? 0,
+            blurStyle:
+                effect.type == figma.EffectType.innerShadow
+                    ? BlurStyle.inner
+                    : BlurStyle.normal,
           ),
-          offset: Offset(
-            effect.offset?.x.toDouble() ?? 0,
-            effect.offset?.y.toDouble() ?? 0,
-          ),
-          blurRadius: effect.radius?.toDouble() ?? 0,
-          spreadRadius: effect.spread?.toDouble() ?? 0,
-          blurStyle: effect.type == figma.EffectType.innerShadow
-              ? BlurStyle.inner
-              : BlurStyle.normal,
-        ));
+        );
       }
     }
 

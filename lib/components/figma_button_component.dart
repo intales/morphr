@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'package:flutter/widgets.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/morphr_service.dart';
 import 'package:morphr/renderers/figma_shape_renderer.dart';
@@ -28,10 +28,7 @@ class FigmaButtonComponent extends FigmaComponent {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final size = Size(
-          constraints.maxWidth,
-          constraints.maxHeight,
-        );
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
 
         return GestureDetector(
           onTap: onPressed,

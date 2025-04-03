@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 
 /// An adapter that provides text capabilities for Figma nodes.
@@ -119,10 +119,7 @@ class FigmaTextAdapter {
     final box = _getBoundingBox();
     if (box == null) return null;
 
-    return Size(
-      box.width?.toDouble() ?? 0.0,
-      box.height?.toDouble() ?? 0.0,
-    );
+    return Size(box.width?.toDouble() ?? 0.0, box.height?.toDouble() ?? 0.0);
   }
 
   figma.SizeRectangle? _getBoundingBox() {

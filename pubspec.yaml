@@ -16,10 +16,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  figma:
-    git:
-      url: https://github.com/filippomenchini/figma.git
-      ref: patch-1
   path_parsing: ^1.1.0
   args: ^2.6.0
   interact: ^2.2.0
@@ -28,6 +24,7 @@ dependencies:
   path_provider: ^2.1.5
   diff_match_patch: ^0.4.1
   crypto: ^3.0.6
+  morphr_figma: ^7.3.4
 
 dev_dependencies:
   flutter_test:

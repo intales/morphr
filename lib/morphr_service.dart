@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/cloud/morphr_cloud.dart';
 import 'package:morphr/cloud/morphr_cloud_options.dart';
 import 'package:morphr/cloud/morphr_file_storage.dart';
@@ -19,24 +19,15 @@ class MorphrService {
   MorphrFileStorage? _fileStorage;
   bool _isCloudEnabled = false;
 
-  Future<void> initialize({
-    required final String documentPath,
-  }) async {
+  Future<void> initialize({required final String documentPath}) async {
     _documentPath = documentPath;
     await _loadDocument();
   }
 
-  Future<void> initializeCloud({
-    required MorphrCloudOptions options,
-  }) async {
-    _fileStorage = MorphrFileStorage(
-      fileName: 'design.json',
-    );
+  Future<void> initializeCloud({required MorphrCloudOptions options}) async {
+    _fileStorage = MorphrFileStorage(fileName: 'design.json');
 
-    _cloud = MorphrCloud(
-      options: options,
-      fileStorage: _fileStorage!,
-    );
+    _cloud = MorphrCloud(options: options, fileStorage: _fileStorage!);
 
     await _cloud!.init();
     _isCloudEnabled = true;
@@ -73,8 +64,9 @@ class MorphrService {
 
   Future<void> _loadDocument() async {
     final file = await rootBundle.loadString(_documentPath);
-    _document = figma.FileResponse.fromJson(jsonDecode(file)).document
-        as figma.Document?;
+    _document =
+        figma.FileResponse.fromJson(jsonDecode(file)).document
+            as figma.Document?;
   }
 
   Future<void> _loadDocumentFromCloud() async {
@@ -83,8 +75,9 @@ class MorphrService {
     }
 
     final file = await _fileStorage!.readAsString();
-    _document = figma.FileResponse.fromJson(jsonDecode(file)).document
-        as figma.Document?;
+    _document =
+        figma.FileResponse.fromJson(jsonDecode(file)).document
+            as figma.Document?;
   }
 
   figma.Node? _findComponent(figma.Node node, String componentId) {

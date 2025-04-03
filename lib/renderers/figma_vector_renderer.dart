@@ -4,7 +4,7 @@
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:path_parsing/path_parsing.dart';
 
@@ -66,8 +66,10 @@ class FigmaVectorRenderer {
           left = math.max(left, blurRadius - math.min(offsetX.toDouble(), 0));
           top = math.max(top, blurRadius - math.min(offsetY.toDouble(), 0));
           right = math.max(right, blurRadius + math.max(offsetX.toDouble(), 0));
-          bottom =
-              math.max(bottom, blurRadius + math.max(offsetY.toDouble(), 0));
+          bottom = math.max(
+            bottom,
+            blurRadius + math.max(offsetY.toDouble(), 0),
+          );
         }
       }
     }
@@ -172,12 +174,13 @@ class _VectorPainter extends CustomPainter {
         if (effect.type == figma.EffectType.dropShadow) {
           canvas.saveLayer(Offset.zero & size, Paint());
 
-          final shadowPaint = Paint()
-            ..color = _createColorFromEffect(effect)
-            ..maskFilter = MaskFilter.blur(
-              BlurStyle.normal,
-              effect.radius?.toDouble() ?? 0,
-            );
+          final shadowPaint =
+              Paint()
+                ..color = _createColorFromEffect(effect)
+                ..maskFilter = MaskFilter.blur(
+                  BlurStyle.normal,
+                  effect.radius?.toDouble() ?? 0,
+                );
 
           final offset = Offset(
             effect.offset?.x.toDouble() ?? 0,
@@ -226,9 +229,10 @@ class _VectorPainter extends CustomPainter {
 
     if (strokes != null) {
       for (final stroke in strokes!) {
-        final paint = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWeight ?? 1.0;
+        final paint =
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = strokeWeight ?? 1.0;
 
         if (stroke.type == figma.PaintType.solid) {
           paint.color = _createColor([stroke]);
@@ -286,14 +290,17 @@ class _VectorPainter extends CustomPainter {
     if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
 
     final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
-    final colors = fill.gradientStops!
-        .map((stop) => Color.fromRGBO(
-              ((stop.color?.r ?? 0) * 255).round(),
-              ((stop.color?.g ?? 0) * 255).round(),
-              ((stop.color?.b ?? 0) * 255).round(),
-              fill.opacity ?? 1,
-            ))
-        .toList();
+    final colors =
+        fill.gradientStops!
+            .map(
+              (stop) => Color.fromRGBO(
+                ((stop.color?.r ?? 0) * 255).round(),
+                ((stop.color?.g ?? 0) * 255).round(),
+                ((stop.color?.b ?? 0) * 255).round(),
+                fill.opacity ?? 1,
+              ),
+            )
+            .toList();
 
     if (fill.type == figma.PaintType.gradientLinear) {
       return _createLinearGradient(fill, colors, stops);
@@ -342,10 +349,7 @@ class _VectorPainter extends CustomPainter {
         final scaleX = transforms[0][0].toDouble();
         final scaleY = transforms[3][0].toDouble();
 
-        center = Alignment(
-          (translateX * 2.0) - 1.0,
-          (translateY * 2.0) - 1.0,
-        );
+        center = Alignment((translateX * 2.0) - 1.0, (translateY * 2.0) - 1.0);
         radius = (scaleX.abs() + scaleY.abs()) / 2 * 0.7;
       } catch (e) {
         debugPrint('Error processing gradient transform: $e');
@@ -400,8 +404,7 @@ class _PathProxyImpl extends PathProxy {
     double y2,
     double x3,
     double y3,
-  ) =>
-      path.cubicTo(x1, y1, x2, y2, x3, y3);
+  ) => path.cubicTo(x1, y1, x2, y2, x3, y3);
 
   @override
   void close() => path.close();

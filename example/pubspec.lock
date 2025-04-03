@@ -113,15 +113,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-  figma:
-    dependency: transitive
-    description:
-      path: "."
-      ref: patch-1
-      resolved-ref: fe0559f1899b65e028db19074ccf2b97c1b21b03
-      url: "https://github.com/filippomenchini/figma.git"
-    source: git
-    version: "7.3.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -259,6 +250,14 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  morphr_figma:
+    dependency: transitive
+    description:
+      name: morphr_figma
+      sha256: d4b51956dbebdf9220415e182602ca61a912873ade3d3a7484e624143b139e1d
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.3.4"
   path:
     dependency: transitive
     description:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/widgets.dart';
 
 /// Adapter that handles Figma constraints and converts them to Flutter constraints

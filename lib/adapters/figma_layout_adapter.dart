@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 import 'package:morphr/mixins/cacheable_mixin.dart';
 
@@ -20,11 +20,12 @@ class FigmaLayoutAdapter with CacheableMixin {
   /// Whether the node supports layout capabilities
   bool get supportsLayout {
     return getCached(
-        "supportsMixin",
-        () =>
-            node is figma.Frame ||
-            node is figma.Instance ||
-            (node is figma.Group && (node as figma.Group).children != null));
+      "supportsMixin",
+      () =>
+          node is figma.Frame ||
+          node is figma.Instance ||
+          (node is figma.Group && (node as figma.Group).children != null),
+    );
   }
 
   /// The layout mode (horizontal/vertical) of the node
@@ -143,10 +144,7 @@ class FigmaLayoutAdapter with CacheableMixin {
       final box = _getBoundingBox();
       if (box == null) return null;
 
-      return Size(
-        box.width?.toDouble() ?? 0.0,
-        box.height?.toDouble() ?? 0.0,
-      );
+      return Size(box.width?.toDouble() ?? 0.0, box.height?.toDouble() ?? 0.0);
     });
   }
 

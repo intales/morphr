@@ -2,14 +2,14 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 import 'package:morphr/mixins/cacheable_mixin.dart';
 
 /// Type of navigation bar
 enum FigmaBarType {
   top, // AppBar
-  bottom // BottomBar
+  bottom, // BottomBar
 }
 
 /// An adapter that provides navigation bar capabilities for Figma nodes.
@@ -116,10 +116,12 @@ class FigmaBarAdapter with CacheableMixin {
 
   /// Gets the default height for this type of bar
   double get defaultHeight => getCached(
-      "defaultHeight",
-      () => barType == FigmaBarType.top
-          ? kToolbarHeight
-          : kBottomNavigationBarHeight);
+    "defaultHeight",
+    () =>
+        barType == FigmaBarType.top
+            ? kToolbarHeight
+            : kBottomNavigationBarHeight,
+  );
 
   /// Gets the height from Figma design if available
   double? get figmaHeight =>

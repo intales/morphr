@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/adapters/figma_layout_adapter.dart';
@@ -59,10 +59,9 @@ class FigmaFlexRenderer {
     for (var i = 0; i < children.length; i++) {
       spacedChildren.add(children[i]);
       if (i < children.length - 1) {
-        spacedChildren.add(SizedBox(
-          width: isRow ? spacing : 0,
-          height: !isRow ? spacing : 0,
-        ));
+        spacedChildren.add(
+          SizedBox(width: isRow ? spacing : 0, height: !isRow ? spacing : 0),
+        );
       }
     }
 

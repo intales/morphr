@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'dart:math' as math;
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 
 /// An adapter that provides vector capabilities for Figma nodes.
@@ -65,10 +65,7 @@ class FigmaVectorAdapter {
     final box = _getBoundingBox();
     if (box == null) return Size.zero;
 
-    return Size(
-      box.width?.toDouble() ?? 0.0,
-      box.height?.toDouble() ?? 0.0,
-    );
+    return Size(box.width?.toDouble() ?? 0.0, box.height?.toDouble() ?? 0.0);
   }
 
   /// The extra padding needed for shadows

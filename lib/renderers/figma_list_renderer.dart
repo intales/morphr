@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/adapters/figma_layout_adapter.dart';
 import 'package:morphr/adapters/figma_decoration_adapter.dart';
@@ -28,12 +28,17 @@ class FigmaListRenderer {
       padding: layoutAdapter.padding,
       scrollDirection: scrollDirection,
       itemCount: itemCount,
-      separatorBuilder: (context, index) => SizedBox(
-        width:
-            scrollDirection == Axis.horizontal ? layoutAdapter.itemSpacing : 0,
-        height:
-            scrollDirection == Axis.vertical ? layoutAdapter.itemSpacing : 0,
-      ),
+      separatorBuilder:
+          (context, index) => SizedBox(
+            width:
+                scrollDirection == Axis.horizontal
+                    ? layoutAdapter.itemSpacing
+                    : 0,
+            height:
+                scrollDirection == Axis.vertical
+                    ? layoutAdapter.itemSpacing
+                    : 0,
+          ),
       itemBuilder: itemBuilder,
     );
 

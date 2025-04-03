@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
 
 class FigmaTextRenderer {
@@ -29,44 +29,38 @@ class FigmaTextRenderer {
     final textAlign = _getTextAlign(node.style?.textAlignHorizontal);
     final hasStroke = node.strokes.isNotEmpty == true;
     final hasFill = node.fills.isNotEmpty == true;
-    final hasGradient = hasFill &&
-        node.fills.any((f) =>
-            f.type == figma.PaintType.gradientLinear ||
-            f.type == figma.PaintType.gradientRadial);
+    final hasGradient =
+        hasFill &&
+        node.fills.any(
+          (f) =>
+              f.type == figma.PaintType.gradientLinear ||
+              f.type == figma.PaintType.gradientRadial,
+        );
 
     Widget textWidget;
 
     if (hasGradient) {
-      final gradientFill = node.fills.firstWhere((f) =>
-          f.type == figma.PaintType.gradientLinear ||
-          f.type == figma.PaintType.gradientRadial);
+      final gradientFill = node.fills.firstWhere(
+        (f) =>
+            f.type == figma.PaintType.gradientLinear ||
+            f.type == figma.PaintType.gradientRadial,
+      );
 
       final gradient = _createGradient(gradientFill);
       if (gradient != null) {
         textWidget = ShaderMask(
           blendMode: BlendMode.srcIn,
-          shaderCallback: (bounds) => gradient.createShader(
-            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-          ),
-          child: Text(
-            text,
-            style: baseStyle,
-            textAlign: textAlign,
-          ),
+          shaderCallback:
+              (bounds) => gradient.createShader(
+                Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+              ),
+          child: Text(text, style: baseStyle, textAlign: textAlign),
         );
       } else {
-        textWidget = Text(
-          text,
-          style: baseStyle,
-          textAlign: textAlign,
-        );
+        textWidget = Text(text, style: baseStyle, textAlign: textAlign);
       }
     } else {
-      textWidget = Text(
-        text,
-        style: baseStyle,
-        textAlign: textAlign,
-      );
+      textWidget = Text(text, style: baseStyle, textAlign: textAlign);
     }
 
     if (hasStroke) {
@@ -76,10 +70,11 @@ class FigmaTextRenderer {
           Text(
             text,
             style: baseStyle?.copyWith(
-              foreground: Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
-                ..color = _getColor(node.strokes),
+              foreground:
+                  Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = node.strokeWeight?.toDouble() ?? 1.0
+                    ..color = _getColor(node.strokes),
             ),
             textAlign: textAlign,
           ),
@@ -170,14 +165,17 @@ class FigmaTextRenderer {
     if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
 
     final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
-    final colors = fill.gradientStops!
-        .map((stop) => Color.fromRGBO(
-              ((stop.color?.r ?? 0) * 255).round(),
-              ((stop.color?.g ?? 0) * 255).round(),
-              ((stop.color?.b ?? 0) * 255).round(),
-              fill.opacity ?? 1,
-            ))
-        .toList();
+    final colors =
+        fill.gradientStops!
+            .map(
+              (stop) => Color.fromRGBO(
+                ((stop.color?.r ?? 0) * 255).round(),
+                ((stop.color?.g ?? 0) * 255).round(),
+                ((stop.color?.b ?? 0) * 255).round(),
+                fill.opacity ?? 1,
+              ),
+            )
+            .toList();
 
     if (fill.type == figma.PaintType.gradientLinear) {
       return _createLinearGradient(fill, colors, stops);
@@ -226,10 +224,7 @@ class FigmaTextRenderer {
         final scaleX = transforms[0][0].toDouble();
         final scaleY = transforms[3][0].toDouble();
 
-        center = Alignment(
-          (translateX * 2.0) - 1.0,
-          (translateY * 2.0) - 1.0,
-        );
+        center = Alignment((translateX * 2.0) - 1.0, (translateY * 2.0) - 1.0);
         radius = (scaleX.abs() + scaleY.abs()) / 2 * 0.7;
       } catch (e) {
         debugPrint('Error processing gradient transform: $e');

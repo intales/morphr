@@ -3,7 +3,7 @@
 // in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:figma/figma.dart' as figma;
+import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
 import 'package:morphr/renderers/figma_flex_renderer.dart';
 import 'package:morphr/adapters/figma_bar_adapter.dart';
