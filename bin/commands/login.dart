@@ -7,9 +7,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:crypto/crypto.dart';
 import 'package:interact/interact.dart';
 import 'package:http/http.dart' as http;
 import '../helpers/config_helper.dart';
+import '../helpers/client_pepper.dart';
 import 'verify.dart';
 
 class LoginCommand extends Command {
@@ -20,17 +22,19 @@ class LoginCommand extends Command {
 
   LoginCommand() {
     argParser
-      ..addOption(
-        'email',
-        abbr: 'e',
-        help: 'Email address',
-      )
+      ..addOption('email', abbr: 'e', help: 'Email address')
       ..addOption(
         'server',
         abbr: 's',
         help: 'Morphr Cloud server (only for testing)',
         defaultsTo: 'https://cloud.morphr.dev',
       );
+  }
+
+  String _preHashPassword(String rawPassword) {
+    final bytes = utf8.encode(rawPassword + clientPepper);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   @override
@@ -47,45 +51,41 @@ class LoginCommand extends Command {
       print('📧 Using email from configuration: $email');
     }
 
-    email ??= Input(
-      prompt: '📧 Enter your email address',
-      validator: (value) {
-        if (value.isEmpty) {
-          throw ValidationError('❌ Email cannot be empty');
-        }
-        if (!value.contains('@') || !value.contains('.')) {
-          throw ValidationError('❌ Invalid email format');
-        }
-        return true;
-      },
-    ).interact();
+    email ??=
+        Input(
+          prompt: '📧 Enter your email address',
+          validator: (value) {
+            if (value.isEmpty) {
+              throw ValidationError('❌ Email cannot be empty');
+            }
+            if (!value.contains('@') || !value.contains('.')) {
+              throw ValidationError('❌ Invalid email format');
+            }
+            return true;
+          },
+        ).interact();
 
-    password ??= Password(
-      prompt: '🔑 Enter your password',
-    ).interact();
+    password ??= Password(prompt: '🔑 Enter your password').interact();
 
     print('\n🔄 Logging in...');
 
     try {
+      final preHashedPassword = _preHashPassword(password);
       final response = await http.post(
         Uri.parse("$server/login"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-        }),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "password": preHashedPassword}),
       );
 
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        final errorMessage = responseBody is String
-            ? responseBody
-            : (responseBody is Map && responseBody.containsKey('message')
-                ? responseBody['message']
-                : 'Error during login');
+        final errorMessage =
+            responseBody is String
+                ? responseBody
+                : (responseBody is Map && responseBody.containsKey('message')
+                    ? responseBody['message']
+                    : 'Error during login');
 
         print('\n❌ Login failed: $errorMessage');
         exit(1);
@@ -117,10 +117,11 @@ class LoginCommand extends Command {
           print('📝 Please check your email for a verification code.');
           print('🔐 Use "morphr verify" to complete the verification process.');
 
-          final verify = Confirm(
-            prompt: 'Do you want to verify your account now?',
-            defaultValue: true,
-          ).interact();
+          final verify =
+              Confirm(
+                prompt: 'Do you want to verify your account now?',
+                defaultValue: true,
+              ).interact();
 
           if (verify) {
             final runner = CommandRunner('morphr', 'Morphr CLI')
@@ -129,7 +130,8 @@ class LoginCommand extends Command {
           }
         } else {
           print(
-              '\n❌ Login failed: ${responseBody['message'] ?? 'Unknown error'}');
+            '\n❌ Login failed: ${responseBody['message'] ?? 'Unknown error'}',
+          );
         }
       }
     } catch (e) {

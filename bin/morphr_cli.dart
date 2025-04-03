@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:interact/interact.dart';
 import 'package:args/command_runner.dart';
-import 'commands/regsiter.dart';
+import 'commands/register.dart';
 import 'commands/verify.dart';
 import 'commands/login.dart';
 import 'commands/figma_connect.dart';
@@ -17,15 +17,16 @@ import 'commands/sync.dart';
 import 'commands/subscription.dart';
 
 void main(List<String> arguments) {
-  final runner = CommandRunner('morphr', 'CLI tool for Morphr library')
-    ..addCommand(RegisterCommand())
-    ..addCommand(VerifyCommand())
-    ..addCommand(LoginCommand())
-    ..addCommand(FigmaConnectCommand())
-    ..addCommand(InitCommand())
-    ..addCommand(SyncCommand())
-    ..addCommand(SubscriptionCommand())
-    ..addCommand(DownloadCommand());
+  final runner =
+      CommandRunner('morphr', 'CLI tool for Morphr library')
+        ..addCommand(RegisterCommand())
+        ..addCommand(VerifyCommand())
+        ..addCommand(LoginCommand())
+        ..addCommand(FigmaConnectCommand())
+        ..addCommand(InitCommand())
+        ..addCommand(SyncCommand())
+        ..addCommand(SubscriptionCommand())
+        ..addCommand(DownloadCommand());
 
   runner.run(arguments).catchError((error) {
     if (error is! UsageException) throw error;
@@ -42,16 +43,8 @@ class DownloadCommand extends Command {
 
   DownloadCommand() {
     argParser
-      ..addOption(
-        'token',
-        abbr: 't',
-        help: 'Figma access token',
-      )
-      ..addOption(
-        'file',
-        abbr: 'f',
-        help: 'Figma file ID',
-      );
+      ..addOption('token', abbr: 't', help: 'Figma access token')
+      ..addOption('file', abbr: 'f', help: 'Figma file ID');
   }
 
   @override
@@ -63,38 +56,37 @@ class DownloadCommand extends Command {
 
     print('\n🎨 Welcome to Morphr CLI! Let\'s download your Figma file!\n');
 
-    token ??= Input(
-      prompt: '🔑 Enter your Figma access token',
-      validator: (value) {
-        if (value.isEmpty) {
-          throw ValidationError('❌ Token cannot be empty');
-        }
-        if (value.length < 10) {
-          throw ValidationError('❌ Token seems too short');
-        }
-        return true;
-      },
-    ).interact();
+    token ??=
+        Input(
+          prompt: '🔑 Enter your Figma access token',
+          validator: (value) {
+            if (value.isEmpty) {
+              throw ValidationError('❌ Token cannot be empty');
+            }
+            if (value.length < 10) {
+              throw ValidationError('❌ Token seems too short');
+            }
+            return true;
+          },
+        ).interact();
 
-    fileId ??= Input(
-      prompt: '📁 Enter your Figma file ID',
-      validator: (value) {
-        if (value.isEmpty) {
-          throw ValidationError('❌ File ID cannot be empty');
-        }
-        return true;
-      },
-    ).interact();
+    fileId ??=
+        Input(
+          prompt: '📁 Enter your Figma file ID',
+          validator: (value) {
+            if (value.isEmpty) {
+              throw ValidationError('❌ File ID cannot be empty');
+            }
+            return true;
+          },
+        ).interact();
 
     print('\n📥 Downloading Figma file $fileId...');
 
     try {
       final response = await http.get(
         Uri.parse("https://api.figma.com/v1/files/$fileId?geometry=paths"),
-        headers: {
-          "Content-Type": "application/json",
-          "X-Figma-Token": token,
-        },
+        headers: {"Content-Type": "application/json", "X-Figma-Token": token},
       );
 
       final json = response.body;
@@ -104,7 +96,8 @@ class DownloadCommand extends Command {
       await File(output).writeAsString(json, encoding: utf8);
 
       print(
-          '\n✨ File successfully downloaded and saved to $output\nAdd it to your pubspec.yaml!');
+        '\n✨ File successfully downloaded and saved to $output\nAdd it to your pubspec.yaml!',
+      );
       print('🎉 Happy coding with Morphr!\n');
     } catch (e) {
       print('\n❌ Error downloading file: $e');
