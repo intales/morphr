@@ -51,6 +51,11 @@
 					"icon": "rotate"
 				},
 				{
+					"title": "Manage subscription",
+					"href": "/subscription",
+					"icon": "money-bill"
+				},
+				{
 					"title": "Using Morphr components",
 					"href": "/using-morphr",
 					"icon": "pen"

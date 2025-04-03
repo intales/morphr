@@ -1,0 +1,79 @@
+# The `morphr subscription` Command
+
+The `subscription` command allows you to view your current subscription details, usage statistics, and limits. This information helps you monitor your usage and determine if you need to upgrade your plan.
+
+## Basic Usage
+
+```bash
+morphr subscription
+```
+
+When you run this command, the CLI will:
+
+1. Verify you're logged in to your Morphr account
+2. Fetch your current subscription information from Morphr Cloud
+3. Display detailed information about your plan, usage, and billing period
+
+## Example
+
+```
+$ morphr subscription
+🔍 Fetching subscription information...
+
+===== Subscription Information =====
+
+📋 Plan Details:
+  Name: Pro
+  Description: Pro plan with 1000 syncs/month
+  Sync Limit: 1000
+
+📊 Usage:
+  Sync Count: 342
+  Project Count: 5
+  Remaining Syncs: 658
+  Billing Period: 2025-04-01 to 2025-04-30
+
+💳 Subscription Details:
+  Status: active
+  Start Date: 2025-03-15
+  End Date: 2025-06-15
+  Type: pro
+
+✨ You can upgrade your plan at https://morphr.dev/pricing
+```
+
+## Understanding Your Subscription
+
+### Plan Types
+
+Morphr offers several subscription plans:
+
+- **Free**: 100 syncs/month (permanent)
+- **Pro**: 1000 syncs/month
+- **Business**: 3000 syncs/month
+- **Enterprise**: Unlimited syncs
+
+### Usage Metrics
+
+The command displays several important usage metrics:
+
+- **Sync Count**: How many times you've synchronized with Figma this billing period
+- **Project Count**: Total number of projects in your account
+- **Remaining Syncs**: How many more syncs you can perform in the current billing period
+- **Billing Period**: The current billing cycle dates
+
+### Subscription Details
+
+- **Status**: Current status of your subscription (active, canceled, etc.)
+- **Start/End Date**: The period your subscription covers
+- **Type**: Your subscription tier
+- **Permanent**: Indicates if your subscription is permanent (like the Free plan)
+
+## Notes
+
+- You must be logged in to view your subscription details
+- The billing period resets monthly
+- If you're approaching your sync limit, consider upgrading your plan
+- Free plans have a permanent subscription with limited syncs per month
+
+This command is useful for monitoring your usage and ensuring you don't hit unexpected limits during development.
