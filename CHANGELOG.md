@@ -2,6 +2,9 @@
 
 All notable changes to the Morphr package will be documented in this file.
 
+## 0.1.1 - 2025-04-03
+- Migrated to `morphr_figma`
+
 ## 0.1.0 - 2025-04-02
 
 ### Added

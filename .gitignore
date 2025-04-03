@@ -29,3 +29,6 @@ migrate_working_dir/
 build/
 
 example/lib/morphr_options.dart
+
+.flutter-plugins
+.flutter-plugins-dependencies
