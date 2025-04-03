@@ -6,7 +6,7 @@ repository: "https://github.com/intales/morphr"
 license: MIT
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.7.2
   flutter: ">=1.17.0"
 
 executables:
