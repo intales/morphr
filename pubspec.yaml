@@ -16,7 +16,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  figma: ^7.1.1
+  figma:
+    git:
+      url: https://github.com/filippomenchini/figma.git
+      ref: patch-1
   path_parsing: ^1.1.0
   args: ^2.6.0
   interact: ^2.2.0
