@@ -12,6 +12,7 @@ import 'package:morphr/components/figma_button_component.dart';
 import 'package:morphr/components/figma_icon_component.dart';
 import 'package:morphr/components/figma_bottombar_component.dart';
 import 'package:morphr/components/figma_appbar_component.dart';
+import 'package:morphr/components/figma_tree_component.dart';
 
 abstract class FigmaComponent extends StatelessWidget {
   const FigmaComponent({super.key});
@@ -36,11 +37,7 @@ abstract class FigmaComponent extends StatelessWidget {
     required final BuildContext context,
     required final List<Widget> children,
   }) =>
-      FigmaAppbarComponent(
-        componentName,
-        context: context,
-        children: children,
-      );
+      FigmaAppbarComponent(componentName, context: context, children: children);
 
   const factory FigmaComponent.bottomBar(
     final String componentName, {
@@ -52,9 +49,8 @@ abstract class FigmaComponent extends StatelessWidget {
     required final String text,
   }) = FigmaTextComponent;
 
-  const factory FigmaComponent.icon(
-    final String componentName,
-  ) = FigmaIconComponent;
+  const factory FigmaComponent.icon(final String componentName) =
+      FigmaIconComponent;
 
   const factory FigmaComponent.button(
     final String componentName, {
@@ -76,4 +72,7 @@ abstract class FigmaComponent extends StatelessWidget {
     required final IndexedWidgetBuilder itemBuilder,
     required final Axis scrollDirection,
   }) = FigmaListComponent;
+
+  const factory FigmaComponent.tree(final String componentName) =
+      FigmaTreeComponent;
 }

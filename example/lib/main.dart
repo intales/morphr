@@ -43,61 +43,9 @@ class FigmaTestApp extends StatelessWidget {
       home: Builder(
         builder: (context) {
           return Scaffold(
-            appBar: FigmaComponent.appBar(
-              "app_bar",
-              context: context,
-              children: [
-                const FigmaComponent.text(
-                  "app_bar_title",
-                  text: "Todo App",
-                ),
-                FigmaComponent.button(
-                  "app_bar_add_todo_button",
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            bottomNavigationBar: const FigmaComponent.bottomBar(
-              "bottom_bar",
-              children: [
-                Icon(Icons.home),
-                Icon(Icons.task_rounded),
-                Icon(Icons.add_task_outlined),
-              ],
-            ),
-            body: FigmaComponent.container(
-              "main_page",
-              child: FigmaComponent.list(
-                "todos_list",
-                itemCount: todos.length,
-                itemBuilder: (context, index) {
-                  final todo = todos[index];
-
-                  return FigmaComponent.row(
-                    "todo_frame",
-                    children: [
-                      FigmaComponent.button(
-                        "todo_checkbox${todo.done ? "_done" : ""}",
-                        onPressed: () {},
-                      ),
-                      FigmaComponent.column(
-                        "todo_frame_content",
-                        children: [
-                          FigmaComponent.text(
-                            "todo_title",
-                            text: todo.title,
-                          ),
-                          FigmaComponent.text(
-                            "todo_description",
-                            text: todo.description,
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-                scrollDirection: Axis.vertical,
-              ),
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              child: FigmaComponent.tree("main_page"),
             ),
           );
         },
