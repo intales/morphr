@@ -11,6 +11,11 @@
 		"backgroundLight": "#FFFFFF",
 		"backgroundDark": "#000000"
 	},
+	"social": {
+		"discord": "cVm7gsx54C",
+		"github": "intales",
+		"x": "@morphrdev"
+	},
 	"sidebar": [
 		{
 			"group": "Getting Started",
