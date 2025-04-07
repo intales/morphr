@@ -26,6 +26,11 @@
 					"icon": "rocket"
 				},
 				{
+					"title": "Why morphr",
+					"href": "/why",
+					"icon": "question"
+				},
+				{
 					"title": "Installation",
 					"href": "/installation",
 					"icon": "download"
