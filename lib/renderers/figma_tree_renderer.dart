@@ -7,6 +7,8 @@ import 'package:morphr/renderers/figma_flex_renderer.dart';
 import 'package:morphr/renderers/figma_shape_renderer.dart';
 import 'package:morphr/renderers/figma_text_renderer.dart';
 import 'package:morphr/renderers/figma_vector_renderer.dart';
+import 'package:morphr/transformers/core/node_transformer.dart';
+import 'package:morphr/transformers/core/transformer_manager.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 
 /// A renderer that can recursively render a Figma node tree into Flutter widgets.
@@ -20,29 +22,81 @@ class FigmaTreeRenderer {
   ///
   /// The [node] is the Figma node to render.
   /// The [context] is the BuildContext for responsive sizing.
-  Widget render({required figma.Node node, required BuildContext context}) {
+  /// The [transformers] list allows customizing the rendering behavior.
+  /// The [parent] is the parent node (if any).
+  /// The [transformerManager] is used internally for applying transformations.
+  Widget render({
+    required figma.Node node,
+    required BuildContext context,
+    List<NodeTransformer> transformers = const [],
+    figma.Node? parent,
+    TransformerManager? transformerManager,
+  }) {
+    // Initialize or reuse transformer manager
+    transformerManager ??= TransformerManager(transformers: transformers);
+
     try {
       // First, create the base widget according to node type
       Widget baseWidget = _createBaseWidget(node, context);
 
+      // Apply transformations if any
+      final Widget transformedWidget = transformerManager.transformNode(
+        buildContext: context,
+        node: node,
+        parent: parent,
+        defaultWidget: baseWidget,
+      );
+
+      // If the widget was transformed and we're not going to process children,
+      // return it as is
+      if (transformedWidget != baseWidget) {
+        // Check if the node has no children or if it's a leaf node type
+        if (_getChildNodes(node) == null || _getChildNodes(node)!.isEmpty) {
+          return transformedWidget;
+        }
+      }
+
       // Then, render children recursively if available
       final children = _getChildNodes(node);
       if (children != null && children.isNotEmpty) {
+        // Get child transformers for this node
+        final childTransformers = transformerManager.getChildTransformers(
+          node,
+          parent,
+        );
+
         // Create list of rendered children
         final childWidgets = <Widget>[];
         for (final child in children) {
           if (child != null) {
-            childWidgets.add(render(node: child, context: context));
+            childWidgets.add(
+              render(
+                node: child,
+                context: context,
+                transformers: childTransformers,
+                parent: node,
+                transformerManager: transformerManager,
+              ),
+            );
           }
         }
 
         // Combine with children according to layout
         if (childWidgets.isNotEmpty) {
-          baseWidget = _combineWithChildren(baseWidget, node, childWidgets);
+          // If the node was transformed, wrap the children with it
+          if (transformedWidget != baseWidget) {
+            // This is simplified and might need adjustment based on how
+            // you want transformed parents to interact with their children
+            return _combineWithChildren(transformedWidget, node, childWidgets);
+          }
+
+          // Otherwise combine the base widget with children
+          return _combineWithChildren(baseWidget, node, childWidgets);
         }
       }
 
-      return baseWidget;
+      // If there are no children to process, return the transformed widget
+      return transformedWidget;
     } catch (e, stackTrace) {
       // If rendering fails, return a placeholder with error info
       debugPrint('Error rendering node: $e');

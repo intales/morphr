@@ -40,15 +40,10 @@ class FigmaTestApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: GoogleFonts.robotoMono().fontFamily,
       ),
-      home: Builder(
-        builder: (context) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            body: SafeArea(
-              child: FigmaComponent.tree("main_page"),
-            ),
-          );
-        },
+      home: FigmaComponent.scaffold(
+        "main_page",
+        appBarNodeName: "app_bar",
+        bodyNodeName: "todos_list",
       ),
     );
   }

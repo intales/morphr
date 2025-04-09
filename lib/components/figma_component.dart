@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:morphr/components/figma_container_component.dart';
 import 'package:morphr/components/figma_list_component.dart';
 import 'package:morphr/components/figma_flex_component.dart';
@@ -13,6 +13,8 @@ import 'package:morphr/components/figma_icon_component.dart';
 import 'package:morphr/components/figma_bottombar_component.dart';
 import 'package:morphr/components/figma_appbar_component.dart';
 import 'package:morphr/components/figma_tree_component.dart';
+import 'package:morphr/components/figma_scaffold_component.dart';
+import 'package:morphr/transformers/core/node_transformer.dart';
 
 abstract class FigmaComponent extends StatelessWidget {
   const FigmaComponent({super.key});
@@ -73,6 +75,22 @@ abstract class FigmaComponent extends StatelessWidget {
     required final Axis scrollDirection,
   }) = FigmaListComponent;
 
-  const factory FigmaComponent.tree(final String componentName) =
-      FigmaTreeComponent;
+  const factory FigmaComponent.tree(
+    final String componentName, {
+    final List<NodeTransformer> transformers,
+  }) = FigmaTreeComponent;
+
+  const factory FigmaComponent.scaffold(
+    final String screenNodeName, {
+    String appBarNodeName,
+    String bodyNodeName,
+    String bottomBarNodeName,
+    String floatingActionButtonNodeName,
+    final List<NodeTransformer> appBarTransformers,
+    final List<NodeTransformer> bodyTransformers,
+    final List<NodeTransformer> bottomBarTransformers,
+    final List<NodeTransformer> fabTransformers,
+    Color? backgroundColor,
+    FloatingActionButtonLocation? floatingActionButtonLocation,
+  }) = FigmaScaffoldComponent;
 }

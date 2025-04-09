@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:morphr/components/figma_component.dart';
 import 'package:morphr/morphr_service.dart';
 import 'package:morphr/renderers/figma_tree_renderer.dart';
+import 'package:morphr/transformers/core/node_transformer.dart';
 
 /// A component that renders an entire Figma component tree recursively.
 ///
@@ -15,10 +16,18 @@ class FigmaTreeComponent extends FigmaComponent {
   /// The name of the root component in Figma.
   final String componentName;
 
+  /// Optional transformers to customize the rendering behavior.
+  final List<NodeTransformer> transformers;
+
   /// Creates a new FigmaTreeComponent.
   ///
   /// The [componentName] is the name of the Figma component to render.
-  const FigmaTreeComponent(this.componentName, {super.key});
+  /// The [transformers] provide a way to customize the rendering of specific nodes.
+  const FigmaTreeComponent(
+    this.componentName, {
+    this.transformers = const [],
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +38,10 @@ class FigmaTreeComponent extends FigmaComponent {
     }
 
     // Use the tree renderer to render the entire component tree
-    return const FigmaTreeRenderer().render(node: node, context: context);
+    return const FigmaTreeRenderer().render(
+      node: node,
+      context: context,
+      transformers: transformers,
+    );
   }
 }
