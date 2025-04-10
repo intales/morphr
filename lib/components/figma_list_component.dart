@@ -12,12 +12,14 @@ class FigmaListComponent extends FigmaComponent {
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
   final Axis scrollDirection;
+  final bool shrinkWrap;
 
   const FigmaListComponent(
     this.componentName, {
     required this.itemCount,
     required this.itemBuilder,
     this.scrollDirection = Axis.vertical,
+    this.shrinkWrap = false,
     super.key,
   });
 
@@ -37,6 +39,7 @@ class FigmaListComponent extends FigmaComponent {
           itemCount: itemCount,
           itemBuilder: itemBuilder,
           scrollDirection: scrollDirection,
+          shrinkWrap: shrinkWrap,
         );
       },
     );

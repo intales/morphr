@@ -32,7 +32,7 @@ NodeTransformer onTap(
     transformer: (context) {
       return GestureDetector(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque, // Makes the entire area tappable
+        behavior: HitTestBehavior.opaque,
         child: context.defaultWidget,
       );
     },

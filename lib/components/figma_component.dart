@@ -73,17 +73,17 @@ abstract class FigmaComponent extends StatelessWidget {
     required final int itemCount,
     required final IndexedWidgetBuilder itemBuilder,
     required final Axis scrollDirection,
+    required final bool shrinkWrap,
   }) = FigmaListComponent;
 
-  const factory FigmaComponent.tree(
+  const factory FigmaComponent.widget(
     final String componentName, {
     final List<NodeTransformer> transformers,
   }) = FigmaTreeComponent;
 
   const factory FigmaComponent.scaffold(
-    final String screenNodeName, {
+    final String bodyNodeName, {
     String appBarNodeName,
-    String bodyNodeName,
     String bottomBarNodeName,
     String floatingActionButtonNodeName,
     final List<NodeTransformer> appBarTransformers,

@@ -20,6 +20,8 @@ class Todo {
     required this.description,
     required this.done,
   });
+
+  Todo get toggle => Todo(title: title, description: description, done: !done);
 }
 
 final todos = List.generate(
@@ -41,9 +43,27 @@ class FigmaTestApp extends StatelessWidget {
         fontFamily: GoogleFonts.robotoMono().fontFamily,
       ),
       home: FigmaComponent.scaffold(
-        "main_page",
+        "todos_list",
         appBarNodeName: "app_bar",
-        bodyNodeName: "todos_list",
+        appBarTransformers: [
+          replaceText("app_bar_title", "Bentornato Elia"),
+        ],
+        bodyTransformers: [
+          listTransformer(
+            "todos_list",
+            items: todos,
+            itemBuilder: (context, index, item) {
+              final done = item.done ? "_done" : "";
+              return FigmaComponent.widget(
+                "todo_frame$done",
+                transformers: [
+                  replaceText("todo_title$done", item.title),
+                  replaceText("todo_description$done", item.description),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }

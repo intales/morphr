@@ -20,7 +20,6 @@ NodeTransformer replaceText(
         return context.defaultWidget;
       }
 
-      // Use the FigmaTextRenderer to render the node with the new text
       return const FigmaTextRenderer().render(
         node: context.node as figma.Text,
         parentSize: Size.zero,

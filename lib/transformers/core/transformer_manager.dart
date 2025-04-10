@@ -27,32 +27,38 @@ class TransformerManager {
     required figma.Node? parent,
     required Widget defaultWidget,
     List<NodeTransformer>? overrideTransformers,
+    TransformContext? transformContext,
   }) {
-    // Find the first transformer that applies to this node
     final applicableTransformers =
         (overrideTransformers ?? transformers)
             .where((t) => t.appliesTo(node, parent))
             .toList();
 
     if (applicableTransformers.isEmpty) {
-      // If no transformer applies, return the default widget
       return defaultWidget;
     }
 
-    // Use the first applicable transformer
-    final transformer = applicableTransformers.first;
-    final context = TransformContext(
-      buildContext: buildContext,
-      node: node,
-      parent: parent,
-      defaultWidget: defaultWidget,
-    );
+    final context =
+        transformContext ??
+        TransformContext(
+          buildContext: buildContext,
+          node: node,
+          parent: parent,
+          defaultWidget: defaultWidget,
+        );
 
-    // Apply the transformation
-    final transformedWidget = transformer.transform(context);
+    Widget result = defaultWidget;
+    for (final transformer in applicableTransformers) {
+      try {
+        final updatedContext = context.copyWith(defaultWidget: result);
 
-    // Return the transformed widget
-    return transformedWidget;
+        result = transformer.transform(updatedContext);
+      } catch (e) {
+        debugPrint('Error applying transformer to ${node.name}: $e');
+      }
+    }
+
+    return result;
   }
 
   /// Gets the child transformers for a specific node.

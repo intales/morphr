@@ -17,6 +17,7 @@ class FigmaListRenderer {
     required final int itemCount,
     required final IndexedWidgetBuilder itemBuilder,
     final Axis scrollDirection = Axis.vertical,
+    final bool shrinkWrap = false,
   }) {
     final layoutAdapter = FigmaLayoutAdapter(node);
     final decorationAdapter = FigmaDecorationAdapter(node);
@@ -28,6 +29,7 @@ class FigmaListRenderer {
       padding: layoutAdapter.padding,
       scrollDirection: scrollDirection,
       itemCount: itemCount,
+      shrinkWrap: shrinkWrap,
       separatorBuilder:
           (context, index) => SizedBox(
             width:

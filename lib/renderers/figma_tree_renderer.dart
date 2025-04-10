@@ -7,8 +7,7 @@ import 'package:morphr/renderers/figma_flex_renderer.dart';
 import 'package:morphr/renderers/figma_shape_renderer.dart';
 import 'package:morphr/renderers/figma_text_renderer.dart';
 import 'package:morphr/renderers/figma_vector_renderer.dart';
-import 'package:morphr/transformers/core/node_transformer.dart';
-import 'package:morphr/transformers/core/transformer_manager.dart';
+import 'package:morphr/transformers/core/transformers_core.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 
 /// A renderer that can recursively render a Figma node tree into Flutter widgets.
@@ -32,40 +31,37 @@ class FigmaTreeRenderer {
     figma.Node? parent,
     TransformerManager? transformerManager,
   }) {
-    // Initialize or reuse transformer manager
     transformerManager ??= TransformerManager(transformers: transformers);
 
     try {
-      // First, create the base widget according to node type
       Widget baseWidget = _createBaseWidget(node, context);
+      final children = _getChildNodes(node);
 
-      // Apply transformations if any
-      final Widget transformedWidget = transformerManager.transformNode(
+      final transformContext = TransformContext(
         buildContext: context,
         node: node,
         parent: parent,
         defaultWidget: baseWidget,
       );
 
-      // If the widget was transformed and we're not going to process children,
-      // return it as is
+      final transformedWidget = transformerManager.transformNode(
+        buildContext: context,
+        node: node,
+        parent: parent,
+        defaultWidget: baseWidget,
+        transformContext: transformContext,
+      );
+
       if (transformedWidget != baseWidget) {
-        // Check if the node has no children or if it's a leaf node type
-        if (_getChildNodes(node) == null || _getChildNodes(node)!.isEmpty) {
-          return transformedWidget;
-        }
+        return transformedWidget;
       }
 
-      // Then, render children recursively if available
-      final children = _getChildNodes(node);
       if (children != null && children.isNotEmpty) {
-        // Get child transformers for this node
         final childTransformers = transformerManager.getChildTransformers(
           node,
           parent,
         );
 
-        // Create list of rendered children
         final childWidgets = <Widget>[];
         for (final child in children) {
           if (child != null) {
@@ -81,24 +77,13 @@ class FigmaTreeRenderer {
           }
         }
 
-        // Combine with children according to layout
         if (childWidgets.isNotEmpty) {
-          // If the node was transformed, wrap the children with it
-          if (transformedWidget != baseWidget) {
-            // This is simplified and might need adjustment based on how
-            // you want transformed parents to interact with their children
-            return _combineWithChildren(transformedWidget, node, childWidgets);
-          }
-
-          // Otherwise combine the base widget with children
           return _combineWithChildren(baseWidget, node, childWidgets);
         }
       }
 
-      // If there are no children to process, return the transformed widget
-      return transformedWidget;
+      return baseWidget;
     } catch (e, stackTrace) {
-      // If rendering fails, return a placeholder with error info
       debugPrint('Error rendering node: $e');
       debugPrint('Stack trace: $stackTrace');
       return SizedBox(
@@ -111,7 +96,6 @@ class FigmaTreeRenderer {
 
   /// Creates the base widget for a node without children.
   Widget _createBaseWidget(figma.Node node, BuildContext context) {
-    // Determine node type and render accordingly
     try {
       if (node is figma.Text) {
         return _renderText(node);
@@ -122,7 +106,6 @@ class FigmaTreeRenderer {
         return _renderContainer(node);
       }
     } catch (e) {
-      // If rendering fails, return a placeholder with error info
       debugPrint('Error rendering node: $e');
       return SizedBox(
         width: 50,
@@ -134,30 +117,27 @@ class FigmaTreeRenderer {
 
   /// Renders a text node.
   Widget _renderText(figma.Text node) {
-    // Use the existing text renderer
     return const FigmaTextRenderer().render(
       node: node,
-      parentSize: Size.zero, // Size will be determined by the text
+      parentSize: Size.zero,
       content: node.characters ?? '',
     );
   }
 
   /// Renders a vector node.
   Widget _renderVector(figma.Vector node) {
-    // Use the existing vector renderer
     return const FigmaVectorRenderer().render(
       node: node,
-      parentSize: Size.zero, // Parent size doesn't matter for vector rendering
+      parentSize: Size.zero,
     );
   }
 
   /// Renders a container node (Frame, Rectangle, Group, etc.)
   Widget _renderContainer(figma.Node node) {
-    // Use the existing shape renderer
     return const FigmaShapeRenderer().render(
       node: node,
-      parentSize: Size.zero, // The size will be determined by the renderer
-      child: null, // Children will be added separately
+      parentSize: Size.zero,
+      child: null,
     );
   }
 

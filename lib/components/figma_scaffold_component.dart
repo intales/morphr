@@ -17,9 +17,6 @@ import 'package:morphr_figma/morphr_figma.dart' as figma;
 /// AppBar, BottomNavigationBar, and FloatingActionButton into the appropriate
 /// positions within a Scaffold, while rendering the remaining content as the body.
 class FigmaScaffoldComponent extends FigmaComponent {
-  /// The name of the node in Figma that contains the entire screen.
-  final String screenNodeName;
-
   /// The name of the node in Figma that should be rendered as an AppBar.
   final String? appBarNodeName;
 
@@ -58,9 +55,8 @@ class FigmaScaffoldComponent extends FigmaComponent {
   /// Other named parameters allow specifying which nodes should be treated
   /// as special parts of the Scaffold, and what transformers to apply to each.
   const FigmaScaffoldComponent(
-    this.screenNodeName, {
+    this.bodyNodeName, {
     this.appBarNodeName,
-    this.bodyNodeName,
     this.bottomBarNodeName,
     this.floatingActionButtonNodeName,
     this.appBarTransformers = const [],
@@ -74,16 +70,18 @@ class FigmaScaffoldComponent extends FigmaComponent {
 
   @override
   Widget build(BuildContext context) {
-    // If bodyNodeName is not provided, we use the screen node as the body
-    final effectiveBodyNodeName = bodyNodeName ?? screenNodeName;
+    final effectiveBodyNodeName = bodyNodeName;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: _buildAppBar(context),
-      body: FigmaComponent.tree(
-        effectiveBodyNodeName,
-        transformers: bodyTransformers,
-      ),
+      body:
+          effectiveBodyNodeName != null
+              ? FigmaComponent.widget(
+                effectiveBodyNodeName,
+                transformers: bodyTransformers,
+              )
+              : const SizedBox.shrink(),
       bottomNavigationBar: _buildBottomBar(context),
       floatingActionButton: _buildFloatingActionButton(context),
       floatingActionButtonLocation: floatingActionButtonLocation,
@@ -93,15 +91,12 @@ class FigmaScaffoldComponent extends FigmaComponent {
   PreferredSizeWidget? _buildAppBar(BuildContext context) {
     if (appBarNodeName == null) return null;
 
-    // First, render the original children using tree renderer
     final figmaNode = MorphrService.instance.getComponent(appBarNodeName!);
     if (figmaNode == null) return null;
 
-    // Get child nodes from the app bar
     final List<Widget> appBarChildren = [];
 
     if (figmaNode is figma.Frame && figmaNode.children != null) {
-      // Render each child node using tree renderer with the app bar transformers
       for (final childNode in figmaNode.children!) {
         if (childNode == null) continue;
 
@@ -115,7 +110,6 @@ class FigmaScaffoldComponent extends FigmaComponent {
         );
       }
     } else if (figmaNode is figma.Instance && figmaNode.children != null) {
-      // Same for instances
       for (final childNode in figmaNode.children!) {
         if (childNode == null) continue;
 
@@ -140,15 +134,12 @@ class FigmaScaffoldComponent extends FigmaComponent {
   Widget? _buildBottomBar(BuildContext context) {
     if (bottomBarNodeName == null) return null;
 
-    // First, render the original children using tree renderer
     final figmaNode = MorphrService.instance.getComponent(bottomBarNodeName!);
     if (figmaNode == null) return null;
 
-    // Get child nodes from the bottom bar
     final List<Widget> bottomBarChildren = [];
 
     if (figmaNode is figma.Frame && figmaNode.children != null) {
-      // Render each child node using tree renderer with the bottom bar transformers
       for (final childNode in figmaNode.children!) {
         if (childNode == null) continue;
 
@@ -162,7 +153,6 @@ class FigmaScaffoldComponent extends FigmaComponent {
         );
       }
     } else if (figmaNode is figma.Instance && figmaNode.children != null) {
-      // Same for instances
       for (final childNode in figmaNode.children!) {
         if (childNode == null) continue;
 
@@ -186,7 +176,7 @@ class FigmaScaffoldComponent extends FigmaComponent {
   Widget? _buildFloatingActionButton(BuildContext context) {
     if (floatingActionButtonNodeName == null) return null;
 
-    return FigmaComponent.tree(
+    return FigmaComponent.widget(
       floatingActionButtonNodeName!,
       transformers: fabTransformers,
     );
