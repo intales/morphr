@@ -34,9 +34,36 @@ class FigmaTreeRenderer {
     transformerManager ??= TransformerManager(transformers: transformers);
 
     try {
-      Widget baseWidget = _createBaseWidget(node, context);
       final children = _getChildNodes(node);
 
+      List<Widget>? childWidgets;
+      if (children != null && children.isNotEmpty) {
+        final childTransformers = transformerManager.getChildTransformers(
+          node,
+          parent,
+        );
+
+        childWidgets = [];
+        for (final child in children) {
+          if (child != null) {
+            childWidgets.add(
+              render(
+                node: child,
+                context: context,
+                transformers: childTransformers,
+                parent: node,
+                transformerManager: transformerManager,
+              ),
+            );
+          }
+        }
+      }
+
+      Widget baseWidget = _createBaseWidget(node, context);
+      baseWidget =
+          childWidgets != null
+              ? _combineWithChildren(baseWidget, node, childWidgets)
+              : baseWidget;
       final transformContext = TransformContext(
         buildContext: context,
         node: node,
@@ -52,37 +79,7 @@ class FigmaTreeRenderer {
         transformContext: transformContext,
       );
 
-      if (transformedWidget != baseWidget) {
-        return transformedWidget;
-      }
-
-      if (children != null && children.isNotEmpty) {
-        final childTransformers = transformerManager.getChildTransformers(
-          node,
-          parent,
-        );
-
-        final childWidgets = <Widget>[];
-        for (final child in children) {
-          if (child != null) {
-            childWidgets.add(
-              render(
-                node: child,
-                context: context,
-                transformers: childTransformers,
-                parent: node,
-                transformerManager: transformerManager,
-              ),
-            );
-          }
-        }
-
-        if (childWidgets.isNotEmpty) {
-          return _combineWithChildren(baseWidget, node, childWidgets);
-        }
-      }
-
-      return baseWidget;
+      return transformedWidget;
     } catch (e, stackTrace) {
       debugPrint('Error rendering node: $e');
       debugPrint('Stack trace: $stackTrace');
