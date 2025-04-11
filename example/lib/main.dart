@@ -61,7 +61,8 @@ class FigmaTestApp extends StatelessWidget {
                   return FigmaComponent.widget(
                     "todo_frame$done",
                     transformers: [
-                      onTap("todo_frame$done", () => print("hello")),
+                      onTap("todo_frame$done",
+                          () => print("tap on ${todo.title}")),
                       replaceText("todo_title$done", todo.title),
                       replaceText("todo_description$done", todo.description),
                     ],
