@@ -49,17 +49,26 @@ class FigmaTestApp extends StatelessWidget {
           replaceText("app_bar_title", "Bentornato Elia"),
         ],
         bodyTransformers: [
-          listTransformer(
+          widgetTransformer(
             "todos_list",
-            items: todos,
-            itemBuilder: (context, index, item) {
-              final done = item.done ? "_done" : "";
-              return FigmaComponent.widget(
-                "todo_frame$done",
-                transformers: [
-                  replaceText("todo_title$done", item.title),
-                  replaceText("todo_description$done", item.description),
-                ],
+            builder: (context) {
+              return FigmaComponent.list(
+                "todos_list",
+                itemCount: todos.length,
+                itemBuilder: (context, index) {
+                  final todo = todos[index];
+                  final done = todo.done ? "_done" : "";
+                  return FigmaComponent.widget(
+                    "todo_frame$done",
+                    transformers: [
+                      onTap("todo_frame$done", () => print("hello")),
+                      replaceText("todo_title$done", todo.title),
+                      replaceText("todo_description$done", todo.description),
+                    ],
+                  );
+                },
+                scrollDirection: Axis.vertical,
+                shrinkWrap: false,
               );
             },
           ),
