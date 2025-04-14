@@ -1,0 +1,84 @@
+# FigmaComponent.icon
+
+The `FigmaComponent.icon` component renders vector graphics from your Figma design as icons in your Flutter app. It preserves all visual details including paths, colors, gradients, and effects.
+
+## Basic Usage
+
+```dart
+FigmaComponent.icon("my_icon_name")
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the icon component in your Figma file |
+
+## How It Works
+
+1. The component looks for a vector node with the specified name in your Figma file
+2. It extracts all vector paths and styling information
+3. It renders the vector graphic as a Flutter custom paint
+4. The result is a pixel-perfect representation of your Figma icon
+
+## Examples
+
+### Simple Icon
+
+```dart
+FigmaComponent.icon("notification_icon")
+```
+
+### Icon in a Button
+
+```dart
+IconButton(
+  icon: FigmaComponent.icon("settings_icon"),
+  onPressed: () => openSettings(),
+)
+```
+
+### Icon with Text
+
+```dart
+Row(
+  children: [
+    FigmaComponent.icon("location_pin"),
+    SizedBox(width: 8),
+    Text("New York, NY"),
+  ],
+)
+```
+
+### Conditional Icons
+
+```dart
+FigmaComponent.icon(
+  isSelected ? "checkbox_selected" : "checkbox_empty",
+)
+```
+
+## Figma Design Tips
+
+1. **Keep icons simple**: Complex icons with many paths can impact performance
+2. **Organize icons in frames**: Group related icons in named frames
+3. **Use consistent sizing**: Design icons with consistent dimensions
+4. **Flatten vectors**: Flatten vector paths when possible to optimize rendering
+5. **Consider color overrides**: If you need to change icon colors dynamically, design monochrome icons
+
+## Best Practices
+
+1. **Naming convention**: Use a clear naming convention for icons in your Figma file
+2. **Optimize vectors**: Too many control points can impact performance
+3. **Consider size**: Design icons at their intended size to avoid scaling issues
+4. **Group related icons**: Organize icons logically in your Figma file
+
+## Limitations
+
+Currently, the `FigmaComponent.icon` has a few limitations:
+
+- It doesn't support dynamic color changes (the color comes from Figma)
+- Complex effects may not render identically in all cases
+- Very complex vectors might impact performance
+
+This component is perfect for rendering custom icons, simple illustrations, and vector graphics from your Figma design.

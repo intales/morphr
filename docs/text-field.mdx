@@ -1,0 +1,171 @@
+# FigmaComponent.textField
+
+The `FigmaComponent.textField` component renders text input fields from your Figma design. It preserves all visual styling while adding input functionality.
+
+## Basic Usage
+
+```dart
+FigmaComponent.textField(
+  "search_input",
+  controller: searchController,
+  hint: "Search...",
+  onChanged: (value) {
+    // Handle text changes
+    print("Search query: $value");
+  },
+  onSubmitted: (value) {
+    // Handle submit
+    performSearch(value);
+  },
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the text field component in your Figma file |
+| `controller` | `TextEditingController?` | Optional controller for the text field |
+| `onChanged` | `ValueChanged<String>?` | Optional callback when the text changes |
+| `onSubmitted` | `ValueChanged<String>?` | Optional callback when the user submits the text |
+| `hint` | `String?` | Optional hint text to display when the field is empty |
+
+## How It Works
+
+1. The component looks for a text node with the specified name in your Figma file
+2. It preserves all text styling from Figma (font, size, color, etc.)
+3. It renders an interactive text field with the same visual properties
+4. It applies your callbacks for onChange and onSubmit events
+5. If provided, it displays hint text when the field is empty
+
+## Examples
+
+### Basic Text Field
+
+```dart
+FigmaComponent.textField(
+  "email_input",
+  hint: "Enter your email",
+  onChanged: (value) => setState(() => email = value),
+)
+```
+
+### Text Field with Controller
+
+```dart
+// In your StatefulWidget
+late TextEditingController _passwordController;
+
+@override
+void initState() {
+  super.initState();
+  _passwordController = TextEditingController();
+}
+
+@override
+void dispose() {
+  _passwordController.dispose();
+  super.dispose();
+}
+
+// In your build method
+FigmaComponent.textField(
+  "password_input",
+  controller: _passwordController,
+  hint: "Enter your password",
+  onSubmitted: (value) => login(),
+)
+```
+
+### Search Field with Actions
+
+```dart
+FigmaComponent.textField(
+  "search_input",
+  controller: searchController,
+  hint: "Search products...",
+  onChanged: (value) {
+    if (value.length >= 3) {
+      // Auto-search after 3 characters
+      searchProducts(value);
+    }
+  },
+  onSubmitted: (value) {
+    // Search on submit
+    searchProducts(value);
+    // Hide keyboard
+    FocusScope.of(context).unfocus();
+  },
+)
+```
+
+### Form Integration
+
+```dart
+final _formKey = GlobalKey<FormState>();
+final _emailController = TextEditingController();
+final _passwordController = TextEditingController();
+
+// In your build method
+Form(
+  key: _formKey,
+  child: Column(
+    children: [
+      FigmaComponent.textField(
+        "email_input",
+        controller: _emailController,
+        hint: "Email",
+        onSubmitted: (_) => _passwordFocusNode.requestFocus(),
+      ),
+      SizedBox(height: 16),
+      FigmaComponent.textField(
+        "password_input",
+        controller: _passwordController,
+        hint: "Password",
+        onSubmitted: (_) {
+          if (_formKey.currentState!.validate()) {
+            login();
+          }
+        },
+      ),
+      SizedBox(height: 24),
+      ElevatedButton(
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            login();
+          }
+        },
+        child: Text("Log In"),
+      ),
+    ],
+  ),
+)
+```
+
+## Figma Design Tips
+
+1. **Use text nodes**: Design your text fields as standard text nodes in Figma
+2. **Consider states**: Design different states (default, focus, error) for reference
+3. **Use clear styling**: Make your text fields clearly look like input fields
+4. **Include appropriate spacing**: Leave room for input text that may be longer than placeholders
+5. **Consider keyboard types**: Design fields appropriately for different input types (email, password, etc.)
+
+## Best Practices
+
+1. **Always use controllers for important inputs**: This allows you to easily retrieve, set, and clear values
+2. **Add proper validation**: Validate input either on change or on submission
+3. **Consider the keyboard type**: While Morphr can't automatically determine the keyboard type, design your Figma components to suggest the input type
+4. **Handle focus**: Implement proper focus management for form fields
+5. **Provide clear hints**: Use descriptive hint text to guide users
+
+## Limitations
+
+Currently, the `FigmaComponent.textField` has a few limitations:
+
+- It doesn't automatically determine the appropriate keyboard type
+- Complex input decorations (icons, prefixes, suffixes) need to be handled manually
+- Validation needs to be implemented separately
+
+These limitations may be addressed in future versions of Morphr.
+
+This component is ideal for creating search inputs, login forms, comment fields, and any other text input that needs to match your Figma design.

@@ -1,0 +1,81 @@
+# FigmaComponent.container
+
+The `FigmaComponent.container` renders Figma frames, rectangles, and other container elements as Flutter widgets. It preserves all visual properties like colors, borders, shadows, and shapes.
+
+## Basic Usage
+
+```dart
+FigmaComponent.container(
+  "my_container_name",
+  child: YourChildWidget(), // Optional child widget
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the container component in your Figma file |
+| `child` | `Widget?` | Optional child widget to render inside the container |
+| `alignment` | `AlignmentGeometry?` | Optional alignment for the child widget |
+
+## How It Works
+
+1. The component looks for a node with the specified name in your Figma file
+2. It renders all visual properties of that node (background, border, shadows, etc.)
+3. If a child widget is provided, it's rendered inside the container
+4. The result is a Flutter widget that faithfully represents your Figma container
+
+## Examples
+
+### Simple Container
+
+```dart
+FigmaComponent.container("background_card")
+```
+
+### Container with Child
+
+```dart
+FigmaComponent.container(
+  "profile_card",
+  child: Column(
+    children: [
+      Avatar(user: currentUser),
+      Text(currentUser.name),
+      Text(currentUser.email),
+    ],
+  ),
+)
+```
+
+### Container with Alignment
+
+```dart
+FigmaComponent.container(
+  "centered_container",
+  alignment: Alignment.center,
+  child: Icon(Icons.check_circle, size: 48),
+)
+```
+
+### Nested Containers
+
+```dart
+FigmaComponent.container(
+  "outer_card",
+  child: FigmaComponent.container(
+    "inner_content",
+    child: Text("Nested content"),
+  ),
+)
+```
+
+## Best Practices
+
+1. **Design with proper constraints**: Ensure your Figma containers use appropriate constraints to handle different screen sizes
+2. **Use descriptive names**: Give your Figma containers clear, descriptive names
+3. **Keep layer structure clean**: Avoid deeply nested layers for better performance
+4. **Consider responsiveness**: Design your containers to adapt to different screen sizes
+
+This component is ideal for creating backgrounds, cards, panels, and other container elements from your Figma designs.

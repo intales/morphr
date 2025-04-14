@@ -1,0 +1,87 @@
+# FigmaComponent.text
+
+The `FigmaComponent.text` component renders text elements from your Figma design, preserving all typography styles including font family, size, weight, color, and alignment.
+
+## Basic Usage
+
+```dart
+FigmaComponent.text(
+  "my_text_component",
+  text: "Custom text content", // Override the text content
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the text component in your Figma file |
+| `text` | `String` | The text content to display (overrides the original text from Figma) |
+
+## How It Works
+
+1. The component looks for a text node with the specified name in your Figma file
+2. It preserves all text styling from Figma (font, size, weight, color, etc.)
+3. It renders the specified text content, replacing the original text from Figma
+4. The result is a Flutter `Text` widget with all the styling from your Figma design
+
+## Examples
+
+### Simple Text
+
+```dart
+FigmaComponent.text(
+  "welcome_title",
+  text: "Welcome to My App",
+)
+```
+
+### Dynamic Text
+
+```dart
+FigmaComponent.text(
+  "user_greeting",
+  text: "Hello, ${user.name}!",
+)
+```
+
+### Localized Text
+
+```dart
+FigmaComponent.text(
+  "login_button_label",
+  text: AppLocalizations.of(context).loginButtonText,
+)
+```
+
+### Formatted Text
+
+```dart
+// Price with currency formatting
+FigmaComponent.text(
+  "product_price",
+  text: "\$${product.price.toStringAsFixed(2)}",
+)
+
+// Date formatting
+FigmaComponent.text(
+  "event_date",
+  text: DateFormat('MMM d, yyyy').format(event.date),
+)
+```
+
+## Handling Text Overflow
+
+The `FigmaComponent.text` component will respect the text styles and constraints from your Figma design. If your text content is too long for the container:
+
+1. Text will wrap according to the text wrapping settings in your Figma design
+2. If the text still doesn't fit, it will be truncated with an ellipsis
+
+## Best Practices
+
+1. **Design with dynamic content in mind**: Create text components in Figma that can accommodate varying content lengths
+2. **Use text styles in Figma**: Create and use text styles in Figma for consistent typography across your design
+3. **Keep placeholders in Figma**: Use descriptive placeholder text in Figma (e.g., "User Name" instead of "John Doe")
+4. **Consider localization**: Design text components with enough space for translations
+
+This component is perfect for labels, titles, paragraphs, and any text content in your app.
