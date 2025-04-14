@@ -3,7 +3,6 @@
 	"description": "",
 	"favicon": "/assets/logo.png",
 	"theme": {
-		"defaultTheme": "dark",
 		"primary": "#E879F9",
 		"primaryLight": "#F0ABFC",
 		"primaryDark": "#D946EF",
@@ -64,11 +63,66 @@
 					"title": "Manage subscription",
 					"href": "/subscription",
 					"icon": "money-bill"
+				}
+			]
+		},
+		{
+			"group": "Components",
+			"pages": [
+				{
+					"title": "Introduction",
+					"href": "/components",
+					"icon": "toolbox"
 				},
 				{
-					"title": "Using Morphr components",
-					"href": "/using-morphr",
-					"icon": "pen"
+					"title": "Container",
+					"href": "/container",
+					"icon": "box"
+				},
+				{
+					"title": "Text",
+					"href": "/text",
+					"icon": "font"
+				},
+				{
+					"title": "Button",
+					"href": "/button",
+					"icon": "toggle-on"
+				},
+				{
+					"title": "Rows and Columns",
+					"href": "/row-column",
+					"icon": "table-columns"
+				},
+				{
+					"title": "Bars",
+					"href": "/bars",
+					"icon": "bars"
+				},
+				{
+					"title": "List",
+					"href": "/list",
+					"icon": "list"
+				},
+				{
+					"title": "Text Field",
+					"href": "/text-field",
+					"icon": "keyboard"
+				},
+				{
+					"title": "Icon",
+					"href": "/icon",
+					"icon": "icons"
+				},
+				{
+					"title": "Widget",
+					"href": "/widget",
+					"icon": "puzzle-piece"
+				},
+				{
+					"title": "Scaffold",
+					"href": "/scaffold",
+					"icon": "file"
 				}
 			]
 		}

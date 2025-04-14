@@ -1,0 +1,193 @@
+# FigmaComponent.list
+
+The `FigmaComponent.list` component renders scrollable lists from your Figma design. It preserves the visual styling from Figma while allowing you to populate the list with dynamic content.
+
+## Basic Usage
+
+```dart
+FigmaComponent.list(
+  "my_list_component",
+  itemCount: items.length,
+  itemBuilder: (context, index) {
+    return ListTile(
+      title: Text(items[index].title),
+      subtitle: Text(items[index].description),
+    );
+  },
+  scrollDirection: Axis.vertical,
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the list component in your Figma file |
+| `itemCount` | `int` | The number of items in the list |
+| `itemBuilder` | `IndexedWidgetBuilder` | Function that builds each item widget |
+| `scrollDirection` | `Axis` | The direction of scrolling (defaults to `Axis.vertical`) |
+| `shrinkWrap` | `bool` | Whether the list should shrink to its content size (defaults to `false`) |
+
+## How It Works
+
+1. The component looks for a frame with the specified name in your Figma file
+2. It extracts visual properties (background, padding, etc.) from that frame
+3. It creates a scrollable list with the specified number of items
+4. Each item is built using your `itemBuilder` function
+5. The spacing between items is taken from the Figma frame's auto-layout properties
+
+## Examples
+
+### Basic Vertical List
+
+```dart
+FigmaComponent.list(
+  "products_list",
+  itemCount: products.length,
+  itemBuilder: (context, index) {
+    final product = products[index];
+    return ListTile(
+      leading: Image.network(product.imageUrl, width: 50, height: 50),
+      title: Text(product.name),
+      subtitle: Text("\$${product.price.toStringAsFixed(2)}"),
+      trailing: IconButton(
+        icon: Icon(Icons.add_shopping_cart),
+        onPressed: () => addToCart(product),
+      ),
+    );
+  },
+)
+```
+
+### Horizontal List
+
+```dart
+FigmaComponent.list(
+  "categories_list",
+  itemCount: categories.length,
+  scrollDirection: Axis.horizontal,
+  itemBuilder: (context, index) {
+    final category = categories[index];
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundImage: NetworkImage(category.imageUrl),
+          ),
+          SizedBox(height: 8),
+          Text(category.name),
+        ],
+      ),
+    );
+  },
+)
+```
+
+### Using Figma-Styled Items
+
+You can combine `FigmaComponent.list` with other Figma components for list items:
+
+```dart
+FigmaComponent.list(
+  "news_feed",
+  itemCount: articles.length,
+  itemBuilder: (context, index) {
+    final article = articles[index];
+    return FigmaComponent.container(
+      "article_card",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.network(article.imageUrl),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  article.title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(article.summary),
+                SizedBox(height: 8),
+                Text(
+                  "Published on ${formatDate(article.publishDate)}",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  },
+)
+```
+
+### Nested Lists
+
+```dart
+FigmaComponent.list(
+  "section_list",
+  itemCount: sections.length,
+  itemBuilder: (context, sectionIndex) {
+    final section = sections[sectionIndex];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            section.title,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        FigmaComponent.list(
+          "section_items_list",
+          itemCount: section.items.length,
+          shrinkWrap: true, // Important for nested lists
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, itemIndex) {
+            final item = section.items[itemIndex];
+            return FigmaComponent.container(
+              "section_item_card",
+              child: Column(
+                children: [
+                  Image.network(item.imageUrl, width: 120, height: 120),
+                  SizedBox(height: 8),
+                  Text(item.name),
+                  Text("\$${item.price.toStringAsFixed(2)}"),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  },
+)
+```
+
+## Figma Design Tips
+
+1. **Use auto-layout frames**: Design your list component with auto-layout in Figma
+2. **Define item spacing**: Set consistent spacing between items in your auto-layout
+3. **Create a list item template**: Design a template for list items in your Figma file
+
+## Best Practices
+
+1. **Virtualization**: The list is automatically virtualized, rendering only visible items for performance
+2. **Reuse item widgets**: Optimize your `itemBuilder` to reuse widgets where possible
+3. **Be mindful of nested scrolling**: When nesting lists, use `shrinkWrap: true` and consider physics settings
+4. **Handle empty states**: Add logic to display a message when the list is empty
+
+This component is ideal for product lists, feeds, galleries, and any scrollable content in your app.

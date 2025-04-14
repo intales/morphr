@@ -1,0 +1,184 @@
+# FigmaComponent.scaffold
+
+The `FigmaComponent.scaffold` component provides a convenient way to create complete screens from your Figma designs using Flutter's `Scaffold` widget. It automatically maps sections of your Figma design to the appropriate parts of a `Scaffold` (appBar, body, bottomNavigationBar, floatingActionButton), handling system UI integration properly.
+
+## Basic Usage
+
+```dart
+FigmaComponent.scaffold(
+  "main_content", // The body content node name
+  appBarNodeName: "top_app_bar",
+  bottomBarNodeName: "bottom_navigation",
+  floatingActionButtonNodeName: "add_button",
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `bodyNodeName` | `String` | Name of the Figma node for the main content |
+| `appBarNodeName` | `String?` | Optional name of the Figma node for the app bar |
+| `bottomBarNodeName` | `String?` | Optional name of the Figma node for the bottom navigation bar |
+| `floatingActionButtonNodeName` | `String?` | Optional name of the Figma node for the floating action button |
+| `appBarTransformers` | `List<NodeTransformer>?` | Optional transformers for the app bar |
+| `bodyTransformers` | `List<NodeTransformer>?` | Optional transformers for the body content |
+| `bottomBarTransformers` | `List<NodeTransformer>?` | Optional transformers for the bottom bar |
+| `fabTransformers` | `List<NodeTransformer>?` | Optional transformers for the floating action button |
+| `backgroundColor` | `Color?` | Optional background color for the scaffold |
+| `floatingActionButtonLocation` | `FloatingActionButtonLocation?` | Optional location for the floating action button |
+
+## How It Works
+
+1. The component creates a Flutter `Scaffold`
+2. It looks for Figma nodes with the names specified in the parameters
+3. It renders each node in the appropriate part of the `Scaffold`
+4. It applies any provided transformers to customize rendering and behavior
+5. The result is a complete screen that faithfully represents your Figma design
+
+## When to Use
+
+Use `FigmaComponent.scaffold` when:
+
+- You're creating a full screen in your app
+- Your Figma design has distinct sections for app bars, content, and navigation
+- You want the benefits of Flutter's `Scaffold` with the visual fidelity of your Figma design
+- You need proper handling of safe areas, notches, and system UI
+
+## Examples
+
+### Basic Screen with App Bar and Body
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return FigmaComponent.scaffold(
+    "home_screen_content",
+    appBarNodeName: "home_app_bar",
+    backgroundColor: Colors.white,
+  );
+}
+```
+
+### Complete Screen with All Elements
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return FigmaComponent.scaffold(
+    "products_screen_content",
+    appBarNodeName: "products_app_bar",
+    bottomBarNodeName: "main_navigation",
+    floatingActionButtonNodeName: "add_product_button",
+    floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+  );
+}
+```
+
+### Using with Transformers
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return FigmaComponent.scaffold(
+    "profile_screen_content",
+    appBarNodeName: "profile_app_bar",
+    bottomBarNodeName: "main_navigation",
+    
+    // Customize the app bar
+    appBarTransformers: [
+      TextTransformer.byName(
+        "user_name_title",
+        text: user.fullName,
+      ),
+      GestureTransformer.byName(
+        "settings_button",
+        onTap: () => navigateToSettings(),
+      ),
+    ],
+    
+    // Customize the main content
+    bodyTransformers: [
+      TextTransformer.byName(
+        "email_text",
+        text: user.email,
+      ),
+      TextTransformer.byName(
+        "member_since_text",
+        text: "Member since ${formatDate(user.joinDate)}",
+      ),
+      ListTransformer.byName(
+        "activity_list",
+        items: userActivities,
+        itemBuilder: (context, index, activity) {
+          return FigmaComponent.widget(
+            "activity_item",
+            transformers: [
+              TextTransformer.byName("activity_title", text: activity.title),
+              TextTransformer.byName("activity_date", text: formatDate(activity.date)),
+            ],
+          );
+        },
+      ),
+    ],
+    
+    // Make bottom navigation functional
+    bottomBarTransformers: [
+      GestureTransformer.byName(
+        "home_tab",
+        onTap: () => navigateToHome(),
+      ),
+      GestureTransformer.byName(
+        "profile_tab",
+        onTap: () => navigateToProfile(),
+      ),
+      GestureTransformer.byName(
+        "settings_tab",
+        onTap: () => navigateToSettings(),
+      ),
+    ],
+    
+    // Make FAB functional
+    fabTransformers: [
+      GestureTransformer.byName(
+        "add_button",
+        onTap: () => showAddDialog(),
+      ),
+    ],
+  );
+}
+```
+
+## Best Practices
+
+1. **Organize your Figma layout**: Structure your Figma file with clearly named components for app bars, content areas, and navigation
+2. **Use consistent naming**: Follow a consistent naming convention for screen parts (e.g., "screen_app_bar", "screen_content", "screen_navigation")
+3. **Design with proper constraints**: Ensure your Figma components use appropriate constraints to handle different screen sizes
+4. **Isolate the components**: App bar, body content, and bottom navigation should be separate components in Figma
+5. **Consider the Scaffold API**: Be familiar with Flutter's Scaffold widget to understand how your Figma components will be positioned
+
+## Figma Design Tips
+
+For optimal results with `FigmaComponent.scaffold`:
+
+### App Bar Design
+- Create app bars as horizontal frames with a fixed height
+- Use auto layout for content positioning
+- Include appropriate status bar space at the top
+
+### Bottom Navigation Design
+- Create bottom navigation as horizontal frames with a fixed height
+- Use auto layout for tab positioning
+- Account for safe areas on devices with home indicators or curved corners
+
+### Body Content Design
+- Use frames with vertical auto layout for scrollable content
+- Set proper constraints for responsive layouts
+- Consider device-specific safe areas
+
+### Floating Action Button Design
+- Create FABs as circular components
+- Position them appropriately in your design
+- Consider Material Design guidelines for size and positioning
+
+By following these guidelines, you can create complete, functional screens that maintain the visual fidelity of your Figma designs while leveraging Flutter's powerful navigation and layout capabilities.

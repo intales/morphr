@@ -27,12 +27,10 @@ class FigmaAppbarRenderer {
 
     return Stack(
       children: [
-        // Background che si estende sotto la status bar
         Container(
           height: totalHeight,
           decoration: decorationAdapter.createBoxDecoration(),
         ),
-        // Contenuto posizionato con padding per la status bar
         Positioned(
           top: mediaQueryPadding.top,
           left: 0,

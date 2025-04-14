@@ -40,14 +40,16 @@ class FigmaAppbarComponent extends FigmaComponent
       throw ArgumentError("$componentName does not exist in figma file.");
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
-      return const FigmaAppbarRenderer().render(
-        node: node,
-        mediaQueryPadding: MediaQuery.of(context).padding,
-        parentSize: parentSize,
-        children: children,
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentSize = Size(constraints.maxWidth, constraints.maxHeight);
+        return const FigmaAppbarRenderer().render(
+          node: node,
+          mediaQueryPadding: MediaQuery.of(context).padding,
+          parentSize: parentSize,
+          children: children,
+        );
+      },
+    );
   }
 }

@@ -1,0 +1,140 @@
+# FigmaComponent.column and FigmaComponent.row
+
+The `FigmaComponent.column` and `FigmaComponent.row` components render Figma's auto-layout frames as Flutter's `Column` and `Row` widgets, preserving alignment, spacing, and other layout properties.
+
+Both components share the same API but render in different directions:
+- `FigmaComponent.column`: Renders a vertical layout (maps to Figma's vertical auto-layout)
+- `FigmaComponent.row`: Renders a horizontal layout (maps to Figma's horizontal auto-layout)
+
+## Basic Usage
+
+```dart
+// Vertical layout
+FigmaComponent.column(
+  "my_vertical_layout",
+  children: [
+    Text("First item"),
+    Text("Second item"),
+    Text("Third item"),
+  ],
+)
+
+// Horizontal layout
+FigmaComponent.row(
+  "my_horizontal_layout",
+  children: [
+    Icon(Icons.star),
+    Text("Rating"),
+    Text("4.8"),
+  ],
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the auto-layout component in your Figma file |
+| `children` | `List<Widget>` | The list of child widgets to render within the layout |
+
+## How It Works
+
+1. The component looks for an auto-layout frame with the specified name in your Figma file
+2. It preserves the spacing between items as defined in Figma
+3. It preserves the alignment (main-axis and cross-axis) as defined in Figma
+4. It preserves padding, background, and decoration as defined in Figma
+5. The specified children are rendered within the layout
+
+## Layout Properties Preserved from Figma
+
+These components preserve the following layout properties from your Figma design:
+
+- **Direction**: Vertical or horizontal (determined by which component you use)
+- **Spacing**: The gap between items
+- **Padding**: The internal padding of the container
+- **Alignment**: How items are aligned in both axes
+- **Background**: Any background colors or effects
+- **Size constraints**: How the layout sizes itself relative to its parent
+
+## Examples
+
+### Basic Column
+
+```dart
+FigmaComponent.column(
+  "profile_info",
+  children: [
+    ProfileAvatar(user: currentUser),
+    Text(currentUser.name),
+    Text(currentUser.email),
+    Text("Member since ${formatDate(currentUser.joinDate)}"),
+  ],
+)
+```
+
+### Basic Row
+
+```dart
+FigmaComponent.row(
+  "action_buttons",
+  children: [
+    TextButton(onPressed: () {}, child: Text("Cancel")),
+    SizedBox(width: 8), // Additional spacing if needed
+    ElevatedButton(onPressed: () {}, child: Text("Save")),
+  ],
+)
+```
+
+### Nested Layouts
+
+```dart
+FigmaComponent.column(
+  "product_card",
+  children: [
+    Image.network(product.imageUrl),
+    Padding(
+      padding: EdgeInsets.all(16),
+      child: FigmaComponent.column(
+        "product_details",
+        children: [
+          Text(product.name, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(product.description),
+          FigmaComponent.row(
+            "product_meta",
+            children: [
+              Icon(Icons.star, color: Colors.amber),
+              Text("${product.rating}"),
+              Spacer(),
+              Text("\$${product.price.toStringAsFixed(2)}"),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ],
+)
+```
+
+### Dynamic Content
+
+```dart
+FigmaComponent.column(
+  "todo_list",
+  children: todos.map((todo) => 
+    CheckboxListTile(
+      value: todo.isCompleted,
+      onChanged: (value) => updateTodo(todo, value),
+      title: Text(todo.title),
+    )
+  ).toList(),
+)
+```
+
+## Best Practices
+
+1. **Design with auto-layout in Figma**: Always use auto-layout for components that will be rendered with these components
+2. **Be mindful of spacing**: The spacing between items comes from Figma, but you can add additional spacing in your Flutter code if needed
+3. **Consider responsiveness**: Design your layouts to adapt to different screen sizes
+4. **Use nested auto-layouts**: Combine horizontal and vertical auto-layouts in Figma for complex layouts
+
+These components are fundamental building blocks for creating complex layouts that match your Figma designs.

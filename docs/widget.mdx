@@ -1,0 +1,215 @@
+# FigmaComponent.widget
+
+The `FigmaComponent.widget` component provides the most flexible way to render Figma designs in your Flutter app. Unlike other components that have specific purposes (like containers, text, buttons), this component can render any Figma node and allows you to apply custom transformations to modify how it's rendered.
+
+## Basic Usage
+
+```dart
+FigmaComponent.widget(
+  "my_component_name",
+  transformers: [], // Optional list of transformers
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the component in your Figma file |
+| `transformers` | `List<NodeTransformer>?` | Optional list of transformers to customize rendering |
+
+## How It Works
+
+1. The component looks for a node with the specified name in your Figma file
+2. It renders the entire node tree recursively, preserving the structure and styling
+3. If transformers are provided, they are applied to matching nodes in the tree
+4. The result is a Flutter widget that faithfully represents your Figma design
+
+## When to Use
+
+Use `FigmaComponent.widget` when:
+
+- You want to render a complex Figma component with minimal code
+- You need to customize how specific parts of the component are rendered
+- You want to add dynamic behavior to parts of a static design
+- You need to work with an entire subtree of your Figma design
+
+## Using with Transformers
+
+Transformers allow you to modify how specific nodes in your Figma component are rendered. This is powerful for adding dynamic content or behavior to your designs.
+
+### Example: Text Replacement
+
+```dart
+FigmaComponent.widget(
+  "user_profile_card",
+  transformers: [
+    TextTransformer.byName(
+      "user_name",
+      text: currentUser.name,
+    ),
+    TextTransformer.byName(
+      "user_email",
+      text: currentUser.email,
+    ),
+  ],
+)
+```
+
+### Example: Adding Interactivity
+
+```dart
+FigmaComponent.widget(
+  "product_card",
+  transformers: [
+    // Make the entire card clickable
+    GestureTransformer.byName(
+      "product_card",
+      onTap: () => viewProductDetails(product),
+    ),
+    // Replace product information with dynamic data
+    TextTransformer.byName(
+      "product_title",
+      text: product.name,
+    ),
+    TextTransformer.byName(
+      "product_price",
+      text: "${product.price.toStringAsFixed(2)}",
+    ),
+  ],
+)
+```
+
+### Example: Custom Widget Insertion
+
+```dart
+FigmaComponent.widget(
+  "stats_dashboard",
+  transformers: [
+    // Replace a static chart with an interactive one
+    WidgetTransformer.byName(
+      "revenue_chart",
+      builder: (context) => RevenueChart(data: revenueData),
+    ),
+  ],
+)
+```
+
+### Example: Rendering Dynamic Lists
+
+```dart
+FigmaComponent.widget(
+  "product_list_screen",
+  transformers: [
+    ListTransformer.byName(
+      "product_list",
+      items: products,
+      itemBuilder: (context, index, product) {
+        return FigmaComponent.widget(
+          "product_list_item",
+          transformers: [
+            TextTransformer.byName(
+              "product_name", 
+              text: product.name
+            ),
+            TextTransformer.byName(
+              "product_price", 
+              text: "\$${product.price}"
+            ),
+          ],
+        );
+      },
+      scrollDirection: Axis.vertical,
+    ),
+  ],
+)
+```
+
+## Available Transformer Types
+
+Morphr provides several built-in transformer types:
+
+### TextTransformer
+
+Replaces the content of text nodes:
+
+```dart
+TextTransformer.byName(
+  "node_name",
+  text: "New text content",
+  exact: true, // Whether the node name must match exactly
+)
+```
+
+### GestureTransformer
+
+Adds gesture detection to nodes:
+
+```dart
+GestureTransformer.byName(
+  "node_name",
+  onTap: () => handleTap(),
+  onLongPress: () => handleLongPress(),
+  onDoubleTap: () => handleDoubleTap(),
+  childTransformers: [], // Transformers to apply to children
+)
+```
+
+### WidgetTransformer
+
+Replaces a node with a custom widget:
+
+```dart
+WidgetTransformer.byName(
+  "node_name",
+  builder: (context) => YourCustomWidget(),
+)
+```
+
+### ListTransformer
+
+Converts a node into a scrollable list:
+
+```dart
+ListTransformer.byName(
+  "node_name",
+  items: yourItemsList,
+  itemBuilder: (context, index, item) => YourItemWidget(item),
+  scrollDirection: Axis.vertical,
+  shrinkWrap: false,
+)
+```
+
+## Creating Custom Transformers
+
+You can create your own transformers by extending the `NodeTransformer` class:
+
+```dart
+class MyCustomTransformer extends NodeTransformer {
+  MyCustomTransformer({
+    required NodeSelector selector,
+    required this.customData,
+  }) : super(
+        selector: selector,
+        transform: (context, widget) {
+          // Your custom transformation logic here
+          return TransformedWidget(
+            data: customData,
+            child: widget,
+          );
+        },
+      );
+
+  final String customData;
+}
+```
+
+## Best Practices
+
+1. **Structure your Figma file thoughtfully**: Use clear naming conventions and organize components for easy targeting
+2. **Start simple**: Begin with basic transformers before using complex transformation chains
+3. **Prefer specific selectors**: Use exact name matching when possible to avoid unexpected transformations
+4. **Consider performance**: Complex transformations on deep component trees may impact performance
+5. **Combine with StatefulWidget**: Wrap `FigmaComponent.widget` in a `StatefulWidget` when you need to manage state
+
+This flexible component, combined with transformers, gives you the power to create dynamic, interactive UIs while maintaining the visual fidelity of your Figma designs.

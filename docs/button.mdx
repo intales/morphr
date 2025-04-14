@@ -1,0 +1,101 @@
+# FigmaComponent.button
+
+The `FigmaComponent.button` component renders interactive buttons from your Figma design, preserving all visual properties while adding tap functionality.
+
+## Basic Usage
+
+```dart
+FigmaComponent.button(
+  "my_button_name",
+  onPressed: () {
+    // Handle button press
+    print("Button pressed!");
+  },
+  child: YourCustomChild(), // Optional custom child
+)
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the button component in your Figma file |
+| `onPressed` | `VoidCallback` | Function to execute when the button is pressed |
+| `child` | `Widget?` | Optional custom child widget to replace the button's content |
+
+## How It Works
+
+1. The component looks for a node with the specified name in your Figma file
+2. It renders all visual properties of that node (colors, shapes, shadows, etc.)
+3. It wraps the node in a `GestureDetector` to handle taps
+4. If the node contains text, that text is preserved (unless a custom child is provided)
+5. If a custom child is provided, it replaces the original content
+
+## Examples
+
+### Simple Button
+
+```dart
+FigmaComponent.button(
+  "login_button",
+  onPressed: () => authService.login(email, password),
+)
+```
+
+### Button with Navigation
+
+```dart
+FigmaComponent.button(
+  "next_button",
+  onPressed: () => Navigator.of(context).push(
+    MaterialPageRoute(builder: (_) => NextScreen()),
+  ),
+)
+```
+
+### Button with Custom Child
+
+```dart
+FigmaComponent.button(
+  "submit_button",
+  onPressed: () => submitForm(),
+  child: isLoading
+    ? CircularProgressIndicator(color: Colors.white)
+    : null, // Use null to keep the original button content
+)
+```
+
+### Button with Async Action
+
+```dart
+FigmaComponent.button(
+  "save_button",
+  onPressed: () async {
+    setState(() => isSaving = true);
+    try {
+      await saveData();
+      showSuccessMessage();
+    } catch (e) {
+      showErrorMessage(e);
+    } finally {
+      setState(() => isSaving = false);
+    }
+  },
+)
+```
+
+## Button States
+
+Currently, the `FigmaComponent.button` renders the default state from your Figma design. To handle visual feedback for button states:
+
+1. For simple press feedback, Flutter's touch ripple effect is automatically applied
+2. For more complex state changes, consider using a StatefulWidget to swap between different Figma components
+
+## Best Practices
+
+1. **Design clear button states**: Even though only the default state is used, make your buttons clearly look interactive
+2. **Use appropriate sizing**: Create buttons that are large enough to be easily tapped (minimum 44x44 points)
+3. **Add visual feedback**: Design buttons with hover/pressed states in Figma for reference
+4. **Use consistent naming**: Follow a naming pattern for buttons across your design system
+
+This component is perfect for action buttons, form submissions, navigation actions, and any interactive elements in your app.

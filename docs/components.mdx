@@ -1,0 +1,83 @@
+# Morphr Components
+
+## Introduction
+
+Morphr provides a set of Flutter components that render your Figma designs with high fidelity. These components are designed to be both flexible and powerful, allowing you to maintain the visual integrity of your designs while retaining full control over the behavior and logic of your application.
+
+The component system follows a simple principle: **Use Figma for visual design, use Flutter for behavior**. This separation of concerns allows designers and developers to work in parallel without stepping on each other's toes.
+
+## Component Types
+
+Morphr provides several types of components to handle different aspects of your UI:
+
+### Basic Components
+- `FigmaComponent.container`: Renders frames, rectangles, and other container elements
+- `FigmaComponent.text`: Renders text elements with styling
+- `FigmaComponent.button`: Renders interactive buttons
+- `FigmaComponent.textField`: Renders input fields
+- `FigmaComponent.icon`: Renders vector graphics and icons
+
+### Layout Components
+- `FigmaComponent.column`: Renders vertical auto-layout
+- `FigmaComponent.row`: Renders horizontal auto-layout
+- `FigmaComponent.list`: Renders scrollable lists
+
+### Navigation Components
+- `FigmaComponent.appBar`: Renders top navigation bars
+- `FigmaComponent.bottomBar`: Renders bottom navigation bars
+
+### Advanced Components
+- `FigmaComponent.widget`: Renders any Figma component with custom transformations
+- `FigmaComponent.scaffold`: Creates a complete screen layout with app bars, body content, and more
+
+## Component Naming
+
+For Morphr to find your components in the Figma file, you need to use consistent naming:
+
+1. In Figma, give your frames, components, and elements descriptive names
+2. In your Flutter code, reference these elements using the same names
+3. Avoid spaces and special characters; use underscores or camelCase instead
+
+Example:
+- Figma: `login_button`
+- Flutter: `FigmaComponent.button("login_button", onPressed: () => login())`
+
+## Getting Started
+
+To use Morphr components, ensure you've initialized the Morphr service in your app:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MorphrService.instance.initializeCloud(options: morphrOptions);
+  runApp(MyApp());
+}
+```
+
+Then you can start using components in your widgets:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: FigmaComponent.container(
+      "welcome_screen",
+      child: FigmaComponent.column(
+        "content_column",
+        children: [
+          FigmaComponent.text(
+            "title_text", 
+            text: "Welcome to My App"
+          ),
+          FigmaComponent.button(
+            "get_started_button",
+            onPressed: () => navigateToNextScreen(),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+The following sections provide detailed documentation for each component type, including the advanced components that offer enhanced flexibility and customization.

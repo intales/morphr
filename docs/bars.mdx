@@ -1,0 +1,191 @@
+# FigmaComponent.appBar and FigmaComponent.bottomBar
+
+The `FigmaComponent.appBar` and `FigmaComponent.bottomBar` components render navigation bars from your Figma design, handling system UI integration and safe areas automatically.
+
+These components are designed to work directly with Flutter's `Scaffold` widget:
+- `FigmaComponent.appBar`: Renders top navigation bars (implements `PreferredSizeWidget`)
+- `FigmaComponent.bottomBar`: Renders bottom navigation bars
+
+## Basic Usage
+
+```dart
+// App Bar
+Scaffold(
+  appBar: FigmaComponent.appBar(
+    "my_app_bar",
+    context: context, // Required for safe area handling
+    children: [
+      Text("App Title"),
+      IconButton(icon: Icon(Icons.settings), onPressed: () {}),
+    ],
+  ),
+  // ...
+)
+
+// Bottom Bar
+Scaffold(
+  bottomNavigationBar: FigmaComponent.bottomBar(
+    "my_bottom_bar",
+    children: [
+      IconButton(icon: Icon(Icons.home), onPressed: () {}),
+      IconButton(icon: Icon(Icons.search), onPressed: () {}),
+      IconButton(icon: Icon(Icons.person), onPressed: () {}),
+    ],
+  ),
+  // ...
+)
+```
+
+## Parameters
+
+### FigmaComponent.appBar
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the app bar component in your Figma file |
+| `context` | `BuildContext` | Required for MediaQuery access (safe area handling) |
+| `children` | `List<Widget>` | The list of child widgets to render within the app bar |
+
+### FigmaComponent.bottomBar
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `componentName` | `String` | The name of the bottom bar component in your Figma file |
+| `children` | `List<Widget>` | The list of child widgets to render within the bottom bar |
+
+## How They Work
+
+### FigmaComponent.appBar
+1. Finds the specified app bar component in your Figma file
+2. Extracts visual properties (colors, effects, etc.)
+3. Applies MediaQuery padding to account for status bars and notches
+4. Renders your custom children within the app bar
+5. Returns a widget that implements `PreferredSizeWidget` for use with `Scaffold.appBar`
+
+### FigmaComponent.bottomBar
+1. Finds the specified bottom bar component in your Figma file
+2. Extracts visual properties (colors, effects, etc.)
+3. Handles safe area insets for devices with home indicators or rounded corners
+4. Renders your custom children within the bottom bar
+5. Returns a widget suitable for use with `Scaffold.bottomNavigationBar`
+
+## Examples
+
+### App Bar with Title and Actions
+
+```dart
+FigmaComponent.appBar(
+  "main_app_bar",
+  context: context,
+  children: [
+    Text(
+      "My App",
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    Spacer(),
+    IconButton(
+      icon: Icon(Icons.notifications),
+      onPressed: () => showNotifications(),
+    ),
+    IconButton(
+      icon: Icon(Icons.settings),
+      onPressed: () => navigateToSettings(),
+    ),
+  ],
+)
+```
+
+### Bottom Bar with Navigation
+
+```dart
+FigmaComponent.bottomBar(
+  "main_nav_bar",
+  children: [
+    IconButton(
+      icon: Icon(
+        Icons.home,
+        color: currentIndex == 0 ? Colors.blue : Colors.grey,
+      ),
+      onPressed: () => setCurrentIndex(0),
+    ),
+    IconButton(
+      icon: Icon(
+        Icons.search,
+        color: currentIndex == 1 ? Colors.blue : Colors.grey,
+      ),
+      onPressed: () => setCurrentIndex(1),
+    ),
+    IconButton(
+      icon: Icon(
+        Icons.favorite,
+        color: currentIndex == 2 ? Colors.blue : Colors.grey,
+      ),
+      onPressed: () => setCurrentIndex(2),
+    ),
+    IconButton(
+      icon: Icon(
+        Icons.person,
+        color: currentIndex == 3 ? Colors.blue : Colors.grey,
+      ),
+      onPressed: () => setCurrentIndex(3),
+    ),
+  ],
+)
+```
+
+### App Bar with Custom Layout
+
+```dart
+FigmaComponent.appBar(
+  "search_app_bar",
+  context: context,
+  children: [
+    IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () => Navigator.of(context).pop(),
+    ),
+    Expanded(
+      child: TextField(
+        controller: searchController,
+        decoration: InputDecoration(
+          hintText: "Search...",
+          border: InputBorder.none,
+        ),
+        onSubmitted: (value) => performSearch(value),
+      ),
+    ),
+    IconButton(
+      icon: Icon(Icons.mic),
+      onPressed: () => startVoiceSearch(),
+    ),
+  ],
+)
+```
+
+## Figma Design Tips
+
+### For App Bars
+
+1. **Use horizontal auto-layout**: Design app bars with horizontal auto-layout
+2. **Account for status bar height**: Include appropriate space for the status bar
+3. **Use constraints**: Set horizontal constraints to "Left & Right" and vertical to "Top"
+4. **Standard height**: Typically 56dp (Material Design) or 44dp (iOS) plus status bar height
+
+### For Bottom Bars
+
+1. **Use horizontal auto-layout**: Design bottom bars with horizontal auto-layout
+2. **Account for home indicator**: Include appropriate space for the home indicator on newer devices
+3. **Use constraints**: Set horizontal constraints to "Left & Right" and vertical to "Bottom"
+4. **Standard height**: Typically 56dp (Material Design) or 49dp (iOS) plus home indicator height
+
+## Best Practices
+
+1. **Consistent naming**: Use clear naming for your navigation components in Figma
+2. **Responsive design**: Design your navigation bars to adapt to different screen widths
+3. **Safe area awareness**: Consider safe areas in your Figma designs
+4. **Use system UI patterns**: Follow platform-specific guidelines for navigation elements
+
+These components make it easy to implement navigation bars that match your Figma designs while properly handling system UI elements and safe areas.
