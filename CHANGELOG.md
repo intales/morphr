@@ -2,7 +2,10 @@
 
 All notable changes to the Morphr package will be documented in this file.
 
-## 0.2.0 - 2025-04-03
+## 0.2.1 - 2025-04-14
+- Fixed docs link inside readme
+
+## 0.2.0 - 2025-04-14
 - New recursive rendering system with transformers pattern
 
 ## 0.1.1 - 2025-04-03

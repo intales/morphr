@@ -135,7 +135,7 @@ class HomeScreen extends StatelessWidget {
 
 ## Documentation
 
-For complete documentation, visit [docs.morphr.dev](https://docs.morphr.dev).
+For complete documentation, go [here](https://docs.page/intales/morphr).
 
 ## Examples
 
