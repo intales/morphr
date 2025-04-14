@@ -3,97 +3,48 @@
 // in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:morphr/transformers/core/node_transformer.dart';
+import 'package:morphr/transformers/core/transformers_core.dart';
 
-/// Creates a transformer that adds tap functionality to a Figma node.
-///
-/// This transformer wraps the original widget with a GestureDetector to handle
-/// tap events while preserving the original appearance and behavior.
-///
-/// Example usage:
-/// ```dart
-/// FigmaComponent.tree(
-///   "profile_screen",
-///   transformers: [
-///     onTap("logout_button", () => logoutUser()),
-///     onTap("settings_icon", () => openSettings()),
-///   ],
-/// )
-/// ```
-NodeTransformer onTap(
-  String nodeName,
-  VoidCallback onTap, {
-  List<NodeTransformer> childTransformers = const [],
-  bool exact = true,
-}) {
-  return NodeTransformer.byName(
-    nodeName,
-    exact: exact,
-    transformer: (context) {
-      return GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: context.defaultWidget,
-      );
-    },
-    childTransformers: childTransformers,
-  );
-}
+/// A transformer that makes a Figma node respond to various gestures.
+class GestureTransformer extends NodeTransformer {
+  /// Creates a transformer that adds various gestures to a Figma node.
+  ///
+  /// The [selector] determines which nodes to make interactive.
+  /// Various gesture callbacks can be provided.
+  GestureTransformer({
+    required super.selector,
+    VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    VoidCallback? onDoubleTap,
+    super.childTransformers = const [],
+  }) : super(
+         transform:
+             (context, widget) => Material(
+               color: Colors.transparent,
+               child: InkWell(
+                 onTap: onTap,
+                 onLongPress: onLongPress,
+                 onDoubleTap: onDoubleTap,
+                 child: widget,
+               ),
+             ),
+       );
 
-/// Creates a transformer that adds long press functionality to a Figma node.
-///
-/// This transformer wraps the original widget with a GestureDetector to handle
-/// long press events while preserving the original appearance and behavior.
-NodeTransformer onLongPress(
-  String nodeName,
-  VoidCallback onLongPress, {
-  List<NodeTransformer> childTransformers = const [],
-  bool exact = true,
-}) {
-  return NodeTransformer.byName(
-    nodeName,
-    exact: exact,
-    transformer: (context) {
-      return GestureDetector(
-        onLongPress: onLongPress,
-        behavior: HitTestBehavior.opaque,
-        child: context.defaultWidget,
-      );
-    },
-    childTransformers: childTransformers,
-  );
-}
-
-/// Creates a transformer that adds multiple gesture capabilities to a Figma node.
-///
-/// This transformer allows adding multiple gesture recognizers to a single node,
-/// such as tap, double tap, long press, etc.
-NodeTransformer withGestures(
-  String nodeName, {
-  VoidCallback? onTap,
-  VoidCallback? onLongPress,
-  VoidCallback? onDoubleTap,
-  GestureTapDownCallback? onTapDown,
-  GestureTapUpCallback? onTapUp,
-  GestureTapCancelCallback? onTapCancel,
-  List<NodeTransformer> childTransformers = const [],
-  bool exact = true,
-}) {
-  return NodeTransformer.byName(
-    nodeName,
-    exact: exact,
-    transformer: (context) {
-      return GestureDetector(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        onDoubleTap: onDoubleTap,
-        onTapDown: onTapDown,
-        onTapUp: onTapUp,
-        onTapCancel: onTapCancel,
-        behavior: HitTestBehavior.opaque,
-        child: context.defaultWidget,
-      );
-    },
-    childTransformers: childTransformers,
-  );
+  /// Factory method to create a gesture transformer for nodes with a specific name.
+  factory GestureTransformer.byName(
+    String name, {
+    VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    VoidCallback? onDoubleTap,
+    List<NodeTransformer> childTransformers = const [],
+    bool exact = true,
+  }) {
+    return GestureTransformer(
+      selector: NameSelector(name, exact: exact),
+      onTap: onTap,
+      onLongPress: onLongPress,
+      onDoubleTap: onDoubleTap,
+      childTransformers: childTransformers,
+    );
+  }
 }

@@ -5,46 +5,27 @@
 import 'package:flutter/widgets.dart';
 import 'package:morphr/transformers/core/transformers_core.dart';
 
-/// Creates a transformer that completely replaces a Figma node with a custom widget.
-///
-/// Unlike other transformers that modify or enhance existing nodes, this transformer
-/// completely replaces the node with a new widget, allowing for full customization.
-///
-/// Parameters:
-/// - [nodeName]: The name of the node to replace
-/// - [builder]: Builder function that returns the replacement widget
-/// - [exact]: Whether the node name should match exactly
-///
-/// Example:
-/// ```dart
-/// widgetTransformer(
-///   "todos_list",
-///   builder: (context) {
-///     return ListView.builder(
-///       itemCount: todos.length,
-///       itemBuilder: (context, index) {
-///         return FigmaComponent.tree(
-///           "todo_item",
-///           transformers: [
-///             replaceText("title", todos[index].title),
-///             replaceText("description", todos[index].description),
-///           ],
-///         );
-///       },
-///     );
-///   },
-/// )
-/// ```
-NodeTransformer widgetTransformer(
-  String nodeName, {
-  required WidgetBuilder builder,
-  bool exact = true,
-}) {
-  return NodeTransformer.byName(
-    nodeName,
-    exact: exact,
-    transformer: (context) {
-      return builder(context.buildContext);
-    },
-  );
+/// A transformer that replaces a Figma node with a completely custom widget.
+class WidgetTransformer extends NodeTransformer {
+  /// Creates a transformer that replaces a Figma node with a custom widget.
+  ///
+  /// The [selector] determines which nodes to replace.
+  /// The [builder] creates the replacement widget.
+  WidgetTransformer({
+    required super.selector,
+    required WidgetBuilder builder,
+    super.childTransformers = const [],
+  }) : super(transform: (context, widget) => builder(context.buildContext));
+
+  /// Factory method to create a widget transformer for nodes with a specific name.
+  factory WidgetTransformer.byName(
+    String name, {
+    required WidgetBuilder builder,
+    bool exact = true,
+  }) {
+    return WidgetTransformer(
+      selector: NameSelector(name, exact: exact),
+      builder: builder,
+    );
+  }
 }

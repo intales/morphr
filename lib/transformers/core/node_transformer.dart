@@ -15,24 +15,55 @@ typedef NodeTransformerFunction = Widget Function(TransformContext context);
 /// Node transformers are used to customize how specific nodes in a Figma document
 /// are rendered in Flutter. This allows for adding interactivity, dynamic content,
 /// or custom rendering logic to specific parts of a design.
+///
+/// The hierarchical structure of NodeTransformer allows defining transformations
+/// that apply to both the selected node and its children, creating a clear
+/// parent-child relationship similar to Flutter's widget tree.
+///
+/// Example usage:
+/// ```dart
+/// NodeTransformer(
+///   selector: NameSelector("todo_card"),
+///   transform: (context, widget) => GestureDetector(
+///     onTap: () => print("Card tapped"),
+///     child: widget,
+///   ),
+///   childTransformers: [
+///     NodeTransformer(
+///       selector: NameSelector("todo_title"),
+///       transform: (context, widget) => Text("New Title"),
+///     ),
+///     NodeTransformer(
+///       selector: NameSelector("todo_description"),
+///       transform: (context, widget) => Text("New Description"),
+///     ),
+///   ],
+/// )
+/// ```
 class NodeTransformer {
   /// The selector that determines which nodes this transformer applies to.
   final NodeSelector selector;
 
-  /// The function that performs the transformation.
-  final NodeTransformerFunction transformer;
+  /// The function that performs the transformation on the selected node.
+  ///
+  /// This function takes the transformation context and the default widget,
+  /// and returns a new widget that replaces or modifies the default one.
+  final Widget Function(TransformContext context, Widget widget) transform;
 
-  /// Optional transformers to apply to child nodes.
+  /// Transformers to apply to child nodes of the selected node.
+  ///
+  /// These transformers will only be applied to nodes that are children
+  /// of the node that matched this transformer's selector.
   final List<NodeTransformer> childTransformers;
 
   /// Creates a node transformer.
   ///
   /// The [selector] determines which nodes this transformer applies to.
-  /// The [transformer] defines how to transform matching nodes.
+  /// The [transform] defines how to transform matching nodes.
   /// Optional [childTransformers] can be provided to transform child nodes.
   const NodeTransformer({
     required this.selector,
-    required this.transformer,
+    required this.transform,
     this.childTransformers = const [],
   });
 
@@ -42,20 +73,20 @@ class NodeTransformer {
   }
 
   /// Applies the transformation to the given context.
-  Widget transform(TransformContext context) {
-    return transformer(context);
+  Widget applyTransform(TransformContext context) {
+    return transform(context, context.defaultWidget);
   }
 
   /// Factory method to create a transformer that matches nodes by name.
   factory NodeTransformer.byName(
     String name, {
-    required NodeTransformerFunction transformer,
+    required Widget Function(TransformContext, Widget) transform,
     List<NodeTransformer> childTransformers = const [],
     bool exact = true,
   }) {
     return NodeTransformer(
       selector: NameSelector(name, exact: exact),
-      transformer: transformer,
+      transform: transform,
       childTransformers: childTransformers,
     );
   }
@@ -63,12 +94,12 @@ class NodeTransformer {
   /// Factory method to create a transformer that matches nodes by type.
   factory NodeTransformer.byType(
     Type type, {
-    required NodeTransformerFunction transformer,
+    required Widget Function(TransformContext, Widget) transform,
     List<NodeTransformer> childTransformers = const [],
   }) {
     return NodeTransformer(
       selector: TypeSelector(type),
-      transformer: transformer,
+      transform: transform,
       childTransformers: childTransformers,
     );
   }
@@ -76,12 +107,12 @@ class NodeTransformer {
   /// Factory method to create a transformer with a custom predicate function.
   factory NodeTransformer.custom({
     required bool Function(figma.Node node, figma.Node? parent) predicate,
-    required NodeTransformerFunction transformer,
+    required Widget Function(TransformContext, Widget) transform,
     List<NodeTransformer> childTransformers = const [],
   }) {
     return NodeTransformer(
       selector: PredicateSelector(predicate),
-      transformer: transformer,
+      transform: transform,
       childTransformers: childTransformers,
     );
   }

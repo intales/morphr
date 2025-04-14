@@ -52,7 +52,7 @@ class TransformerManager {
       try {
         final updatedContext = context.copyWith(defaultWidget: result);
 
-        result = transformer.transform(updatedContext);
+        result = transformer.transform(updatedContext, result);
       } catch (e) {
         debugPrint('Error applying transformer to ${node.name}: $e');
       }
