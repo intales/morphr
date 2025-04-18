@@ -3,6 +3,7 @@
 // in the LICENSE file.
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/cloud/morphr_cloud.dart';
@@ -32,7 +33,16 @@ class MorphrService {
     await _cloud!.init();
     _isCloudEnabled = true;
 
-    await syncCloud();
+    if (await _fileStorage!.exists()) {
+      try {
+        await _loadDocumentFromCloud();
+        _syncCloudInBackground();
+      } catch (e) {
+        await syncCloud();
+      }
+    } else {
+      await syncCloud();
+    }
   }
 
   bool get isCloudEnabled => _isCloudEnabled;
@@ -62,22 +72,35 @@ class MorphrService {
     return _findComponent(_document!, componentId);
   }
 
+  Future<void> _syncCloudInBackground() async {
+    Future.microtask(() async {
+      try {
+        await _cloud!.sync();
+      } catch (_) {}
+    });
+  }
+
   Future<void> _loadDocument() async {
     final file = await rootBundle.loadString(_documentPath);
-    _document =
-        figma.FileResponse.fromJson(jsonDecode(file)).document
-            as figma.Document?;
+    _document = await compute(
+      (file) =>
+          figma.FileResponse.fromJson(jsonDecode(file)).document
+              as figma.Document?,
+      file,
+    );
   }
 
   Future<void> _loadDocumentFromCloud() async {
     if (_fileStorage == null || _fileStorage!.localPath == null) {
       throw StateError("File storage not initialized.");
     }
-
     final file = await _fileStorage!.readAsString();
-    _document =
-        figma.FileResponse.fromJson(jsonDecode(file)).document
-            as figma.Document?;
+    _document = await compute(
+      (file) =>
+          figma.FileResponse.fromJson(jsonDecode(file)).document
+              as figma.Document?,
+      file,
+    );
   }
 
   figma.Node? _findComponent(figma.Node node, String componentId) {
