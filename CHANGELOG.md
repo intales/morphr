@@ -2,16 +2,20 @@
 
 All notable changes to the Morphr package will be documented in this file.
 
-## 0.2.1 - 2025-04-14
+## 0.3.0
+- Added fallback system for missing connection or patching errors.
+- Enhanced syncing strategy to make everything faster.
+
+## 0.2.1
 - Fixed docs link inside readme
 
-## 0.2.0 - 2025-04-14
+## 0.2.0
 - New recursive rendering system with transformers pattern
 
-## 0.1.1 - 2025-04-03
+## 0.1.1
 - Migrated to `morphr_figma`
 
-## 0.1.0 - 2025-04-02
+## 0.1.0
 
 ### Added
 - Initial release of Morphr
