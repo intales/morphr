@@ -13,6 +13,7 @@ import 'package:morphr/cloud/morphr_file_storage.dart';
 class MorphrService {
   MorphrService._();
   static final instance = MorphrService._();
+  static const _fallbackPath = "assets/morphr/fallback.json";
 
   late final String _documentPath;
   late figma.Document? _document;
@@ -22,7 +23,7 @@ class MorphrService {
 
   Future<void> initialize({required final String documentPath}) async {
     _documentPath = documentPath;
-    await _loadDocument();
+    await _loadDocument(_documentPath);
   }
 
   Future<void> initializeCloud({required MorphrCloudOptions options}) async {
@@ -80,8 +81,8 @@ class MorphrService {
     });
   }
 
-  Future<void> _loadDocument() async {
-    final file = await rootBundle.loadString(_documentPath);
+  Future<void> _loadDocument(final String documentPath) async {
+    final file = await rootBundle.loadString(documentPath);
     _document = await compute(
       (file) =>
           figma.FileResponse.fromJson(jsonDecode(file)).document
@@ -91,16 +92,20 @@ class MorphrService {
   }
 
   Future<void> _loadDocumentFromCloud() async {
-    if (_fileStorage == null || _fileStorage!.localPath == null) {
-      throw StateError("File storage not initialized.");
+    try {
+      if (_fileStorage == null || _fileStorage!.localPath == null) {
+        throw StateError("File storage not initialized.");
+      }
+      final file = await _fileStorage!.readAsString();
+      _document = await compute(
+        (file) =>
+            figma.FileResponse.fromJson(jsonDecode(file)).document
+                as figma.Document?,
+        file,
+      );
+    } catch (_) {
+      await _loadDocument(_fallbackPath);
     }
-    final file = await _fileStorage!.readAsString();
-    _document = await compute(
-      (file) =>
-          figma.FileResponse.fromJson(jsonDecode(file)).document
-              as figma.Document?,
-      file,
-    );
   }
 
   figma.Node? _findComponent(figma.Node node, String componentId) {
@@ -134,7 +139,7 @@ class MorphrService {
     if (_isCloudEnabled) {
       await _loadDocumentFromCloud();
     } else {
-      await _loadDocument();
+      await _loadDocument(_documentPath);
     }
   }
 
