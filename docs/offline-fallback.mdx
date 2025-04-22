@@ -1,0 +1,74 @@
+# Offline Fallback System
+
+Morphr includes a fallback system that ensures your app can display UI components even when a network connection isn't available. This system works by maintaining a local copy of your Figma design that can be used when cloud synchronization isn't possible.
+
+## How It Works
+
+The fallback system operates in three main ways:
+
+1. **Development Time**: When you run `morphr sync`, the command not only synchronizes your project with the cloud but also saves a copy of the current design to your project's assets folder.
+
+2. **App Initialization**: When your app starts, Morphr first tries to load any locally cached design file. If this fails, it falls back to the asset version included in your app bundle.
+
+3. **Background Synchronization**: After initialization, Morphr attempts to synchronize with the cloud in the background, preparing updated designs for the next app launch without disrupting the current session.
+
+## Setting Up the Fallback System
+
+### 1. Configure Your pubspec.yaml
+
+To enable the fallback system, you need to declare the assets directory in your `pubspec.yaml` file:
+
+```yaml
+flutter:
+  assets:
+    - assets/morphr/
+```
+
+This tells Flutter to include the Morphr design files in your app bundle.
+
+### 2. Initialize Morphr in Your App
+
+Make sure you initialize Morphr with the cloud options:
+
+```dart
+import 'package:morphr/morphr.dart';
+import 'package:your_app/morphr_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Morphr with cloud support
+  await MorphrService.instance.initializeCloud(options: morphrOptions);
+  
+  runApp(MyApp());
+}
+```
+
+### 3. Run Sync During Development and Deployment
+
+Before deploying your app, always run the sync command to update the fallback file:
+
+```bash
+morphr sync
+```
+
+This ensures that your app ships with the most recent version of your design as a fallback.
+
+## How the Fallback is Used
+
+The fallback is automatically used in the following scenarios:
+
+1. **First Launch**: When a user first installs your app and has no cached design file
+2. **Network Errors**: When the app can't connect to Morphr Cloud
+3. **Sync Failures**: If the synchronization process encounters errors
+
+In these cases, Morphr will seamlessly use the fallback file to ensure your app's UI renders correctly, even without an internet connection.
+
+## Best Practices
+
+1. **Regular Updates**: Run `morphr sync` regularly during development and always before building release versions of your app
+2. **Version Control**: Include the fallback file in version control to ensure consistent builds
+3. **Testing**: Test your app in airplane mode to verify the fallback system works correctly
+4. **Asset Size Awareness**: Be mindful that including the fallback file increases your app's bundle size
+
+This approach provides an excellent balance between updating your UI and ensuring availability, making your app robust even in offline scenarios.

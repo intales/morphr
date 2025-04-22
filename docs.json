@@ -60,6 +60,11 @@
 					"icon": "rotate"
 				},
 				{
+					"title": "Offline Fallback System",
+					"href": "/offline-fallback",
+					"icon": "plug-circle-xmark"
+				},
+				{
 					"title": "Manage subscription",
 					"href": "/subscription",
 					"icon": "money-bill"
