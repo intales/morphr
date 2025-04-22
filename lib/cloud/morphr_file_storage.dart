@@ -10,9 +10,7 @@ class MorphrFileStorage {
   final String fileName;
   String? _localPath;
 
-  MorphrFileStorage({
-    required this.fileName,
-  });
+  MorphrFileStorage({required this.fileName});
 
   Future<String> init() async {
     final directory = await _getDocumentsDirectory();
@@ -29,16 +27,15 @@ class MorphrFileStorage {
 
   Future<bool> exists() async {
     if (_localPath == null) {
-      throw Exception('Chiamare prima init() per inizializzare lo storage');
+      throw Exception('Call init() to initialize storage');
     }
 
     return File(_localPath!).exists();
   }
 
-  /// Legge il contenuto del file locale come stringa.
   Future<String> readAsString() async {
     if (_localPath == null) {
-      throw Exception('Chiamare prima init() per inizializzare lo storage');
+      throw Exception('Call init() to initialize storage');
     }
 
     final file = File(_localPath!);
@@ -51,7 +48,7 @@ class MorphrFileStorage {
 
   Future<void> writeAsString(String content) async {
     if (_localPath == null) {
-      throw Exception('Chiamare prima init() per inizializzare lo storage');
+      throw Exception('Call init() to initialize storage');
     }
 
     final file = File(_localPath!);

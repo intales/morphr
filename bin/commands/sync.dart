@@ -4,6 +4,7 @@
 
 //ignore_for_file:avoid_print
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -43,9 +44,15 @@ class SyncCommand extends Command {
       exit(1);
     }
 
-    final hash = await _syncProject(server, projectId!);
+    final syncResponse = await _syncProject(server, projectId!);
+
+    final hash = syncResponse?["figmaFileHash"];
     if (hash?.isEmpty ?? true) {
       exit(1);
+    }
+
+    if (syncResponse?["figmaFile"]?.isNotEmpty ?? false) {
+      await _writeFallback(syncResponse!["figmaFile"]);
     }
 
     print("✅ Synced!");
@@ -73,17 +80,24 @@ class SyncCommand extends Command {
     }
   }
 
-  Future<String?> _syncProject(
+  Future<void> _writeFallback(dynamic fallback) async {
+    final file = File("assets/morphr/fallback.json");
+    if (!await file.exists()) {
+      await file.create(recursive: true);
+    }
+
+    await file.writeAsString(jsonEncode(fallback));
+  }
+
+  Future<Map<String, dynamic>?> _syncProject(
     String server,
     String projectId,
   ) async {
     final client = getClient(server: server);
     try {
-      final response = await client.post(
-        "projects/$projectId/sync",
-      );
+      final response = await client.post("projects/$projectId/sync");
 
-      return response['figmaFileHash'].toString();
+      return response;
     } catch (e) {
       print('Error creating project: $e');
       return null;
