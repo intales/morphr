@@ -8,14 +8,27 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import '../helpers/config_helper.dart';
 import '../client.dart';
+import 'subscription_manage.dart';
 
 class SubscriptionCommand extends Command {
   @override
   final name = 'subscription';
   @override
-  final description = 'Display user subscription information';
+  final description = 'Manage your subscription to Morphr Cloud';
 
   SubscriptionCommand() {
+    addSubcommand(SubscriptionManageCommand());
+    addSubcommand(SubscriptionInfoCommand());
+  }
+}
+
+class SubscriptionInfoCommand extends Command {
+  @override
+  final name = 'info';
+  @override
+  final description = 'Display user subscription information';
+
+  SubscriptionInfoCommand() {
     argParser.addOption(
       'server',
       abbr: 's',
@@ -32,7 +45,8 @@ class SubscriptionCommand extends Command {
     final token = ConfigHelper.getToken();
     if (token == null) {
       print(
-          '❌ No authentication token found. Please login first with: "morphr login" or "morphr register"');
+        '❌ No authentication token found. Please login first with: "morphr login" or "morphr register"',
+      );
       exit(1);
     }
 
@@ -65,7 +79,8 @@ class SubscriptionCommand extends Command {
 
     final billingPeriod = usage['billingPeriod'] as Map<String, dynamic>;
     print(
-        '  Billing Period: ${_formatDate(billingPeriod['start'])} to ${_formatDate(billingPeriod['end'])}');
+      '  Billing Period: ${_formatDate(billingPeriod['start'])} to ${_formatDate(billingPeriod['end'])}',
+    );
 
     final subscription = data['subscription'] as Map<String, dynamic>?;
     if (subscription != null) {
