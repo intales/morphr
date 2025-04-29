@@ -25,7 +25,7 @@ enum MorphrAuthMethod {
   jwt,
 
   /// API client credentials (for application integration)
-  apiKey
+  apiKey,
 }
 
 /// Client for interacting with the Morphr Cloud API.
@@ -40,9 +40,9 @@ class MorphrCloudClient {
     this.refreshToken,
     this.onTokenRefreshed,
     this.timeout = const Duration(seconds: 30),
-  })  : authMethod = MorphrAuthMethod.jwt,
-        _clientId = null,
-        _clientSecret = null;
+  }) : authMethod = MorphrAuthMethod.jwt,
+       _clientId = null,
+       _clientSecret = null;
 
   /// Creates a new [MorphrCloudClient] instance with API key authentication.
   ///
@@ -68,12 +68,12 @@ class MorphrCloudClient {
     required String clientId,
     required String clientSecret,
     this.timeout = const Duration(seconds: 30),
-  })  : authMethod = MorphrAuthMethod.apiKey,
-        accessToken = null,
-        refreshToken = null,
-        onTokenRefreshed = null,
-        _clientId = clientId,
-        _clientSecret = clientSecret;
+  }) : authMethod = MorphrAuthMethod.apiKey,
+       accessToken = null,
+       refreshToken = null,
+       onTokenRefreshed = null,
+       _clientId = clientId,
+       _clientSecret = clientSecret;
 
   /// Base URL of the Morphr Cloud API.
   final String baseUrl;
@@ -95,7 +95,7 @@ class MorphrCloudClient {
 
   /// Callback that is called when the access token is refreshed.
   final void Function(String accessToken, String refreshToken)?
-      onTokenRefreshed;
+  onTokenRefreshed;
 
   /// Request timeout
   final Duration timeout;
@@ -178,21 +178,24 @@ class MorphrCloudClient {
           refreshToken != null) {
         final refreshed = await _refreshAccessToken();
         if (refreshed) {
-          return _parseResponseBody(await _executeRequest(
-            method: method,
-            endpoint: endpoint,
-            body: body,
-            requiresAuth: requiresAuth,
-            headers: headers,
-            queryParams: queryParams,
-          ));
+          return _parseResponseBody(
+            await _executeRequest(
+              method: method,
+              endpoint: endpoint,
+              body: body,
+              requiresAuth: requiresAuth,
+              headers: headers,
+              queryParams: queryParams,
+            ),
+          );
         }
       }
 
       return _parseResponseBody(response);
     } on SocketException catch (_) {
       throw const MorphrCloudException(
-          'Network error. Please check your internet connection.');
+        'Network error. Please check your internet connection.',
+      );
     } on http.ClientException catch (e) {
       throw MorphrCloudException('HTTP client error: ${e.message}');
     } catch (e) {
@@ -209,9 +212,9 @@ class MorphrCloudClient {
     Map<String, String>? headers,
     Map<String, String>? queryParams,
   }) async {
-    final uri = Uri.parse('$baseUrl/$endpoint').replace(
-      queryParameters: queryParams,
-    );
+    final uri = Uri.parse(
+      '$baseUrl/$endpoint',
+    ).replace(queryParameters: queryParams);
 
     final requestHeaders = <String, String>{
       'Content-Type': 'application/json',
@@ -226,8 +229,9 @@ class MorphrCloudClient {
           _clientId != null &&
           _clientSecret != null) {
         // API key authentication with Basic auth
-        final credentials =
-            base64Encode(utf8.encode('$_clientId:$_clientSecret'));
+        final credentials = base64Encode(
+          utf8.encode('$_clientId:$_clientSecret'),
+        );
         requestHeaders['Authorization'] = 'Basic $credentials';
       }
     }
@@ -237,8 +241,9 @@ class MorphrCloudClient {
     http.Response response;
     switch (method) {
       case 'GET':
-        response =
-            await http.get(uri, headers: requestHeaders).timeout(timeout);
+        response = await http
+            .get(uri, headers: requestHeaders)
+            .timeout(timeout);
         break;
       case 'POST':
         response = await http
@@ -261,7 +266,7 @@ class MorphrCloudClient {
         }
         return jsonDecode(response.body) as Map<String, dynamic>;
       } catch (e) {
-        throw MorphrCloudException('Failed to parse response: $e');
+        return {'body': response.body};
       }
     } else {
       final message = _extractErrorMessage(response);
