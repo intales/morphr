@@ -2,6 +2,9 @@
 
 All notable changes to the Morphr package will be documented in this file.
 
+## 0.4.0
+- Added subscription commands to the CLI to easily manage user subscriptions.
+
 ## 0.3.0
 - Added fallback system for missing connection or patching errors.
 - Enhanced syncing strategy to make everything faster.
