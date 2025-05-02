@@ -28,13 +28,27 @@ class FigmaVectorRenderer {
       return const SizedBox.shrink();
     }
 
-    // Calculate stroke overflow
+    // Get stroke properties
     final strokeWeight = _getStrokeWeight(node) ?? 0.0;
-    final strokePadding = strokeWeight / 2.0;
+    final strokeAlign = _getStrokeAlign(node) ?? figma.StrokeAlign.center;
+
+    // Calculate stroke padding (how much the stroke extends beyond the path)
+    double strokeOutsidePadding = 0.0;
+    switch (strokeAlign) {
+      case figma.StrokeAlign.inside:
+        strokeOutsidePadding = 0.0; // Stroke is fully inside the path
+        break;
+      case figma.StrokeAlign.center:
+        strokeOutsidePadding = strokeWeight / 2.0; // Half of stroke is outside
+        break;
+      case figma.StrokeAlign.outside:
+        strokeOutsidePadding = strokeWeight; // Stroke is fully outside the path
+        break;
+    }
 
     // Calculate final dimensions including stroke
-    final width = baseWidth + strokePadding * 2;
-    final height = baseHeight + strokePadding * 2;
+    final width = baseWidth + strokeOutsidePadding * 2;
+    final height = baseHeight + strokeOutsidePadding * 2;
 
     final result = RepaintBoundary(
       child: CustomPaint(
@@ -43,8 +57,11 @@ class FigmaVectorRenderer {
           fills: _getFills(node),
           strokes: _getStrokes(node),
           strokeWeight: strokeWeight,
+          strokeAlign: strokeAlign,
           fillGeometry: _getFillGeometry(node),
           strokeGeometry: _getStrokeGeometry(node),
+          strokeCap: _getStrokeCap(node),
+          strokeJoin: _getStrokeJoin(node),
         ),
         size: Size(width, height),
       ),
@@ -63,6 +80,38 @@ class FigmaVectorRenderer {
 
   double? _getStrokeWeight(figma.Node node) {
     return node is figma.Vector ? node.strokeWeight?.toDouble() : null;
+  }
+
+  figma.StrokeAlign? _getStrokeAlign(figma.Node node) {
+    return node is figma.Vector ? node.strokeAlign : null;
+  }
+
+  StrokeCap _getStrokeCap(figma.Node node) {
+    if (node is figma.Vector) {
+      switch (node.strokeCap) {
+        case figma.StrokeCap.round:
+          return StrokeCap.round;
+        case figma.StrokeCap.square:
+          return StrokeCap.square;
+        default:
+          return StrokeCap.butt;
+      }
+    }
+    return StrokeCap.butt; // Default
+  }
+
+  StrokeJoin _getStrokeJoin(figma.Node node) {
+    if (node is figma.Vector) {
+      switch (node.strokeJoin) {
+        case figma.StrokeJoin.round:
+          return StrokeJoin.round;
+        case figma.StrokeJoin.bevel:
+          return StrokeJoin.bevel;
+        default:
+          return StrokeJoin.miter;
+      }
+    }
+    return StrokeJoin.miter; // Default
   }
 
   double? _getWidth(figma.Node node) {
@@ -99,22 +148,40 @@ class _VectorPainter extends CustomPainter {
   final List<figma.Paint>? fills;
   final List<figma.Paint>? strokes;
   final double strokeWeight;
+  final figma.StrokeAlign strokeAlign;
   final List<figma.Path>? fillGeometry;
   final List<Map<String, dynamic>>? strokeGeometry;
+  final StrokeCap strokeCap;
+  final StrokeJoin strokeJoin;
 
   _VectorPainter({
     this.fills,
     this.strokes,
     this.strokeWeight = 0.0,
+    this.strokeAlign = figma.StrokeAlign.center,
     this.fillGeometry,
     this.strokeGeometry,
+    this.strokeCap = StrokeCap.butt,
+    this.strokeJoin = StrokeJoin.miter,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Account for stroke overflow
-    final strokePadding = strokeWeight / 2.0;
-    canvas.translate(strokePadding, strokePadding);
+    // Calculate translation based on stroke alignment
+    double strokeOutsidePadding = 0.0;
+    switch (strokeAlign) {
+      case figma.StrokeAlign.inside:
+        strokeOutsidePadding = 0.0;
+        break;
+      case figma.StrokeAlign.center:
+        strokeOutsidePadding = strokeWeight / 2.0;
+        break;
+      case figma.StrokeAlign.outside:
+        strokeOutsidePadding = strokeWeight;
+        break;
+    }
+
+    canvas.translate(strokeOutsidePadding, strokeOutsidePadding);
 
     final paths = <Path>[];
 
@@ -164,7 +231,9 @@ class _VectorPainter extends CustomPainter {
         final paint =
             Paint()
               ..style = PaintingStyle.stroke
-              ..strokeWidth = strokeWeight;
+              ..strokeWidth = strokeWeight
+              ..strokeCap = strokeCap
+              ..strokeJoin = strokeJoin;
 
         if (stroke.type == figma.PaintType.solid) {
           paint.color = _createColor(stroke);
@@ -290,8 +359,11 @@ class _VectorPainter extends CustomPainter {
     return fills != oldDelegate.fills ||
         strokes != oldDelegate.strokes ||
         strokeWeight != oldDelegate.strokeWeight ||
+        strokeAlign != oldDelegate.strokeAlign ||
         fillGeometry != oldDelegate.fillGeometry ||
-        strokeGeometry != oldDelegate.strokeGeometry;
+        strokeGeometry != oldDelegate.strokeGeometry ||
+        strokeCap != oldDelegate.strokeCap ||
+        strokeJoin != oldDelegate.strokeJoin;
   }
 }
 
