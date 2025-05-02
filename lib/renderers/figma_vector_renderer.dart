@@ -14,6 +14,8 @@ class FigmaVectorRenderer {
     required final figma.Node node,
     required final Size parentSize,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     if (node is! figma.Vector) {
       throw ArgumentError('Node must be a VECTOR node');
     }
@@ -71,11 +73,15 @@ class FigmaVectorRenderer {
   }
 
   List<figma.Paint>? _getFills(figma.Node node) {
-    return node is figma.Vector ? node.fills : null;
+    return node is figma.Vector
+        ? node.fills.where((e) => e.visible).toList()
+        : null;
   }
 
   List<figma.Paint>? _getStrokes(figma.Node node) {
-    return node is figma.Vector ? node.strokes : null;
+    return node is figma.Vector
+        ? node.strokes.where((e) => e.visible).toList()
+        : null;
   }
 
   double? _getStrokeWeight(figma.Node node) {

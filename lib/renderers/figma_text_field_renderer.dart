@@ -18,6 +18,8 @@ class FigmaTextFieldRenderer {
     ValueChanged<String>? onSubmitted,
     String? hint,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     final textAdapter = FigmaTextAdapter(node);
     final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
 

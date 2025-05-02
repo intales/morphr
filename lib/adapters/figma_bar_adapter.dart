@@ -42,18 +42,20 @@ class FigmaBarAdapter with CacheableMixin {
   /// The fill properties of the bar
   List<figma.Paint>? get fills {
     return getCached("fills", () {
-      if (node is figma.Frame) return (node as figma.Frame).fills;
-      if (node is figma.Instance) return (node as figma.Instance).fills;
-      return null;
+      List<figma.Paint>? fills;
+      if (node is figma.Frame) fills = (node as figma.Frame).fills;
+      if (node is figma.Instance) fills = (node as figma.Instance).fills;
+      return fills?.where((fill) => fill.visible).toList();
     });
   }
 
   /// The stroke properties of the bar
   List<figma.Paint>? get strokes {
     return getCached("strokes", () {
-      if (node is figma.Frame) return (node as figma.Frame).strokes;
-      if (node is figma.Instance) return (node as figma.Instance).strokes;
-      return null;
+      List<figma.Paint>? strokes;
+      if (node is figma.Frame) strokes = (node as figma.Frame).strokes;
+      if (node is figma.Instance) strokes = (node as figma.Instance).strokes;
+      return strokes?.where((stroke) => stroke.visible).toList();
     });
   }
 
@@ -73,18 +75,20 @@ class FigmaBarAdapter with CacheableMixin {
   /// The visual effects applied to the bar
   List<figma.Effect>? get effects {
     return getCached("effects", () {
-      if (node is figma.Frame) return (node as figma.Frame).effects;
-      if (node is figma.Instance) return (node as figma.Instance).effects;
-      return null;
+      List<figma.Effect>? effects;
+      if (node is figma.Frame) effects = (node as figma.Frame).effects;
+      if (node is figma.Instance) effects = (node as figma.Instance).effects;
+      return effects?.where((effect) => effect.visible).toList();
     });
   }
 
   /// The children of the bar
   List<figma.Node?>? get children {
     return getCached("children", () {
-      if (node is figma.Frame) return (node as figma.Frame).children;
-      if (node is figma.Instance) return (node as figma.Instance).children;
-      return null;
+      List<figma.Node?>? nodes;
+      if (node is figma.Frame) nodes = (node as figma.Frame).children;
+      if (node is figma.Instance) nodes = (node as figma.Instance).children;
+      return nodes?.where((node) => node?.visible == true).toList();
     });
   }
 

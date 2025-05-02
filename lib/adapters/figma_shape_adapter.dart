@@ -67,24 +67,26 @@ class FigmaShapeAdapter with CacheableMixin {
   /// The fill properties of the shape
   List<figma.Paint>? get fills {
     return getCached("fills", () {
-      if (node is figma.Rectangle) return (node as figma.Rectangle).fills;
-      if (node is figma.Ellipse) return (node as figma.Ellipse).fills;
-      if (node is figma.Instance) return (node as figma.Instance).fills;
-      if (node is figma.Vector) return (node as figma.Vector).fills;
-      if (node is figma.Frame) return (node as figma.Frame).fills;
-      return null;
+      List<figma.Paint>? fills;
+      if (node is figma.Rectangle) fills = (node as figma.Rectangle).fills;
+      if (node is figma.Ellipse) fills = (node as figma.Ellipse).fills;
+      if (node is figma.Instance) fills = (node as figma.Instance).fills;
+      if (node is figma.Vector) fills = (node as figma.Vector).fills;
+      if (node is figma.Frame) fills = (node as figma.Frame).fills;
+      return fills?.where((fill) => fill.visible).toList();
     });
   }
 
   /// The stroke properties of the shape
   List<figma.Paint>? get strokes {
     return getCached("strokes", () {
-      if (node is figma.Rectangle) return (node as figma.Rectangle).strokes;
-      if (node is figma.Ellipse) return (node as figma.Ellipse).strokes;
-      if (node is figma.Instance) return (node as figma.Instance).strokes;
-      if (node is figma.Vector) return (node as figma.Vector).strokes;
-      if (node is figma.Frame) return (node as figma.Frame).strokes;
-      return null;
+      List<figma.Paint>? strokes;
+      if (node is figma.Rectangle) strokes = (node as figma.Rectangle).strokes;
+      if (node is figma.Ellipse) strokes = (node as figma.Ellipse).strokes;
+      if (node is figma.Instance) strokes = (node as figma.Instance).strokes;
+      if (node is figma.Vector) strokes = (node as figma.Vector).strokes;
+      if (node is figma.Frame) strokes = (node as figma.Frame).strokes;
+      return strokes?.where((stroke) => stroke.visible).toList();
     });
   }
 
@@ -113,12 +115,13 @@ class FigmaShapeAdapter with CacheableMixin {
   /// The visual effects applied to the shape
   List<figma.Effect>? get effects {
     return getCached("effects", () {
-      if (node is figma.Rectangle) return (node as figma.Rectangle).effects;
-      if (node is figma.Ellipse) return (node as figma.Ellipse).effects;
-      if (node is figma.Instance) return (node as figma.Instance).effects;
-      if (node is figma.Vector) return (node as figma.Vector).effects;
-      if (node is figma.Frame) return (node as figma.Frame).effects;
-      return null;
+      List<figma.Effect>? effects;
+      if (node is figma.Rectangle) effects = (node as figma.Rectangle).effects;
+      if (node is figma.Ellipse) effects = (node as figma.Ellipse).effects;
+      if (node is figma.Instance) effects = (node as figma.Instance).effects;
+      if (node is figma.Vector) effects = (node as figma.Vector).effects;
+      if (node is figma.Frame) effects = (node as figma.Frame).effects;
+      return effects?.where((effect) => effect.visible).toList();
     });
   }
 

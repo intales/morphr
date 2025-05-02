@@ -16,6 +16,8 @@ class FigmaFlexRenderer {
     required final Size parentSize,
     required final List<Widget> children,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     final layoutAdapter = FigmaLayoutAdapter(node);
     final decorationAdapter = FigmaDecorationAdapter(node);
     final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);

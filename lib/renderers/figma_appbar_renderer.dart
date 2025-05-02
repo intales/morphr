@@ -17,6 +17,8 @@ class FigmaAppbarRenderer {
     required final Size parentSize,
     required final List<Widget> children,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     final barAdapter = FigmaBarAdapter(node, FigmaBarType.top);
     final decorationAdapter = FigmaDecorationAdapter(node);
 

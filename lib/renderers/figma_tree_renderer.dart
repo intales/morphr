@@ -31,6 +31,8 @@ class FigmaTreeRenderer {
     figma.Node? parent,
     TransformerManager? transformerManager,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     transformerManager ??= TransformerManager(transformers: transformers);
 
     try {
