@@ -11,11 +11,7 @@ class FigmaTextComponent extends FigmaComponent {
   final String componentName;
   final String text;
 
-  const FigmaTextComponent(
-    this.componentName, {
-    required this.text,
-    super.key,
-  });
+  const FigmaTextComponent(this.componentName, {required this.text, super.key});
 
   @override
   Widget build(BuildContext context) {

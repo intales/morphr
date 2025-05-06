@@ -36,7 +36,8 @@ class FigmaTreeRenderer {
     transformerManager ??= TransformerManager(transformers: transformers);
 
     try {
-      final children = _getChildNodes(node);
+      final children =
+          _getChildNodes(node)?.where((e) => e?.visible == true).toList();
 
       List<Widget>? childWidgets;
       if (children != null && children.isNotEmpty) {
@@ -64,7 +65,7 @@ class FigmaTreeRenderer {
       Widget baseWidget = _createBaseWidget(node, context);
       baseWidget =
           childWidgets != null
-              ? _combineWithChildren(baseWidget, node, childWidgets)
+              ? _combineWithChildren(node, childWidgets)
               : baseWidget;
       final transformContext = TransformContext(
         buildContext: context,
@@ -149,11 +150,7 @@ class FigmaTreeRenderer {
   }
 
   /// Combines the base widget with its children according to layout.
-  Widget _combineWithChildren(
-    Widget baseWidget,
-    figma.Node node,
-    List<Widget> children,
-  ) {
+  Widget _combineWithChildren(figma.Node node, List<Widget> children) {
     return const FigmaFlexRenderer().render(
       node: node,
       parentSize: Size.zero,
