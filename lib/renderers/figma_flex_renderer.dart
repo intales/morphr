@@ -24,32 +24,17 @@ class FigmaFlexRenderer {
 
     final isRow = layoutAdapter.layoutMode == figma.LayoutMode.horizontal;
 
-    // Check if this is a wrapping layout
-    final isWrap = layoutAdapter.isWrapLayout;
-
     // Create the appropriate layout widget based on properties
     Widget layoutWidget;
 
-    if (isWrap) {
-      // Use Wrap widget for wrap layouts
-      layoutWidget = Wrap(
-        direction: isRow ? Axis.horizontal : Axis.vertical,
-        textDirection: TextDirection.ltr,
-        alignment: layoutAdapter.getWrapMainAxisAlignment(),
-        crossAxisAlignment: layoutAdapter.getWrapCrossAlignment(),
-        spacing: layoutAdapter.itemSpacing,
-        children: _addSpacing(children, layoutAdapter),
-      );
-    } else {
-      // Use Flex widget for standard layouts
-      layoutWidget = Flex(
-        direction: isRow ? Axis.horizontal : Axis.vertical,
-        mainAxisAlignment: layoutAdapter.getMainAxisAlignment(),
-        crossAxisAlignment: layoutAdapter.getCrossAxisAlignment(),
-        mainAxisSize: layoutAdapter.mainAxisSize,
-        children: _addSpacing(children, layoutAdapter),
-      );
-    }
+    // Use Flex widget for standard layouts
+    layoutWidget = Flex(
+      direction: isRow ? Axis.horizontal : Axis.vertical,
+      mainAxisAlignment: layoutAdapter.getMainAxisAlignment(),
+      crossAxisAlignment: layoutAdapter.getCrossAxisAlignment(),
+      mainAxisSize: layoutAdapter.mainAxisSize,
+      children: _addSpacing(children, layoutAdapter),
+    );
 
     // Apply padding and decoration if needed
     if (layoutAdapter.padding != EdgeInsets.zero ||

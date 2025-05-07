@@ -37,25 +37,6 @@ class FigmaLayoutAdapter with CacheableMixin {
     });
   }
 
-  /// Checks if the layout uses wrap behavior
-  /// This is critical for text components that need to wrap properly
-  bool get isWrapLayout {
-    return getCached("isWrapLayout", () {
-      if (node is figma.Frame) {
-        return (node as figma.Frame).layoutWrap == figma.LayoutWrap.wrap;
-      }
-      if (node is figma.Instance) {
-        return (node as figma.Instance).layoutWrap == figma.LayoutWrap.wrap;
-      }
-      return false;
-    });
-  }
-
-  /// Gets the spacing between wrapping lines
-  double get wrapSpacing {
-    return 10;
-  }
-
   /// The primary axis alignment of children
   figma.PrimaryAxisAlignItems? get primaryAxisAlignItems {
     return getCached("primaryAxisAlignItems", () {
@@ -228,31 +209,6 @@ class FigmaLayoutAdapter with CacheableMixin {
         figma.PrimaryAxisAlignItems.spaceBetween =>
           MainAxisAlignment.spaceBetween,
         _ => MainAxisAlignment.start,
-      };
-    });
-  }
-
-  /// Creates appropriate WrapAlignment for the main axis
-  WrapAlignment getWrapMainAxisAlignment() {
-    return getCached("getWrapMainAxisAlignment", () {
-      return switch (primaryAxisAlignItems) {
-        figma.PrimaryAxisAlignItems.min => WrapAlignment.start,
-        figma.PrimaryAxisAlignItems.center => WrapAlignment.center,
-        figma.PrimaryAxisAlignItems.max => WrapAlignment.end,
-        figma.PrimaryAxisAlignItems.spaceBetween => WrapAlignment.spaceBetween,
-        _ => WrapAlignment.start,
-      };
-    });
-  }
-
-  /// Creates appropriate WrapAlignment for the cross axis
-  WrapCrossAlignment getWrapCrossAlignment() {
-    return getCached("getWrapCrossAlignment", () {
-      return switch (counterAxisAlignItems) {
-        figma.CounterAxisAlignItems.min => WrapCrossAlignment.start,
-        figma.CounterAxisAlignItems.center => WrapCrossAlignment.center,
-        figma.CounterAxisAlignItems.max => WrapCrossAlignment.end,
-        _ => WrapCrossAlignment.center,
       };
     });
   }
