@@ -37,7 +37,6 @@ class FigmaTextRenderer {
               f.type == figma.PaintType.gradientRadial,
         );
 
-    // Create the base text widget
     Widget textWidget;
 
     if (hasGradient) {
@@ -64,7 +63,6 @@ class FigmaTextRenderer {
       textWidget = Text(text, style: baseStyle, textAlign: textAlign);
     }
 
-    // Apply stroke if present
     if (hasStroke) {
       textWidget = Stack(
         children: [
@@ -84,51 +82,7 @@ class FigmaTextRenderer {
       );
     }
 
-    // Get dimensions and auto-resize settings from Figma
-    final boundingBox = node.absoluteBoundingBox;
-    final figmaWidth = boundingBox?.width?.toDouble() ?? 0;
-    final figmaHeight = boundingBox?.height?.toDouble() ?? 0;
-    final autoResize = node.style?.textAutoResize ?? figma.TextAutoResize.none;
-
-    // Handle different auto-resize modes
-    switch (autoResize) {
-      case figma.TextAutoResize.none:
-        // No auto-resize, apply both width and height constraints
-        if (figmaWidth > 0 || figmaHeight > 0) {
-          return SizedBox(
-            width: figmaWidth > 0 ? figmaWidth : null,
-            height: figmaHeight > 0 ? figmaHeight : null,
-            child: textWidget,
-          );
-        }
-        return textWidget;
-
-      case figma.TextAutoResize.height:
-        // Auto-resize height, fixed width
-        if (figmaWidth > 0) {
-          return SizedBox(width: figmaWidth, child: textWidget);
-        }
-        return textWidget;
-
-      case figma.TextAutoResize.widthAndHeight:
-        // Auto-resize both width and height
-        return textWidget;
-
-      case figma.TextAutoResize.truncate:
-        // Fixed width with truncation
-        if (figmaWidth > 0) {
-          return SizedBox(
-            width: figmaWidth,
-            child: Text(
-              text,
-              style: baseStyle,
-              textAlign: textAlign,
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
-        }
-        return textWidget;
-    }
+    return SizedBox(width: node.absoluteBoundingBox!.width, child: textWidget);
   }
 
   TextStyle? _createTextStyle(figma.Text node) {

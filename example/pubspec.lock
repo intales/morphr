@@ -254,10 +254,10 @@ packages:
     dependency: transitive
     description:
       name: morphr_figma
-      sha256: e68da4259429cc88f880163ffb50e7d4ce75b5c4d4e1992ff22c049bc6d017b4
+      sha256: "9d05df7530843456f5b26afadae85fd7769048d6e217c1a20f885cf4482fe32c"
       url: "https://pub.dev"
     source: hosted
-    version: "7.4.0"
+    version: "7.4.1"
   path:
     dependency: transitive
     description:

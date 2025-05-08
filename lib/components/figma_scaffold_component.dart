@@ -77,9 +77,11 @@ class FigmaScaffoldComponent extends FigmaComponent {
       appBar: _buildAppBar(context),
       body:
           effectiveBodyNodeName != null
-              ? FigmaComponent.widget(
-                effectiveBodyNodeName,
-                transformers: bodyTransformers,
+              ? SizedBox.expand(
+                child: FigmaComponent.widget(
+                  effectiveBodyNodeName,
+                  transformers: bodyTransformers,
+                ),
               )
               : const SizedBox.shrink(),
       bottomNavigationBar: _buildBottomBar(context),
