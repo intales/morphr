@@ -2,6 +2,11 @@
 
 All notable changes to the Morphr package will be documented in this file.
 
+## 0.4.1
+- Fixed a couple of problems with vectors' strokes
+- Fixed Figma visibility support
+- Fixed text layout retrieval
+
 ## 0.4.0
 - Added subscription commands to the CLI to easily manage user subscriptions.
 
