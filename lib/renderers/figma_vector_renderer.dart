@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/adapters/figma_constraints_adapter.dart';
@@ -15,12 +14,15 @@ class FigmaVectorRenderer {
     required final figma.Node node,
     required final Size parentSize,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     if (node is! figma.Vector) {
       throw ArgumentError('Node must be a VECTOR node');
     }
-    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
-    final shadowPadding = _calculateShadowPadding(node);
 
+    final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);
+
+    // Get base dimensions
     final baseWidth = _getWidth(node);
     final baseHeight = _getHeight(node);
 
@@ -28,69 +30,94 @@ class FigmaVectorRenderer {
       return const SizedBox.shrink();
     }
 
-    final width = baseWidth + shadowPadding.left + shadowPadding.right;
-    final height = baseHeight + shadowPadding.top + shadowPadding.bottom;
+    // Get stroke properties
+    final strokeWeight = _getStrokeWeight(node) ?? 0.0;
+    final strokeAlign = _getStrokeAlign(node) ?? figma.StrokeAlign.center;
 
-    final result = CustomPaint(
-      size: Size(width, height),
-      painter: _VectorPainter(
-        fills: _getFills(node),
-        strokes: _getStrokes(node),
-        strokeWeight: _getStrokeWeight(node),
-        fillGeometry: _getFillGeometry(node),
-        strokeGeometry: _getStrokeGeometry(node),
-        effects: _getEffects(node),
-        shadowPadding: shadowPadding,
+    // Calculate stroke padding (how much the stroke extends beyond the path)
+    double strokeOutsidePadding = 0.0;
+    switch (strokeAlign) {
+      case figma.StrokeAlign.inside:
+        strokeOutsidePadding = 0.0; // Stroke is fully inside the path
+        break;
+      case figma.StrokeAlign.center:
+        strokeOutsidePadding = strokeWeight / 2.0; // Half of stroke is outside
+        break;
+      case figma.StrokeAlign.outside:
+        strokeOutsidePadding = strokeWeight; // Stroke is fully outside the path
+        break;
+    }
+
+    // Calculate final dimensions including stroke
+    final width = baseWidth + strokeOutsidePadding * 2;
+    final height = baseHeight + strokeOutsidePadding * 2;
+
+    final result = RepaintBoundary(
+      child: CustomPaint(
+        isComplex: true,
+        painter: _VectorPainter(
+          fills: _getFills(node),
+          strokes: _getStrokes(node),
+          strokeWeight: strokeWeight,
+          strokeAlign: strokeAlign,
+          fillGeometry: _getFillGeometry(node),
+          strokeGeometry: _getStrokeGeometry(node),
+          strokeCap: _getStrokeCap(node),
+          strokeJoin: _getStrokeJoin(node),
+        ),
+        size: Size(width, height),
       ),
     );
 
     return constraintsAdapter.applyConstraints(result);
   }
 
-  EdgeInsets _calculateShadowPadding(figma.Node node) {
-    if (node is! figma.Vector) return EdgeInsets.zero;
-
-    var left = 0.0;
-    var top = 0.0;
-    var right = 0.0;
-    var bottom = 0.0;
-
-    final effects = node.effects;
-    if (effects != null) {
-      for (final effect in effects) {
-        if (effect.type == figma.EffectType.dropShadow) {
-          final blurRadius = effect.radius ?? 0;
-          final offsetX = effect.offset?.x ?? 0;
-          final offsetY = effect.offset?.y ?? 0;
-
-          left = math.max(left, blurRadius - math.min(offsetX.toDouble(), 0));
-          top = math.max(top, blurRadius - math.min(offsetY.toDouble(), 0));
-          right = math.max(right, blurRadius + math.max(offsetX.toDouble(), 0));
-          bottom = math.max(
-            bottom,
-            blurRadius + math.max(offsetY.toDouble(), 0),
-          );
-        }
-      }
-    }
-
-    return EdgeInsets.fromLTRB(left, top, right, bottom);
-  }
-
   List<figma.Paint>? _getFills(figma.Node node) {
-    return node is figma.Vector ? node.fills : null;
+    return node is figma.Vector
+        ? node.fills.where((e) => e.visible).toList()
+        : null;
   }
 
   List<figma.Paint>? _getStrokes(figma.Node node) {
-    return node is figma.Vector ? node.strokes : null;
+    return node is figma.Vector
+        ? node.strokes.where((e) => e.visible).toList()
+        : null;
   }
 
   double? _getStrokeWeight(figma.Node node) {
     return node is figma.Vector ? node.strokeWeight?.toDouble() : null;
   }
 
-  List<figma.Effect>? _getEffects(figma.Node node) {
-    return node is figma.Vector ? node.effects : null;
+  figma.StrokeAlign? _getStrokeAlign(figma.Node node) {
+    return node is figma.Vector ? node.strokeAlign : null;
+  }
+
+  StrokeCap _getStrokeCap(figma.Node node) {
+    if (node is figma.Vector) {
+      switch (node.strokeCap) {
+        case figma.StrokeCap.round:
+          return StrokeCap.round;
+        case figma.StrokeCap.square:
+          return StrokeCap.square;
+        default:
+          return StrokeCap.butt;
+      }
+    }
+    return StrokeCap.butt; // Default
+  }
+
+  StrokeJoin _getStrokeJoin(figma.Node node) {
+    if (node is figma.Vector) {
+      switch (node.strokeJoin) {
+        case figma.StrokeJoin.round:
+          return StrokeJoin.round;
+        case figma.StrokeJoin.bevel:
+          return StrokeJoin.bevel;
+        default:
+          return StrokeJoin.miter;
+      }
+    }
+    return StrokeJoin.miter; // Default
   }
 
   double? _getWidth(figma.Node node) {
@@ -126,33 +153,52 @@ class FigmaVectorRenderer {
 class _VectorPainter extends CustomPainter {
   final List<figma.Paint>? fills;
   final List<figma.Paint>? strokes;
-  final double? strokeWeight;
+  final double strokeWeight;
+  final figma.StrokeAlign strokeAlign;
   final List<figma.Path>? fillGeometry;
   final List<Map<String, dynamic>>? strokeGeometry;
-  final List<figma.Effect>? effects;
-  final EdgeInsets shadowPadding;
+  final StrokeCap strokeCap;
+  final StrokeJoin strokeJoin;
 
   _VectorPainter({
     this.fills,
     this.strokes,
-    this.strokeWeight,
+    this.strokeWeight = 0.0,
+    this.strokeAlign = figma.StrokeAlign.center,
     this.fillGeometry,
     this.strokeGeometry,
-    this.effects,
-    this.shadowPadding = EdgeInsets.zero,
+    this.strokeCap = StrokeCap.butt,
+    this.strokeJoin = StrokeJoin.miter,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.translate(shadowPadding.left, shadowPadding.top);
+    // Calculate translation based on stroke alignment
+    double strokeOutsidePadding = 0.0;
+    switch (strokeAlign) {
+      case figma.StrokeAlign.inside:
+        strokeOutsidePadding = 0.0;
+        break;
+      case figma.StrokeAlign.center:
+        strokeOutsidePadding = strokeWeight / 2.0;
+        break;
+      case figma.StrokeAlign.outside:
+        strokeOutsidePadding = strokeWeight;
+        break;
+    }
+
+    canvas.translate(strokeOutsidePadding, strokeOutsidePadding);
+
     final paths = <Path>[];
 
+    // Parse fill paths
     if (fillGeometry != null) {
       for (final pathData in fillGeometry!) {
         paths.add(_parseSvgPath(pathData.path));
       }
     }
 
+    // Parse stroke paths
     if (strokeGeometry != null) {
       for (final pathData in strokeGeometry!) {
         final pathStr = pathData['path'] as String?;
@@ -164,60 +210,18 @@ class _VectorPainter extends CustomPainter {
 
     if (paths.isEmpty) return;
 
-    final Path combinedPath = Path();
-    for (final path in paths) {
-      combinedPath.addPath(path, Offset.zero);
-    }
-
-    if (effects != null) {
-      for (final effect in effects!) {
-        if (effect.type == figma.EffectType.dropShadow) {
-          canvas.saveLayer(Offset.zero & size, Paint());
-
-          final shadowPaint =
-              Paint()
-                ..color = _createColorFromEffect(effect)
-                ..maskFilter = MaskFilter.blur(
-                  BlurStyle.normal,
-                  effect.radius?.toDouble() ?? 0,
-                );
-
-          final offset = Offset(
-            effect.offset?.x.toDouble() ?? 0,
-            effect.offset?.y.toDouble() ?? 0,
-          );
-
-          for (final path in paths) {
-            final shadowPath = path.shift(offset);
-            canvas.drawPath(shadowPath, shadowPaint);
-          }
-
-          canvas.save();
-          canvas.clipPath(combinedPath);
-          canvas.drawRect(
-            combinedPath.getBounds(),
-            Paint()..blendMode = BlendMode.clear,
-          );
-          canvas.restore();
-
-          canvas.restore();
-        }
-      }
-    }
-
+    // Draw fills
     if (fills != null && fills!.isNotEmpty) {
       for (final fill in fills!) {
         final paint = Paint()..style = PaintingStyle.fill;
 
         if (fill.type == figma.PaintType.solid) {
-          paint.color = _createColor([fill]);
+          paint.color = _createColor(fill);
         } else if (fill.type == figma.PaintType.gradientLinear ||
             fill.type == figma.PaintType.gradientRadial) {
-          final gradient = _createGradient(fill);
+          final gradient = _createGradient(fill, paths[0].getBounds());
           if (gradient != null) {
-            for (final path in paths) {
-              paint.shader = gradient.createShader(path.getBounds());
-            }
+            paint.shader = gradient;
           }
         }
 
@@ -227,22 +231,23 @@ class _VectorPainter extends CustomPainter {
       }
     }
 
-    if (strokes != null) {
+    // Draw strokes
+    if (strokes != null && strokes!.isNotEmpty) {
       for (final stroke in strokes!) {
         final paint =
             Paint()
               ..style = PaintingStyle.stroke
-              ..strokeWidth = strokeWeight ?? 1.0;
+              ..strokeWidth = strokeWeight
+              ..strokeCap = strokeCap
+              ..strokeJoin = strokeJoin;
 
         if (stroke.type == figma.PaintType.solid) {
-          paint.color = _createColor([stroke]);
+          paint.color = _createColor(stroke);
         } else if (stroke.type == figma.PaintType.gradientLinear ||
             stroke.type == figma.PaintType.gradientRadial) {
-          final gradient = _createGradient(stroke);
+          final gradient = _createGradient(stroke, paths[0].getBounds());
           if (gradient != null) {
-            for (final path in paths) {
-              paint.shader = gradient.createShader(path.getBounds());
-            }
+            paint.shader = gradient;
           }
         }
 
@@ -253,14 +258,7 @@ class _VectorPainter extends CustomPainter {
     }
   }
 
-  Color _createColor(List<figma.Paint>? paints) {
-    if (paints == null || paints.isEmpty) return Colors.black;
-
-    final paint = paints.firstWhere(
-      (p) => p.type == figma.PaintType.solid,
-      orElse: () => paints.first,
-    );
-
+  Color _createColor(figma.Paint paint) {
     if (paint.type != figma.PaintType.solid) return Colors.black;
 
     final color = paint.color;
@@ -274,47 +272,35 @@ class _VectorPainter extends CustomPainter {
     );
   }
 
-  Color _createColorFromEffect(figma.Effect effect) {
-    final color = effect.color;
-    if (color == null) return Colors.black;
-
-    return Color.fromRGBO(
-      ((color.r ?? 0) * 255).round(),
-      ((color.g ?? 0) * 255).round(),
-      ((color.b ?? 0) * 255).round(),
-      color.a ?? 1,
-    );
-  }
-
-  Gradient? _createGradient(figma.Paint fill) {
+  Shader? _createGradient(figma.Paint fill, Rect bounds) {
     if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
 
     final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
     final colors =
-        fill.gradientStops!
-            .map(
-              (stop) => Color.fromRGBO(
-                ((stop.color?.r ?? 0) * 255).round(),
-                ((stop.color?.g ?? 0) * 255).round(),
-                ((stop.color?.b ?? 0) * 255).round(),
-                fill.opacity ?? 1,
-              ),
-            )
-            .toList();
+        fill.gradientStops!.map((stop) {
+          final color = stop.color;
+          return Color.fromRGBO(
+            ((color?.r ?? 0) * 255).round(),
+            ((color?.g ?? 0) * 255).round(),
+            ((color?.b ?? 0) * 255).round(),
+            fill.opacity ?? 1,
+          );
+        }).toList();
 
     if (fill.type == figma.PaintType.gradientLinear) {
-      return _createLinearGradient(fill, colors, stops);
+      return _createLinearGradient(fill, colors, stops, bounds);
     } else if (fill.type == figma.PaintType.gradientRadial) {
-      return _createRadialGradient(fill, colors, stops);
+      return _createRadialGradient(fill, colors, stops, bounds);
     }
 
     return null;
   }
 
-  LinearGradient? _createLinearGradient(
+  Shader? _createLinearGradient(
     figma.Paint fill,
     List<Color> colors,
     List<double> stops,
+    Rect bounds,
   ) {
     if (fill.gradientHandlePositions == null ||
         fill.gradientHandlePositions!.length < 2) {
@@ -330,13 +316,14 @@ class _VectorPainter extends CustomPainter {
       end: Alignment(end.x * 2 - 1, end.y * 2 - 1),
       colors: colors,
       stops: stops,
-    );
+    ).createShader(bounds);
   }
 
-  RadialGradient? _createRadialGradient(
+  Shader? _createRadialGradient(
     figma.Paint fill,
     List<Color> colors,
     List<double> stops,
+    Rect bounds,
   ) {
     final transforms = fill.imageTransform;
     Alignment center = Alignment.center;
@@ -363,7 +350,7 @@ class _VectorPainter extends CustomPainter {
       stops: stops,
       focal: center,
       focalRadius: 0.0,
-    );
+    ).createShader(bounds);
   }
 
   Path _parseSvgPath(String pathData) {
@@ -378,10 +365,11 @@ class _VectorPainter extends CustomPainter {
     return fills != oldDelegate.fills ||
         strokes != oldDelegate.strokes ||
         strokeWeight != oldDelegate.strokeWeight ||
+        strokeAlign != oldDelegate.strokeAlign ||
         fillGeometry != oldDelegate.fillGeometry ||
         strokeGeometry != oldDelegate.strokeGeometry ||
-        effects != oldDelegate.effects ||
-        shadowPadding != oldDelegate.shadowPadding;
+        strokeCap != oldDelegate.strokeCap ||
+        strokeJoin != oldDelegate.strokeJoin;
   }
 }
 

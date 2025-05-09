@@ -37,6 +37,21 @@ class FigmaLayoutAdapter with CacheableMixin {
     });
   }
 
+  figma.LayoutWrap? get layoutWrap {
+    return getCached("layoutWrap", () {
+      if (node is figma.Frame) return (node as figma.Frame).layoutWrap;
+      if (node is figma.Instance) return (node as figma.Instance).layoutWrap;
+      return null;
+    });
+  }
+
+  bool get isWrapLayout {
+    return getCached(
+      "isWrapLayout",
+      () => layoutWrap == figma.LayoutWrap.wrap && layoutMode != null,
+    );
+  }
+
   /// The primary axis alignment of children
   figma.PrimaryAxisAlignItems? get primaryAxisAlignItems {
     return getCached("primaryAxisAlignItems", () {

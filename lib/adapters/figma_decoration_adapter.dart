@@ -49,35 +49,38 @@ class FigmaDecorationAdapter with CacheableMixin {
 
   /// The fill properties of the node
   List<figma.Paint>? _getFills() {
-    if (node is figma.Frame) return (node as figma.Frame).fills;
-    if (node is figma.Rectangle) return (node as figma.Rectangle).fills;
-    if (node is figma.Ellipse) return (node as figma.Ellipse).fills;
-    if (node is figma.Vector) return (node as figma.Vector).fills;
-    if (node is figma.Text) return (node as figma.Text).fills;
-    if (node is figma.Instance) return (node as figma.Instance).fills;
-    return null;
+    List<figma.Paint>? fills;
+    if (node is figma.Frame) fills = (node as figma.Frame).fills;
+    if (node is figma.Rectangle) fills = (node as figma.Rectangle).fills;
+    if (node is figma.Ellipse) fills = (node as figma.Ellipse).fills;
+    if (node is figma.Vector) fills = (node as figma.Vector).fills;
+    if (node is figma.Text) fills = (node as figma.Text).fills;
+    if (node is figma.Instance) fills = (node as figma.Instance).fills;
+    return fills?.where((fill) => fill.visible).toList();
   }
 
   /// The stroke properties of the node
   List<figma.Paint>? _getStrokes() {
-    if (node is figma.Frame) return (node as figma.Frame).strokes;
-    if (node is figma.Rectangle) return (node as figma.Rectangle).strokes;
-    if (node is figma.Ellipse) return (node as figma.Ellipse).strokes;
-    if (node is figma.Vector) return (node as figma.Vector).strokes;
-    if (node is figma.Text) return (node as figma.Text).strokes;
-    if (node is figma.Instance) return (node as figma.Instance).strokes;
-    return null;
+    List<figma.Paint>? strokes;
+    if (node is figma.Frame) strokes = (node as figma.Frame).strokes;
+    if (node is figma.Rectangle) strokes = (node as figma.Rectangle).strokes;
+    if (node is figma.Ellipse) strokes = (node as figma.Ellipse).strokes;
+    if (node is figma.Vector) strokes = (node as figma.Vector).strokes;
+    if (node is figma.Text) strokes = (node as figma.Text).strokes;
+    if (node is figma.Instance) strokes = (node as figma.Instance).strokes;
+    return strokes?.where((stroke) => stroke.visible).toList();
   }
 
   /// The visual effects of the node
   List<figma.Effect>? _getEffects() {
-    if (node is figma.Frame) return (node as figma.Frame).effects;
-    if (node is figma.Rectangle) return (node as figma.Rectangle).effects;
-    if (node is figma.Ellipse) return (node as figma.Ellipse).effects;
-    if (node is figma.Vector) return (node as figma.Vector).effects;
-    if (node is figma.Text) return (node as figma.Text).effects;
-    if (node is figma.Instance) return (node as figma.Instance).effects;
-    return null;
+    List<figma.Effect>? effects;
+    if (node is figma.Frame) effects = (node as figma.Frame).effects;
+    if (node is figma.Rectangle) effects = (node as figma.Rectangle).effects;
+    if (node is figma.Ellipse) effects = (node as figma.Ellipse).effects;
+    if (node is figma.Vector) effects = (node as figma.Vector).effects;
+    if (node is figma.Text) effects = (node as figma.Text).effects;
+    if (node is figma.Instance) effects = (node as figma.Instance).effects;
+    return effects?.where((effect) => effect.visible).toList();
   }
 
   /// The stroke weight of the node

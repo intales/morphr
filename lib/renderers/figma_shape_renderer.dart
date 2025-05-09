@@ -16,6 +16,8 @@ class FigmaShapeRenderer {
     required final Size parentSize,
     final Widget? child,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     final shapeAdapter = FigmaShapeAdapter(node);
     final decorationAdapter = FigmaDecorationAdapter(node);
     final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);

@@ -21,22 +21,23 @@ class FigmaTextAdapter {
   /// The text style properties
   figma.TypeStyle? get style {
     if (node is figma.Text) return (node as figma.Text).style;
-    // Per Component e Instance, potrebbero avere un riferimento a uno stile text
     return null;
   }
 
   /// The fill properties affecting text color and gradients
   List<figma.Paint>? get fills {
-    if (node is figma.Text) return (node as figma.Text).fills;
-    if (node is figma.Instance) return (node as figma.Instance).fills;
-    return null;
+    List<figma.Paint>? fills;
+    if (node is figma.Text) fills = (node as figma.Text).fills;
+    if (node is figma.Instance) fills = (node as figma.Instance).fills;
+    return fills?.where((fill) => fill.visible).toList();
   }
 
   /// The stroke properties for outlined text
   List<figma.Paint>? get strokes {
-    if (node is figma.Text) return (node as figma.Text).strokes;
-    if (node is figma.Instance) return (node as figma.Instance).strokes;
-    return null;
+    List<figma.Paint>? strokes;
+    if (node is figma.Text) strokes = (node as figma.Text).strokes;
+    if (node is figma.Instance) strokes = (node as figma.Instance).strokes;
+    return strokes?.where((stroke) => stroke.visible).toList();
   }
 
   /// The stroke weight for outlined text

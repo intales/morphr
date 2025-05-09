@@ -19,6 +19,8 @@ class FigmaListRenderer {
     final Axis scrollDirection = Axis.vertical,
     final bool shrinkWrap = false,
   }) {
+    if (!node.visible) return const SizedBox.shrink();
+
     final layoutAdapter = FigmaLayoutAdapter(node);
     final decorationAdapter = FigmaDecorationAdapter(node);
     final constraintsAdapter = FigmaConstraintsAdapter(node, parentSize);

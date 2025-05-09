@@ -24,29 +24,69 @@ class FigmaFlexRenderer {
 
     final isRow = layoutAdapter.layoutMode == figma.LayoutMode.horizontal;
 
-    // Create the flex content
-    Widget flex = Flex(
-      direction: isRow ? Axis.horizontal : Axis.vertical,
-      mainAxisAlignment: layoutAdapter.getMainAxisAlignment(),
-      crossAxisAlignment: layoutAdapter.getCrossAxisAlignment(),
-      mainAxisSize: layoutAdapter.mainAxisSize,
-      children: _addSpacing(children, layoutAdapter),
-    );
+    // Create the appropriate layout widget based on properties
+    Widget layoutWidget;
 
-    // Apply padding and decoration
-    if (layoutAdapter.padding != EdgeInsets.zero ||
-        decorationAdapter.supportsDecoration) {
-      flex = Container(
-        decoration: decorationAdapter.createBoxDecoration(),
-        padding: layoutAdapter.padding,
-        child: decorationAdapter.wrapWithBlurEffects(flex),
+    // Check if we should use Wrap or Flex
+    if (layoutAdapter.isWrapLayout) {
+      layoutWidget = Wrap(
+        direction: isRow ? Axis.horizontal : Axis.vertical,
+        alignment: _getWrapAlignment(layoutAdapter.getMainAxisAlignment()),
+        crossAxisAlignment: _getWrapCrossAlignment(
+          layoutAdapter.getCrossAxisAlignment(),
+        ),
+        spacing: layoutAdapter.itemSpacing,
+        runSpacing: layoutAdapter.itemSpacing,
+        children: children,
+      );
+    } else {
+      // Use Flex widget for standard layouts
+      layoutWidget = Flex(
+        direction: isRow ? Axis.horizontal : Axis.vertical,
+        mainAxisAlignment: layoutAdapter.getMainAxisAlignment(),
+        crossAxisAlignment: layoutAdapter.getCrossAxisAlignment(),
+        mainAxisSize: layoutAdapter.mainAxisSize,
+        children: _addSpacing(children, layoutAdapter),
       );
     }
 
-    // Finally apply any additional constraints
-    return constraintsAdapter.applyConstraints(flex);
+    // Apply padding and decoration if needed
+    if (layoutAdapter.padding != EdgeInsets.zero ||
+        decorationAdapter.supportsDecoration) {
+      layoutWidget = Container(
+        decoration: decorationAdapter.createBoxDecoration(),
+        padding: layoutAdapter.padding,
+        child: decorationAdapter.wrapWithBlurEffects(layoutWidget),
+      );
+    }
+
+    // Apply any additional constraints
+    return constraintsAdapter.applyConstraints(layoutWidget);
   }
 
+  // Helper methods to convert MainAxisAlignment to WrapAlignment
+  WrapAlignment _getWrapAlignment(MainAxisAlignment alignment) {
+    return switch (alignment) {
+      MainAxisAlignment.start => WrapAlignment.start,
+      MainAxisAlignment.center => WrapAlignment.center,
+      MainAxisAlignment.end => WrapAlignment.end,
+      MainAxisAlignment.spaceBetween => WrapAlignment.spaceBetween,
+      MainAxisAlignment.spaceAround => WrapAlignment.spaceAround,
+      MainAxisAlignment.spaceEvenly => WrapAlignment.spaceEvenly,
+    };
+  }
+
+  // Helper methods to convert CrossAxisAlignment to WrapCrossAlignment
+  WrapCrossAlignment _getWrapCrossAlignment(CrossAxisAlignment alignment) {
+    return switch (alignment) {
+      CrossAxisAlignment.start => WrapCrossAlignment.start,
+      CrossAxisAlignment.center => WrapCrossAlignment.center,
+      CrossAxisAlignment.end => WrapCrossAlignment.end,
+      _ => WrapCrossAlignment.start,
+    };
+  }
+
+  // This is only used for non-wrap layouts since Wrap handles spacing internally
   List<Widget> _addSpacing(List<Widget> children, FigmaLayoutAdapter adapter) {
     final spacing = adapter.itemSpacing;
     if (spacing == 0 || children.isEmpty) {

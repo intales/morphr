@@ -82,7 +82,7 @@ class FigmaTextRenderer {
       );
     }
 
-    return textWidget;
+    return SizedBox(width: node.absoluteBoundingBox!.width, child: textWidget);
   }
 
   TextStyle? _createTextStyle(figma.Text node) {

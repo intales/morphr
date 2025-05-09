@@ -77,9 +77,11 @@ class FigmaScaffoldComponent extends FigmaComponent {
       appBar: _buildAppBar(context),
       body:
           effectiveBodyNodeName != null
-              ? FigmaComponent.widget(
-                effectiveBodyNodeName,
-                transformers: bodyTransformers,
+              ? SizedBox.expand(
+                child: FigmaComponent.widget(
+                  effectiveBodyNodeName,
+                  transformers: bodyTransformers,
+                ),
               )
               : const SizedBox.shrink(),
       bottomNavigationBar: _buildBottomBar(context),
@@ -97,7 +99,9 @@ class FigmaScaffoldComponent extends FigmaComponent {
     final List<Widget> appBarChildren = [];
 
     if (figmaNode is figma.Frame && figmaNode.children != null) {
-      for (final childNode in figmaNode.children!) {
+      for (final childNode in figmaNode.children!.where(
+        (child) => child?.visible == true,
+      )) {
         if (childNode == null) continue;
 
         appBarChildren.add(
@@ -140,7 +144,9 @@ class FigmaScaffoldComponent extends FigmaComponent {
     final List<Widget> bottomBarChildren = [];
 
     if (figmaNode is figma.Frame && figmaNode.children != null) {
-      for (final childNode in figmaNode.children!) {
+      for (final childNode in figmaNode.children!.where(
+        (child) => child?.visible == true,
+      )) {
         if (childNode == null) continue;
 
         bottomBarChildren.add(
