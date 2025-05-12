@@ -3,6 +3,7 @@
 // in the LICENSE file.
 
 import 'dart:ui' as ui;
+import 'package:morphr/morphr_service.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:flutter/material.dart';
 import 'package:morphr/mixins/cacheable_mixin.dart';
@@ -36,6 +37,7 @@ class FigmaDecorationAdapter with CacheableMixin {
       borderRadius: getCached("_getBorderRadius", _getBorderRadius),
       boxShadow: getCached("_createBoxShadows", _createBoxShadows),
       shape: getCached("_shape", () => _shape),
+      image: getCached("_image", _getDecorationImage),
     );
   }
 
@@ -285,6 +287,80 @@ class FigmaDecorationAdapter with CacheableMixin {
       ((color.g ?? 0) * 255).round(),
       ((color.b ?? 0) * 255).round(),
       stroke.opacity ?? 1,
+    );
+  }
+
+  DecorationImage? _getDecorationImage() {
+    final fills = _getFills();
+    if (fills == null || fills.isEmpty) return null;
+
+    final imageFill =
+        fills
+            .where(
+              (fill) =>
+                  fill.type == figma.PaintType.image && fill.imageRef != null,
+            )
+            .firstOrNull;
+
+    if (imageFill == null || imageFill.imageRef == null) return null;
+
+    final imageProvider = MorphrService.instance.imageProvider!.getImageForRef(
+      imageFill.imageRef!,
+    );
+
+    BoxFit fit = BoxFit.cover;
+    if (imageFill.scaleMode != null) {
+      switch (imageFill.scaleMode) {
+        case figma.ScaleMode.fill:
+          fit = BoxFit.cover;
+          break;
+        case figma.ScaleMode.fit:
+          fit = BoxFit.contain;
+          break;
+        case figma.ScaleMode.tile:
+          fit = BoxFit.none;
+          break;
+        case figma.ScaleMode.stretch:
+          fit = BoxFit.fill;
+          break;
+        default:
+          fit = BoxFit.cover;
+      }
+    }
+
+    ImageRepeat repeat = ImageRepeat.noRepeat;
+    if (imageFill.scaleMode == figma.ScaleMode.tile) {
+      repeat = ImageRepeat.repeat;
+    }
+
+    // Handle image positioning and transformation
+    Alignment alignment = Alignment.center;
+    if (imageFill.imageTransform != null &&
+        imageFill.imageTransform!.isNotEmpty) {
+      try {
+        // Figma's imageTransform is a 6x1 matrix:
+        // [0][0] is scaleX
+        // [1][0] is shearY
+        // [2][0] is shearX
+        // [3][0] is scaleY
+        // [4][0] is translateX
+        // [5][0] is translateY
+        final translateX = imageFill.imageTransform![4][0].toDouble();
+        final translateY = imageFill.imageTransform![5][0].toDouble();
+
+        alignment = Alignment(translateX * 2 - 1, translateY * 2 - 1);
+      } catch (e) {
+        debugPrint('Error processing image transform: $e');
+      }
+    }
+
+    return DecorationImage(
+      image: imageProvider,
+      fit: fit,
+      repeat: repeat,
+      alignment: alignment,
+      scale: imageFill.scalingFactor?.toDouble() ?? 1.0,
+      opacity: imageFill.opacity ?? 1.0,
     );
   }
 

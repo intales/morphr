@@ -97,10 +97,10 @@ class FigmaTreeRenderer {
   /// Creates the base widget for a node without children.
   Widget _createBaseWidget(figma.Node node, BuildContext context) {
     try {
-      if (node is figma.Text) {
-        return _renderText(node);
-      } else if (node is figma.Vector) {
-        return _renderVector(node);
+      if (node.runtimeType is figma.Text) {
+        return _renderText(node as figma.Text);
+      } else if (node.runtimeType is figma.Vector) {
+        return _renderVector(node as figma.Vector);
       } else {
         // Frame, Rectangle, Group, Instance, etc. are treated as containers
         return _renderContainer(node);

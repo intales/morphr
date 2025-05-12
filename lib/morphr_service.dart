@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:morphr/images/morphr_image_provider.dart';
+import 'package:morphr/images/morphr_local_image_provider.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/cloud/morphr_cloud.dart';
 import 'package:morphr/cloud/morphr_cloud_options.dart';
@@ -20,9 +22,11 @@ class MorphrService {
   MorphrCloud? _cloud;
   MorphrFileStorage? _fileStorage;
   bool _isCloudEnabled = false;
+  MorphrImageProvider? imageProvider;
 
   Future<void> initialize({required final String documentPath}) async {
     _documentPath = documentPath;
+    imageProvider = const MorphrLocalImageProvider();
     await _loadDocument(_documentPath);
   }
 
