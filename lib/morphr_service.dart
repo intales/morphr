@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:morphr/archetypes/archetypes_registry.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
 import 'package:morphr/cloud/morphr_cloud.dart';
 import 'package:morphr/cloud/morphr_cloud_options.dart';
@@ -20,13 +21,20 @@ class MorphrService {
   MorphrCloud? _cloud;
   MorphrFileStorage? _fileStorage;
   bool _isCloudEnabled = false;
+  ArchetypesRegistry? archetypesRegistry;
+
+  void _initializeArchetypeRegistry() {
+    archetypesRegistry = ArchetypesRegistry.initialize();
+  }
 
   Future<void> initialize({required final String documentPath}) async {
+    _initializeArchetypeRegistry();
     _documentPath = documentPath;
     await _loadDocument(_documentPath);
   }
 
   Future<void> initializeCloud({required MorphrCloudOptions options}) async {
+    _initializeArchetypeRegistry();
     _fileStorage = MorphrFileStorage(fileName: 'design.json');
 
     _cloud = MorphrCloud(options: options, fileStorage: _fileStorage!);
