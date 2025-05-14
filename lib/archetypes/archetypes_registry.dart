@@ -1,10 +1,15 @@
 import 'package:flutter/widgets.dart';
+import 'package:morphr/archetypes/button_archetype.dart';
 import 'package:morphr/archetypes/container_archetype.dart';
+import 'package:morphr/archetypes/text_archetype.dart';
 import 'package:morphr/archetypes/widget_archetype.dart';
 
 class ArchetypesRegistry {
   static ArchetypesRegistry initialize() =>
-      ArchetypesRegistry()..register(ContainerArchetype());
+      ArchetypesRegistry()
+        ..register(ButtonArchetype())
+        ..register(ContainerArchetype())
+        ..register(TextArchetype());
 
   final List<WidgetArchetype> _archetypes = [];
 
