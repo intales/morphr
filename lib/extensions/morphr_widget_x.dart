@@ -26,7 +26,9 @@ extension MorphrWidgetX on Widget {
 
     try {
       return archetype.build(this, node);
-    } catch (_) {
+    } catch (e) {
+      print(e);
+
       return this;
     }
   }
