@@ -17,14 +17,14 @@ class FigmaTestApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.black,
-        body: Container(
-          key: MorphrKey("task_item"),
-          alignment: Alignment.center,
-          child: Text(
-            "Hello, World!",
-            key: MorphrKey("task_title"),
-          ).morph(),
-        ).morph(),
+        body: Center(
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: "Write something...",
+            ).morph("text_field"),
+            style: TextStyle().morph("text_field_text"),
+          ),
+        ),
       ),
     );
   }
