@@ -3,3 +3,8 @@ export 'morphr_box_decoration_x.dart';
 export 'morphr_button_style_x.dart';
 export 'morphr_input_decoration_x.dart';
 export 'morphr_card_style_x.dart';
+export 'morphr_app_bar_theme_x.dart';
+export 'morphr_bottom_bar_theme_x.dart';
+export 'morphr_edge_insets_x.dart';
+export 'morphr_list_tile_theme_x.dart';
+export 'morphr_floating_action_button_x.dart';
