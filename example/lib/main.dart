@@ -16,13 +16,13 @@ class FigmaTestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black,
         body: Center(
           child: TextField(
+            style: TextStyle().morph("task_title"),
             decoration: InputDecoration(
-              hintText: "Write something...",
-            ).morph("text_field"),
-            style: TextStyle().morph("text_field_text"),
+                    hintText: "Scrivi la tua password...",
+                    hintStyle: TextStyle().morph("task_title"))
+                .morph("text_field"),
           ),
         ),
       ),
