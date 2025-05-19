@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
+import 'package:path/path.dart';
 
 /// A class that adapts a Figma component node to a more usable format.
 class FigmaComponentAdapter {
@@ -365,5 +366,183 @@ class FigmaComponentAdapter {
     if (node is figma.Text) effects = (node as figma.Text).effects;
     if (node is figma.Instance) effects = (node as figma.Instance).effects;
     return effects ?? [];
+  }
+
+  /// Returns the component's [Gradient]s.
+  List<Gradient> get gradients {
+    final fills = _fills.where(
+      (fill) =>
+          fill.type == figma.PaintType.gradientLinear ||
+          fill.type == figma.PaintType.gradientRadial,
+    );
+    if (fills.isEmpty) return [];
+
+    final gradients = fills.map(_createGradient).nonNulls.toList();
+    if (gradients.isEmpty) return [];
+
+    return gradients;
+  }
+
+  /// Creates a [Gradient] from a paint fill.
+  Gradient? _createGradient(figma.Paint fill) {
+    if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
+
+    final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
+    final colors =
+        fill.gradientStops!
+            .map(
+              (stop) => Color.fromRGBO(
+                ((stop.color?.r ?? 0) * 255).round(),
+                ((stop.color?.g ?? 0) * 255).round(),
+                ((stop.color?.b ?? 0) * 255).round(),
+                fill.opacity ?? 1,
+              ),
+            )
+            .toList();
+
+    if (fill.type == figma.PaintType.gradientLinear) {
+      return _createLinearGradient(fill, colors, stops);
+    } else if (fill.type == figma.PaintType.gradientRadial) {
+      return _createRadialGradient(fill, colors, stops);
+    }
+
+    return null;
+  }
+
+  /// Converts a Figma [figma.Paint] to a Flutter [LinearGradient].
+  LinearGradient? _createLinearGradient(
+    figma.Paint fill,
+    List<Color> colors,
+    List<double> stops,
+  ) {
+    if (fill.gradientHandlePositions == null ||
+        fill.gradientHandlePositions!.length < 2) {
+      return null;
+    }
+
+    final handles = fill.gradientHandlePositions!;
+    final start = handles[0];
+    final end = handles[1];
+
+    return LinearGradient(
+      begin: Alignment(start.x * 2 - 1, start.y * 2 - 1),
+      end: Alignment(end.x * 2 - 1, end.y * 2 - 1),
+      colors: colors,
+      stops: stops,
+    );
+  }
+
+  /// Converts a Figma [figma.Paint] to a Flutter [RadialGradient].
+  RadialGradient? _createRadialGradient(
+    figma.Paint fill,
+    List<Color> colors,
+    List<double> stops,
+  ) {
+    final transforms = fill.imageTransform;
+    Alignment center = Alignment.center;
+    double radius = 0.75;
+
+    if (transforms != null && transforms.isNotEmpty) {
+      try {
+        final translateX = transforms[4][0].toDouble();
+        final translateY = transforms[5][0].toDouble();
+        final scaleX = transforms[0][0].toDouble();
+        final scaleY = transforms[3][0].toDouble();
+
+        center = Alignment((translateX * 2.0) - 1.0, (translateY * 2.0) - 1.0);
+        radius = (scaleX.abs() + scaleY.abs()) / 2 * 0.7;
+      } catch (e) {
+        debugPrint('Error processing gradient transform: $e');
+      }
+    }
+
+    return RadialGradient(
+      center: center,
+      radius: radius,
+      colors: colors,
+      stops: stops,
+      focal: center,
+      focalRadius: 0.0,
+    );
+  }
+
+  /// Returns the component's font size.
+  double? get fontSize {
+    if (node is figma.Text) {
+      return (node as figma.Text).style?.fontSize?.toDouble();
+    }
+
+    return null;
+  }
+
+  /// Returns the component's font family.
+  String? get fontFamily {
+    if (node is figma.Text) {
+      return (node as figma.Text).style?.fontFamily;
+    }
+
+    return null;
+  }
+
+  /// Returns the component's [FontWeight].
+  FontWeight? get fontWeight {
+    if (this.node is! figma.Text) {
+      return null;
+    }
+
+    final node = this.node as figma.Text;
+    final weight = node.style?.fontWeight?.toInt();
+    if (weight == null) return FontWeight.normal;
+
+    return switch (weight) {
+      100 => FontWeight.w100,
+      200 => FontWeight.w200,
+      300 => FontWeight.w300,
+      400 => FontWeight.w400,
+      500 => FontWeight.w500,
+      600 => FontWeight.w600,
+      700 => FontWeight.w700,
+      800 => FontWeight.w800,
+      900 => FontWeight.w900,
+      _ => FontWeight.normal,
+    };
+  }
+
+  /// Returns the component's text [FontStyle].
+  FontStyle? get fontStyle {
+    if (this.node is! figma.Text) {
+      return null;
+    }
+
+    final node = this.node as figma.Text;
+    return switch (node.style?.italic) {
+      true => FontStyle.italic,
+      _ => FontStyle.normal,
+    };
+  }
+
+  /// Returns the component's letter spacing.
+  double? get letterSpacing {
+    if (this.node is! figma.Text) {
+      return null;
+    }
+
+    final node = this.node as figma.Text;
+    return node.style?.letterSpacing?.toDouble();
+  }
+
+  /// Returns the component's line height.
+  double? get lineHeight {
+    if (this.node is! figma.Text) {
+      return null;
+    }
+
+    final node = this.node as figma.Text;
+
+    final heightPx = node.style?.lineHeightPx;
+    final size = node.style?.fontSize;
+
+    if (heightPx == null || size == null || size == 0) return null;
+    return heightPx / size;
   }
 }
