@@ -221,23 +221,56 @@ class FigmaComponentAdapter {
     return strokeAlign;
   }
 
-  /// Returns the [Border] of the component.
-  Border? get border {
+  /// Returns the component's left border width.
+  double get leftBorderWidth {
     final strokeWeights = _strokeWeights;
-    if (strokeWeights == null) {
-      final strokeWeight = _strokeWeight;
-      if (strokeWeight == null) return null;
-
-      return Border.all(width: strokeWeight, color: strokes.first);
+    if (strokeWeights != null) {
+      return strokeWeights.left;
     }
+    final strokeWeight = _strokeWeight;
+    if (strokeWeight != null) {
+      return strokeWeight;
+    }
+    return 0;
+  }
 
-    final color = strokes.first;
-    return Border(
-      top: BorderSide(width: strokeWeights.top, color: color),
-      right: BorderSide(width: strokeWeights.right, color: color),
-      bottom: BorderSide(width: strokeWeights.bottom, color: color),
-      left: BorderSide(width: strokeWeights.left, color: color),
-    );
+  /// Returns the component's right border width.
+  double get rightBorderWidth {
+    final strokeWeights = _strokeWeights;
+    if (strokeWeights != null) {
+      return strokeWeights.right;
+    }
+    final strokeWeight = _strokeWeight;
+    if (strokeWeight != null) {
+      return strokeWeight;
+    }
+    return 0;
+  }
+
+  /// Returns the component's top border width.
+  double get topBorderWidth {
+    final strokeWeights = _strokeWeights;
+    if (strokeWeights != null) {
+      return strokeWeights.top;
+    }
+    final strokeWeight = _strokeWeight;
+    if (strokeWeight != null) {
+      return strokeWeight;
+    }
+    return 0;
+  }
+
+  /// Returns the component's bottom border width.
+  double get bottomBorderWidth {
+    final strokeWeights = _strokeWeights;
+    if (strokeWeights != null) {
+      return strokeWeights.bottom;
+    }
+    final strokeWeight = _strokeWeight;
+    if (strokeWeight != null) {
+      return strokeWeight;
+    }
+    return 0;
   }
 
   /// Returns the component's stroke weight.
