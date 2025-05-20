@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrBorderRadiusX on BorderRadius {
@@ -11,27 +11,10 @@ extension MorphrBorderRadiusX on BorderRadius {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) {
-      return this;
-    }
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
-
-      final BorderRadius? borderRadius =
-          decoration.borderRadius as BorderRadius?;
-      if (borderRadius == null) return this;
-
-      return BorderRadius.only(
-        topLeft: topLeft != Radius.zero ? topLeft : borderRadius.topLeft,
-        topRight: topRight != Radius.zero ? topRight : borderRadius.topRight,
-        bottomLeft:
-            bottomLeft != Radius.zero ? bottomLeft : borderRadius.bottomLeft,
-        bottomRight:
-            bottomRight != Radius.zero ? bottomRight : borderRadius.bottomRight,
-      );
+      return component.borderRadius;
     } catch (_) {
       return this;
     }

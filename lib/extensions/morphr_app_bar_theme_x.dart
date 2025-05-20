@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrAppBarThemeX on AppBarTheme {
@@ -11,48 +11,30 @@ extension MorphrAppBarThemeX on AppBarTheme {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) {
-      return this;
-    }
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
+      final backgroundColor = component.colors.first;
 
-      final Color? backgroundColor = decoration.color;
-
-      final List<BoxShadow>? shadows = decoration.boxShadow;
+      final shadows = component.shadows;
       double? elevation;
-      if (shadows != null && shadows.isNotEmpty) {
+      if (shadows.isNotEmpty) {
         elevation = shadows.first.blurRadius / 2;
       }
 
-      final BorderRadius? borderRadius =
-          decoration.borderRadius as BorderRadius?;
-      ShapeBorder? shape;
-      if (borderRadius != null) {
-        shape = RoundedRectangleBorder(borderRadius: borderRadius);
-      }
+      final borderRadius = component.borderRadius;
+      final shape = RoundedRectangleBorder(borderRadius: borderRadius);
 
-      Color? foregroundColor;
-      if (backgroundColor != null) {
-        final brightness = ThemeData.estimateBrightnessForColor(
-          backgroundColor,
-        );
-        foregroundColor =
-            brightness == Brightness.dark ? Colors.white : Colors.black;
-      }
+      final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
+      final foregroundColor =
+          brightness == Brightness.dark ? Colors.white : Colors.black;
 
       return copyWith(
         backgroundColor: this.backgroundColor ?? backgroundColor,
         foregroundColor: this.foregroundColor ?? foregroundColor,
         elevation: this.elevation ?? elevation,
         shadowColor:
-            shadowColor ??
-            (shadows != null && shadows.isNotEmpty
-                ? shadows.first.color
-                : null),
+            shadowColor ?? (shadows.isNotEmpty ? shadows.first.color : null),
         shape: this.shape ?? shape,
       );
     } catch (_) {

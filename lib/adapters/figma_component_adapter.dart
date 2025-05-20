@@ -6,7 +6,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:morphr_figma/morphr_figma.dart' as figma;
-import 'package:path/path.dart';
 
 /// A class that adapts a Figma component node to a more usable format.
 class FigmaComponentAdapter {

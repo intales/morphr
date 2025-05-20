@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrBorderX on Border {
@@ -11,23 +11,40 @@ extension MorphrBorderX on Border {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) {
-      return this;
-    }
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
-
-      final Border? border = decoration.border as Border?;
-      if (border == null) return this;
+      final borderColor = component.strokes.first;
 
       return Border(
-        top: top.width > 0 ? top : border.top,
-        right: right.width > 0 ? right : border.right,
-        bottom: bottom.width > 0 ? bottom : border.bottom,
-        left: left.width > 0 ? left : border.left,
+        top:
+            top.width > 0
+                ? top
+                : BorderSide(
+                  width: component.topBorderWidth,
+                  color: borderColor,
+                ),
+        right:
+            right.width > 0
+                ? right
+                : BorderSide(
+                  width: component.rightBorderWidth,
+                  color: borderColor,
+                ),
+        bottom:
+            bottom.width > 0
+                ? bottom
+                : BorderSide(
+                  width: component.bottomBorderWidth,
+                  color: borderColor,
+                ),
+        left:
+            left.width > 0
+                ? left
+                : BorderSide(
+                  width: component.leftBorderWidth,
+                  color: borderColor,
+                ),
       );
     } catch (_) {
       return this;
