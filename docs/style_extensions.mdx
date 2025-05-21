@@ -1,0 +1,169 @@
+# Morphr Style Extensions
+
+Morphr provides a powerful yet non-invasive way to apply your Figma designs to Flutter widgets through **Style Extensions**. This approach allows you to maintain your existing Flutter code structure while ensuring visual consistency with your Figma designs.
+
+## Overview
+
+Style Extensions add a `.morph()` method to standard Flutter styling classes, allowing you to apply Figma component styles to your widgets without replacing them.
+
+```dart
+// Before: Standard Flutter styling
+final buttonStyle = ElevatedButton.styleFrom(
+  backgroundColor: Colors.blue,
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+);
+
+// After: Figma-driven styling with Morphr
+final buttonStyle = ElevatedButton.styleFrom().morph('primary_button');
+```
+
+## Key Benefits
+
+- **Non-invasive integration**: Apply Figma styles to existing Flutter widgets without replacing them
+- **Incremental adoption**: Gradually enhance your app with Figma styles, one component at a time
+- **Flexible customization**: Override specific properties while keeping others from Figma
+- **Native widget behavior**: Maintain all the built-in functionality of Flutter widgets
+- **Type safety**: Enjoy full type safety and IDE auto-completion
+- **Over-the-air updates**: Style changes in Figma automatically sync to your app
+
+## Usage
+
+Morphr style extensions follow a consistent pattern:
+
+```dart
+// Basic usage
+SomeFlutterStyleClass().morph('figma_component_name');
+
+// Combine with custom properties (custom properties take precedence)
+SomeFlutterStyleClass(
+  customProperty: customValue,
+).morph('figma_component_name');
+
+// Chain extensions for more complex scenarios
+SomeFlutterStyleClass()
+  .morph('figma_component_name')
+  .copyWith(additionalProperty: value);
+```
+
+## Practical Examples
+
+### Styling a Button
+
+```dart
+ElevatedButton(
+  style: ElevatedButton.styleFrom().morph('primary_button'),
+  onPressed: () {},
+  child: Text('Submit'),
+)
+```
+
+### Styling Text
+
+```dart
+Text(
+  'Heading',
+  style: TextStyle().morph('heading_1'),
+)
+```
+
+### Styling Form Fields
+
+```dart
+TextField(
+  decoration: InputDecoration().morph('search_field'),
+)
+```
+
+### Styling Cards
+
+```dart
+Card(
+  elevation: 2.0,
+  shape: RoundedRectangleBorder().morph('product_card'),
+  child: /* ... */,
+)
+```
+
+### Combining with Custom Properties
+
+```dart
+// The custom foregroundColor overrides the one from Figma
+ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    foregroundColor: isSelected ? Colors.white : Colors.grey,
+  ).morph('primary_button'),
+  onPressed: () {},
+  child: Text('Submit'),
+)
+```
+
+### Fallback Values
+
+```dart
+Text(
+  'Heading',
+  style: TextStyle(
+    fontSize: 24, // Will be used if the Figma component doesn't exist
+  ).morph('heading_1'),
+)
+```
+
+## Supported Style Extensions
+
+| Flutter Style Class | Morphr Extension | Description |
+|---------------------|------------------|-------------|
+| `TextStyle` | `TextStyle().morph()` | Typography styles (font, size, weight, etc.) |
+| `ButtonStyle` | `ButtonStyle().morph()` | Complete button styling |
+| `InputDecoration` | `InputDecoration().morph()` | Form field styling |
+| `BoxDecoration` | `BoxDecoration().morph()` | Container styling (color, border, shadow) |
+| `EdgeInsets` | `EdgeInsets.morph()` | Padding and spacing |
+| `BorderRadius` | `BorderRadius.morph()` | Corner styling |
+| `Border` | `Border().morph()` | Border styling |
+| `AppBarTheme` | `AppBarTheme().morph()` | App bar styling |
+| `BottomNavigationBarThemeData` | `BottomNavigationBarThemeData().morph()` | Bottom navigation bar styling |
+| `CardTheme` | `CardTheme().morph()` | Card styling |
+| `ListTileThemeData` | `ListTileThemeData().morph()` | List tile styling |
+| `TabBarTheme` | `TabBarTheme().morph()` | Tab bar styling |
+| `FloatingActionButtonThemeData` | `FloatingActionButtonThemeData().morph()` | FAB styling |
+| `ChipThemeData` | `ChipThemeData().morph()` | Chip styling |
+| `DrawerThemeData` | `DrawerThemeData().morph()` | Drawer styling |
+| `BottomSheetThemeData` | `BottomSheetThemeData().morph()` | Bottom sheet styling |
+| `DialogTheme` | `DialogTheme().morph()` | Dialog styling |
+| `TooltipThemeData` | `TooltipThemeData().morph()` | Tooltip styling |
+| `CheckboxThemeData` | `CheckboxThemeData().morph()` | Checkbox styling |
+| `SwitchThemeData` | `SwitchThemeData().morph()` | Switch styling |
+| `RadioThemeData` | `RadioThemeData().morph()` | Radio button styling |
+| `DividerThemeData` | `DividerThemeData().morph()` | Divider styling |
+| `SliderThemeData` | `SliderThemeData().morph()` | Slider styling |
+| `PopupMenuThemeData` | `PopupMenuThemeData().morph()` | Popup menu styling |
+| `NavigationRailThemeData` | `NavigationRailThemeData().morph()` | Navigation rail styling |
+| `ProgressIndicatorThemeData` | `ProgressIndicatorThemeData().morph()` | Progress indicator styling |
+| `TextSelectionThemeData` | `TextSelectionThemeData().morph()` | Text selection styling |
+
+## Advanced Usage: Theme Integration
+
+Morphr style extensions can be easily integrated into your app's theme:
+
+```dart
+ThemeData buildThemeFromFigma() {
+  return ThemeData(
+    // Apply Figma styles to the theme components
+    textTheme: TextTheme(
+      headline1: TextStyle().morph('heading_1'),
+      headline2: TextStyle().morph('heading_2'),
+      bodyText1: TextStyle().morph('body_text'),
+    ),
+    buttonTheme: ButtonThemeData().morph('button_theme'),
+    appBarTheme: AppBarTheme().morph('app_bar'),
+    cardTheme: CardTheme().morph('card'),
+    // ... other theme components
+  );
+}
+```
+
+## Best Practices
+
+1. **Component naming convention**: Establish a consistent naming convention between Figma and your code
+2. **Fallback values**: Always provide sensible defaults for critical styles in case the Figma component is missing
+3. **Theme integration**: Apply Morphr styles at the theme level for global consistency
+4. **Selective application**: You don't need to use Morphr for every widget - apply it where design consistency is most important

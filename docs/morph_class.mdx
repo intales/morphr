@@ -1,0 +1,251 @@
+# Direct Figma Property Access with Morph
+
+While Morphr style extensions provide a convenient way to apply Figma styles to Flutter widgets, sometimes you need more granular access to specific design properties. The `Morph` class and the top-level `morph()` function give you direct access to all properties of your Figma components.
+
+## Overview
+
+The `morph()` function provides a bridge between your Figma components and Flutter code, exposing all visual properties as Flutter-native values:
+
+```dart
+// Get a reference to a Figma component
+final buttonComponent = morph('primary_button');
+
+// Access specific properties
+final buttonColor = buttonComponent?.colors.first;
+final buttonRadius = buttonComponent?.borderRadius;
+final buttonShadows = buttonComponent?.shadows;
+```
+
+## Key Benefits
+
+- **Maximum flexibility**: Access individual properties rather than applying entire styles
+- **Custom theming**: Extract specific values from Figma to build custom themes
+- **Advanced customization**: Combine properties in ways not possible with style extensions
+- **Conditional styling**: Apply properties based on app state or user preferences
+- **Animation**: Animate between Figma-defined values
+- **Design system foundation**: Use Figma properties as the source of truth for your Flutter design system
+
+## Usage
+
+The `morph()` function returns a nullable `Morph` instance that wraps a Figma component:
+
+```dart
+// Basic usage
+final component = morph('component_name');
+
+// Check if component exists
+if (component != null) {
+  // Access properties
+}
+
+// Null-safe property access with fallback
+final primaryColor = morph('primary')?.colors.first ?? Colors.blue;
+```
+
+## Available Properties
+
+The `Morph` class exposes the following properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `String` | Component ID |
+| `name` | `String` | Component name |
+| `type` | `String` | Component type |
+| `isVisible` | `bool` | Component visibility |
+| `size` | `Size` | Component dimensions |
+| `shape` | `BoxShape` | Component shape (rectangle or circle) |
+| `colors` | `List<Color>` | Fill colors of the component |
+| `borderRadius` | `BorderRadius` | Corner radius of the component |
+| `opacity` | `double` | Opacity value (0.0 - 1.0) |
+| `padding` | `EdgeInsets` | Inner padding values |
+| `strokes` | `List<Color>` | Border/stroke colors |
+| `strokeAlignment` | `double` | Border alignment (-1 inside, 0 center, 1 outside) |
+| `leftBorderWidth` | `double` | Left border width |
+| `rightBorderWidth` | `double` | Right border width |
+| `topBorderWidth` | `double` | Top border width |
+| `bottomBorderWidth` | `double` | Bottom border width |
+| `shadows` | `List<BoxShadow>` | Shadow effects |
+| `imageFilters` | `List<ImageFilter>` | Blur effects |
+| `gradients` | `List<Gradient>` | Fill gradients |
+| `fontSize` | `double?` | Text font size (text components only) |
+| `fontFamily` | `String?` | Text font family (text components only) |
+| `fontWeight` | `FontWeight?` | Text font weight (text components only) |
+| `fontStyle` | `FontStyle?` | Text style (normal or italic, text components only) |
+| `letterSpacing` | `double?` | Text letter spacing (text components only) |
+| `lineHeight` | `double?` | Text line height (text components only) |
+
+## Practical Examples
+
+### Theme Creation from Figma Components
+
+```dart
+ThemeData createThemeFromFigma() {
+  return ThemeData(
+    // Primary and accent colors from Figma
+    primaryColor: morph('primary')?.colors.first ?? Colors.blue,
+    colorScheme: ColorScheme.light(
+      primary: morph('primary')?.colors.first ?? Colors.blue,
+      secondary: morph('accent')?.colors.first ?? Colors.orange,
+      background: morph('background')?.colors.first ?? Colors.white,
+    ),
+    
+    // Typography from Figma
+    textTheme: TextTheme(
+      headline1: TextStyle(
+        fontSize: morph('heading_1')?.fontSize ?? 24,
+        fontWeight: morph('heading_1')?.fontWeight ?? FontWeight.bold,
+        color: morph('text_primary')?.colors.first ?? Colors.black,
+      ),
+      bodyText1: TextStyle(
+        fontSize: morph('body')?.fontSize ?? 16,
+        fontWeight: morph('body')?.fontWeight ?? FontWeight.normal,
+        color: morph('text_primary')?.colors.first ?? Colors.black87,
+      ),
+    ),
+    
+    // Other theme elements
+    shadowColor: morph('shadow')?.shadows.first.color ?? Colors.black26,
+    cardTheme: CardTheme(
+      elevation: morph('card')?.shadows.first.blurRadius ?? 4.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: morph('card')?.borderRadius ?? BorderRadius.circular(8),
+      ),
+    ),
+  );
+}
+```
+
+### Custom Widget with Figma Properties
+
+```dart
+class FigmaStyledContainer extends StatelessWidget {
+  final Widget child;
+  final String figmaComponent;
+  
+  const FigmaStyledContainer({
+    Key? key, 
+    required this.child,
+    required this.figmaComponent,
+  }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    final component = morph(figmaComponent);
+    
+    return Container(
+      width: component?.size.width,
+      height: component?.size.height,
+      padding: component?.padding ?? EdgeInsets.zero,
+      decoration: BoxDecoration(
+        color: component?.colors.isNotEmpty == true 
+            ? component!.colors.first 
+            : Colors.white,
+        borderRadius: component?.borderRadius ?? BorderRadius.zero,
+        boxShadow: component?.shadows ?? [],
+        border: component?.strokes.isNotEmpty == true
+            ? Border.all(
+                color: component!.strokes.first,
+                width: component.leftBorderWidth,
+              )
+            : null,
+      ),
+      child: child,
+    );
+  }
+}
+```
+
+### Conditional Styling
+
+```dart
+ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: isSelected
+        ? morph('button_selected')?.colors.first
+        : morph('button_normal')?.colors.first,
+    shape: RoundedRectangleBorder(
+      borderRadius: morph('button_normal')?.borderRadius ?? BorderRadius.zero,
+    ),
+    elevation: isPressed
+        ? (morph('button_pressed')?.shadows.first.blurRadius ?? 1.0) / 2
+        : (morph('button_normal')?.shadows.first.blurRadius ?? 4.0) / 2,
+  ),
+  onPressed: () => {},
+  child: Text('Button'),
+)
+```
+
+### Animation Between Figma Values
+
+```dart
+AnimatedContainer(
+  duration: const Duration(milliseconds: 300),
+  curve: Curves.easeInOut,
+  width: isExpanded
+      ? morph('card_expanded')?.size.width ?? 300
+      : morph('card_collapsed')?.size.width ?? 150,
+  height: isExpanded 
+      ? morph('card_expanded')?.size.height ?? 200
+      : morph('card_collapsed')?.size.height ?? 100,
+  decoration: BoxDecoration(
+    color: isActive
+        ? morph('card_active')?.colors.first ?? Colors.blue[100]
+        : morph('card_inactive')?.colors.first ?? Colors.grey[100],
+    borderRadius: isExpanded
+        ? morph('card_expanded')?.borderRadius ?? BorderRadius.circular(16)
+        : morph('card_collapsed')?.borderRadius ?? BorderRadius.circular(8),
+    boxShadow: isExpanded
+        ? morph('card_expanded')?.shadows ?? []
+        : morph('card_collapsed')?.shadows ?? [],
+  ),
+  child: child,
+)
+```
+
+## Design System Integration
+
+The `morph()` function is particularly powerful when building a design system:
+
+```dart
+/// Design system color palette based on Figma
+class AppColors {
+  static final primary = morph('primary')?.colors.first ?? Colors.blue;
+  static final secondary = morph('secondary')?.colors.first ?? Colors.orange;
+  static final background = morph('background')?.colors.first ?? Colors.white;
+  static final error = morph('error')?.colors.first ?? Colors.red;
+  static final success = morph('success')?.colors.first ?? Colors.green;
+  
+  // Text colors
+  static final textPrimary = morph('text_primary')?.colors.first ?? Colors.black87;
+  static final textSecondary = morph('text_secondary')?.colors.first ?? Colors.black54;
+  static final textDisabled = morph('text_disabled')?.colors.first ?? Colors.black38;
+}
+
+/// Design system spacing based on Figma
+class AppSpacing {
+  static final xs = morph('spacing_xs')?.padding.left ?? 4.0;
+  static final sm = morph('spacing_sm')?.padding.left ?? 8.0;
+  static final md = morph('spacing_md')?.padding.left ?? 16.0;
+  static final lg = morph('spacing_lg')?.padding.left ?? 24.0;
+  static final xl = morph('spacing_xl')?.padding.left ?? 32.0;
+}
+```
+
+## Best Practices
+
+1. **Provide fallbacks**: Always include a fallback value when accessing Figma properties
+2. **Cache values**: Cache Figma property values when appropriate to avoid repeated lookups
+3. **Component naming**: Use a consistent naming convention between Figma and your code
+4. **Layer of abstraction**: Consider creating a design system layer that encapsulates Figma lookups
+5. **Feature detection**: Check for the presence of expected properties before using them
+
+## When to Use `morph()` vs Style Extensions
+
+| Use `morph()` when... | Use style extensions when... |
+|----------------------|----------------------------|
+| You need access to specific properties | You want to apply complete styles |
+| Building custom widgets with Figma properties | Working with standard Flutter widgets |
+| Creating animations between Figma states | Applying static styles |
+| Building a custom design system | Quick implementation is a priority |
+| Advanced theming requirements | Basic theming is sufficient |
+| Component properties will be combined in complex ways | One-to-one mapping between Figma and Flutter works well |
