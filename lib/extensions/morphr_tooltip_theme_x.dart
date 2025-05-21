@@ -59,8 +59,7 @@ extension MorphrTooltipThemeDataX on TooltipThemeData {
       }
 
       return copyWith(
-        height: this.height ?? height,
-        padding: this.padding ?? padding,
+        constraints: BoxConstraints(minHeight: constraints?.minHeight ?? height), padding: this.padding ?? padding,
         verticalOffset: this.verticalOffset ?? verticalOffset,
         decoration: this.decoration ?? tooltipDecoration,
       );

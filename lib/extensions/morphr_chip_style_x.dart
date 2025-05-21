@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:morphr/adapters/figma_component_adapter.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
 import 'package:morphr/extensions/morphr_border_x.dart';
 import 'package:morphr/morphr_service.dart';
-import 'package:morphr_figma/morphr_figma.dart' as figma;
 
 extension MorphrChipThemeDataX on ChipThemeData {
   ChipThemeData morph(String componentName) {
