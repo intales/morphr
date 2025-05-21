@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrBottomSheetThemeDataX on BottomSheetThemeData {
@@ -11,44 +11,33 @@ extension MorphrBottomSheetThemeDataX on BottomSheetThemeData {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) {
-      return this;
-    }
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
+      final backgroundColor = component.colors.first;
 
-      final Color? backgroundColor = decoration.color;
-
-      final List<BoxShadow>? shadows = decoration.boxShadow;
+      final shadows = component.shadows;
       double? elevation;
       Color? shadowColor;
-      if (shadows != null && shadows.isNotEmpty) {
+      if (shadows.isNotEmpty) {
         elevation = shadows.first.blurRadius;
         shadowColor = shadows.first.color;
       }
 
-      final BorderRadius? borderRadius =
-          decoration.borderRadius as BorderRadius?;
+      final borderRadius = component.borderRadius;
       ShapeBorder? shape;
-      if (borderRadius != null) {
-        shape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: borderRadius.topLeft,
-            topRight: borderRadius.topRight,
-          ),
-        );
-      }
+      shape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: borderRadius.topLeft,
+          topRight: borderRadius.topRight,
+        ),
+      );
 
       double? modalBackdropOpacity;
-      if (backgroundColor != null) {
-        final isDark =
-            ThemeData.estimateBrightnessForColor(backgroundColor) ==
-            Brightness.dark;
-        modalBackdropOpacity = isDark ? 0.5 : 0.3;
-      }
+      final isDark =
+          ThemeData.estimateBrightnessForColor(backgroundColor) ==
+          Brightness.dark;
+      modalBackdropOpacity = isDark ? 0.5 : 0.3;
 
       return copyWith(
         backgroundColor: this.backgroundColor ?? backgroundColor,
@@ -58,9 +47,7 @@ extension MorphrBottomSheetThemeDataX on BottomSheetThemeData {
         modalElevation: modalElevation ?? elevation,
         modalBarrierColor:
             modalBarrierColor ??
-            (modalBackdropOpacity != null
-                ? Colors.black.withValues(alpha: modalBackdropOpacity)
-                : null),
+            Colors.black.withValues(alpha: modalBackdropOpacity),
       );
     } catch (_) {
       return this;

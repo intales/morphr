@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrDialogThemeX on DialogTheme {
@@ -11,38 +11,25 @@ extension MorphrDialogThemeX on DialogTheme {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) {
-      return this;
-    }
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
+      final backgroundColor = component.colors.first;
 
-      final Color? backgroundColor = decoration.color;
-
-      final List<BoxShadow>? shadows = decoration.boxShadow;
+      final shadows = component.shadows;
       double? elevation;
-      if (shadows != null && shadows.isNotEmpty) {
+      if (shadows.isNotEmpty) {
         elevation = shadows.first.blurRadius;
       }
 
-      final BorderRadius? borderRadius =
-          decoration.borderRadius as BorderRadius?;
-      ShapeBorder? shape;
-      if (borderRadius != null) {
-        shape = RoundedRectangleBorder(borderRadius: borderRadius);
-      }
+      final borderRadius = component.borderRadius;
+      final shape = RoundedRectangleBorder(borderRadius: borderRadius);
 
       return copyWith(
         backgroundColor: this.backgroundColor ?? backgroundColor,
         elevation: this.elevation ?? elevation,
         shadowColor:
-            shadowColor ??
-            (shadows != null && shadows.isNotEmpty
-                ? shadows.first.color
-                : null),
+            shadowColor ?? (shadows.isNotEmpty ? shadows.first.color : null),
         shape: this.shape ?? shape,
       );
     } catch (_) {

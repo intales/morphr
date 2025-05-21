@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
+import 'package:morphr/extensions/morphr_border_x.dart';
 import 'package:morphr/morphr_service.dart';
-import 'package:morphr_figma/morphr_figma.dart' as figma;
 
 extension MorphrButtonStyleX on ButtonStyle {
   ButtonStyle morph(String componentName) {
@@ -12,72 +12,41 @@ extension MorphrButtonStyleX on ButtonStyle {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) return this;
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
-
-      final Color? backgroundColor = decoration.color;
-      final BorderRadius? borderRadius =
-          decoration.borderRadius as BorderRadius?;
-      final BorderSide? borderSide = decoration.border?.top;
-      final List<BoxShadow>? shadows = decoration.boxShadow;
+      final backgroundColor = component.colors.first;
+      final borderRadius = component.borderRadius;
+      final border = Border().morph(componentName);
+      final shadows = component.shadows;
 
       OutlinedBorder? shape;
-      if (decoration.shape == BoxShape.circle) {
+      if (component.shape == BoxShape.circle) {
         shape = const CircleBorder();
-      } else if (borderRadius != null) {
+      } else if (borderRadius != BorderRadius.zero) {
         shape = RoundedRectangleBorder(
           borderRadius: borderRadius,
-          side: borderSide ?? BorderSide.none,
+          side: border.top,
         );
-      } else if (borderSide != null) {
-        shape = RoundedRectangleBorder(side: borderSide);
       }
 
       double? elevation;
-      if (shadows != null && shadows.isNotEmpty) {
+      if (shadows.isNotEmpty) {
         elevation = shadows.first.blurRadius;
       }
 
-      EdgeInsetsGeometry? padding;
-      if (node is figma.Frame) {
-        padding = EdgeInsets.fromLTRB(
-          node.paddingLeft.toDouble(),
-          node.paddingTop.toDouble(),
-          node.paddingRight.toDouble(),
-          node.paddingBottom.toDouble(),
-        );
-      } else if (node is figma.Instance) {
-        padding = EdgeInsets.fromLTRB(
-          node.paddingLeft.toDouble(),
-          node.paddingTop.toDouble(),
-          node.paddingRight.toDouble(),
-          node.paddingBottom.toDouble(),
-        );
-      }
-
-      Color? overlayColor;
-      if (backgroundColor != null) {
-        overlayColor = backgroundColor.withValues(alpha: 0.1);
-      }
+      final padding = component.padding;
+      final overlayColor = backgroundColor.withValues(alpha: 0.1);
 
       return copyWith(
         backgroundColor:
             this.backgroundColor ??
-            (backgroundColor != null
-                ? WidgetStatePropertyAll<Color>(backgroundColor)
-                : this.backgroundColor),
+            WidgetStatePropertyAll<Color>(backgroundColor),
         overlayColor:
-            this.overlayColor ??
-            (overlayColor != null
-                ? WidgetStatePropertyAll<Color>(overlayColor)
-                : this.overlayColor),
+            this.overlayColor ?? WidgetStatePropertyAll<Color>(overlayColor),
         shadowColor:
             shadowColor ??
-            (shadows != null && shadows.isNotEmpty
+            (shadows.isNotEmpty
                 ? WidgetStatePropertyAll<Color>(shadows.first.color)
                 : shadowColor),
         elevation:
@@ -86,10 +55,7 @@ extension MorphrButtonStyleX on ButtonStyle {
                 ? WidgetStatePropertyAll<double>(elevation)
                 : this.elevation),
         padding:
-            this.padding ??
-            (padding != null
-                ? WidgetStatePropertyAll<EdgeInsetsGeometry>(padding)
-                : this.padding),
+            this.padding ?? WidgetStatePropertyAll<EdgeInsetsGeometry>(padding),
         shape:
             this.shape ??
             (shape != null

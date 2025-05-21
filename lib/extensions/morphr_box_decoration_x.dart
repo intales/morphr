@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
+import 'package:morphr/extensions/morphr_border_x.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrBoxDecorationX on BoxDecoration {
@@ -11,21 +12,18 @@ extension MorphrBoxDecorationX on BoxDecoration {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final adapter = FigmaDecorationAdapter(node);
-    if (!adapter.supportsDecoration) return this;
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = adapter.createBoxDecoration();
       return copyWith(
-        color: decoration.color ?? color,
-        gradient: decoration.gradient ?? gradient,
-        border: decoration.border ?? border,
-        boxShadow: decoration.boxShadow ?? boxShadow,
-        image: decoration.image ?? image,
-        borderRadius: decoration.borderRadius ?? borderRadius,
-        shape: decoration.shape,
-        backgroundBlendMode:
-            decoration.backgroundBlendMode ?? backgroundBlendMode,
+        color: color ?? component.colors.first,
+        gradient: gradient ?? component.gradients.first,
+        border: border ?? Border().morph(componentName),
+        boxShadow: boxShadow ?? component.shadows,
+        image: image,
+        borderRadius: borderRadius ?? component.borderRadius,
+        shape: component.shape,
+        backgroundBlendMode: backgroundBlendMode,
       );
     } catch (_) {
       return this;

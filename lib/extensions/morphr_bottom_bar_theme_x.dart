@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morphr/adapters/figma_decoration_adapter.dart';
+import 'package:morphr/adapters/figma_component_adapter.dart';
 import 'package:morphr/morphr_service.dart';
 
 extension MorphrBottomNavigationBarThemeX on BottomNavigationBarThemeData {
@@ -11,38 +11,28 @@ extension MorphrBottomNavigationBarThemeX on BottomNavigationBarThemeData {
     final node = MorphrService.instance.getComponent(componentName);
     if (node == null) return this;
 
-    final decorationAdapter = FigmaDecorationAdapter(node);
-
-    if (!decorationAdapter.supportsDecoration) {
-      return this;
-    }
+    final component = FigmaComponentAdapter(node);
 
     try {
-      final decoration = decorationAdapter.createBoxDecoration();
+      final backgroundColor = component.colors.first;
 
-      final Color? backgroundColor = decoration.color;
-
-      final List<BoxShadow>? shadows = decoration.boxShadow;
+      final shadows = component.shadows;
       double? elevation;
-      if (shadows != null && shadows.isNotEmpty) {
+      if (shadows.isNotEmpty) {
         elevation = shadows.first.blurRadius / 2;
       }
 
       Color? selectedItemColor;
       Color? unselectedItemColor;
-      if (backgroundColor != null) {
-        final brightness = ThemeData.estimateBrightnessForColor(
-          backgroundColor,
-        );
+      final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
 
-        selectedItemColor =
-            brightness == Brightness.dark ? Colors.white : Colors.black;
+      selectedItemColor =
+          brightness == Brightness.dark ? Colors.white : Colors.black;
 
-        unselectedItemColor =
-            brightness == Brightness.dark
-                ? Colors.white.withValues(alpha: 0.6)
-                : Colors.black.withValues(alpha: 0.6);
-      }
+      unselectedItemColor =
+          brightness == Brightness.dark
+              ? Colors.white.withValues(alpha: 0.6)
+              : Colors.black.withValues(alpha: 0.6);
 
       return copyWith(
         backgroundColor: this.backgroundColor ?? backgroundColor,

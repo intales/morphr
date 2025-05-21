@@ -36,6 +36,14 @@ class FigmaComponentAdapter {
     return Size.zero;
   }
 
+  /// The shape type of the node
+  BoxShape get shape {
+    if (node is figma.Ellipse) {
+      return BoxShape.circle;
+    }
+    return BoxShape.rectangle;
+  }
+
   /// Returns the component's bounding box.
   figma.SizeRectangle? get _boundingBox {
     figma.SizeRectangle? boundingBox;
