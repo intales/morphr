@@ -147,6 +147,18 @@ class FigmaTextAdapter {
     }
   }
 
+  Color? get _color {
+    final figmaColor = fills?.first;
+    if (figmaColor == null) return null;
+
+    return Color.fromRGBO(
+      ((figmaColor.color?.r ?? 0) * 255).round(),
+      ((figmaColor.color?.g ?? 0) * 255).round(),
+      ((figmaColor.color?.b ?? 0) * 255).round(),
+      figmaColor.opacity ?? 1,
+    );
+  }
+
   /// Creates a Flutter TextStyle from the Figma text properties
   TextStyle? createTextStyle() {
     if (!supportsText) return null;
@@ -158,6 +170,7 @@ class FigmaTextAdapter {
       letterSpacing: letterSpacing,
       height: lineHeight,
       decoration: getTextDecoration(),
+      color: _color,
     );
   }
 }
