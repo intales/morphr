@@ -2,6 +2,13 @@
 
 All notable changes to the Morphr package will be documented in this file.
 
+## 0.5.0
+- Added `morph()` method to style and decoration classes to apply figma designs
+  directly to existing widgets
+- Added `morph()` top-level function to retreive all information about a figma
+  node
+- Fixed some small bugs in the adapters layer
+
 ## 0.4.1
 - Fixed a couple of problems with vectors' strokes
 - Fixed Figma visibility support
