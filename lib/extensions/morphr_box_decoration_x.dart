@@ -21,7 +21,11 @@ extension MorphrBoxDecorationX on BoxDecoration {
         border: border ?? Border().morph(componentName),
         boxShadow: boxShadow ?? component.shadows,
         image: image,
-        borderRadius: borderRadius ?? component.borderRadius,
+        borderRadius:
+            borderRadius ??
+            (component.shape != BoxShape.circle
+                ? component.borderRadius
+                : null),
         shape: component.shape,
         backgroundBlendMode: backgroundBlendMode,
       );

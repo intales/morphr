@@ -428,17 +428,16 @@ class FigmaComponentAdapter {
     if (fill.gradientStops == null || fill.gradientStops!.isEmpty) return null;
 
     final stops = fill.gradientStops!.map((stop) => stop.position!).toList();
-    final colors =
-        fill.gradientStops!
-            .map(
-              (stop) => Color.fromRGBO(
-                ((stop.color?.r ?? 0) * 255).round(),
-                ((stop.color?.g ?? 0) * 255).round(),
-                ((stop.color?.b ?? 0) * 255).round(),
-                fill.opacity ?? 1,
-              ),
-            )
-            .toList();
+    final colors = fill.gradientStops!
+        .map(
+          (stop) => Color.fromRGBO(
+            ((stop.color?.r ?? 0) * 255).round(),
+            ((stop.color?.g ?? 0) * 255).round(),
+            ((stop.color?.b ?? 0) * 255).round(),
+            fill.opacity ?? 1,
+          ),
+        )
+        .toList();
 
     if (fill.type == figma.PaintType.gradientLinear) {
       return _createLinearGradient(fill, colors, stops);
